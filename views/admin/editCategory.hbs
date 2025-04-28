@@ -1,0 +1,30 @@
+
+{{> admin-header }}
+ <div class="main-content " id="mainContent">
+    <h1>Customer List</h1>
+<div class="container mt-4">
+  <form method="post" action="/admin/update-category?id={{category._id}}">
+    <div class="row">
+      <div class="col-md-6"> <!-- Only half width -->
+        <div class="mb-3">
+          <label for="nameex" class="form-label">Name</label>
+          <input type="text" class="form-control" id="nameex" name="name" value="{{category.name}}"  required>
+        </div>
+
+        <div class="mb-3">
+          <label for="inputdescription" class="form-label">Description</label>
+          <textarea class="form-control" id="inputdescription" name="description" required>{{category.description}}</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="inputofferPrice" class="form-label">Offer price in Percentage</label>
+          <input type="number" class="form-control" id="inputofferPrice" name="offerprice" value="{{category.categoryoffer}}">
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Changes</button>
+      </div>
+    </div>
+  </form>
+</div>
+</div>
+{{> admin-foote }}

@@ -1,0 +1,179 @@
+ {{> admin-header }}
+ <div class="main-content " id="mainContent">
+    <h1>category List</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+<form class="mx-auto" role="search" method="GET" action="/search" style="max-width: 400px; width: 100%;">
+  <div class="input-group">
+    <input type="search" name="query" class="form-control" placeholder="Search users..." aria-label="Search">
+    <button class="btn  search-button" type="submit">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+</form>
+
+  <button class="btn btn-success " type="submit" data-bs-toggle="modal" data-bs-target="#staticBackdropadd" >Add category</button>
+</div>
+  <div class="table-responsive mt-4">
+  <table class="table table-striped shadow-sm rounded-3">
+    <thead class=" text-white">
+
+      <tr >
+        <th class="custom-color" scope="col">Category Name</th>
+        <th class="custom-color" scope="col">Description</th>
+        <th class="custom-color"scope="col">Offer Price</th>
+        {{!-- <th class="custom-color" scope="col">Offer</th> --}}
+        <th class="custom-color" scope="col">Status</th>
+        <th class="custom-color" scope="col">List/Unlist</th>
+         <th class="custom-color" scope="col">Actions</th>
+      </tr>
+    </thead>
+ <tbody>
+        {{#each cat}}
+      <tr>
+        <td>{{this.name}}</td>
+        <td>{{this.description}}</td>
+        <td>{{this.categoryoffer }}%</td>
+        {{!-- <td>
+            <button class="btn btn-success btn-sm">add offer</button>
+            <button class="btn btn-danger btn-sm">remove</button>
+        </td> --}}
+        <td>
+          {{#if this.isListed}}
+          <span class="badge rounded-pill text-bg-success">Listed</span>
+          {{else}}
+        <span class="badge rounded-pill text-bg-danger">Unlisted</span>
+        {{/if}}
+        </td>
+        <td>
+              {{#if this.isListed}}
+            <button class="btn btn-danger btn-sm">
+              <a href="/admin/categoryunListed?id={{this._id}}">Unlist</a>
+              </button>
+             {{else}}
+            <button class="btn btn-success btn-sm">
+              <a href="/admin/categoryListed?id={{this._id}}">List</a>
+
+            </button>
+            {{/if}}
+        </td>
+        <td>
+          <a href="/admin/edit-category?id={{this._id}}">
+             <i class="bi bi-pencil "></i></a>
+     <i class="bi bi-trash"></i>  <!-- Trash icon -->
+   
+        </td>
+     
+      </tr>
+      {{/each}}
+      </tbody>
+     
+ 
+  </table>
+</div>
+<div class="d-flex justify-content-end mt-4">
+
+
+<nav aria-label="page-navigation">
+  <ul class="pagination">
+    <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+    </li>
+
+    
+      {{#each (range 1 totalPages)}}
+      <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+        <a class="page-link" href="?page={{this}}">{{this}}</a>
+      </li>
+    {{/each}}
+
+
+    <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{add currentPage 1}}">next</a></li>
+    
+  </ul>
+</nav>
+</div>
+  
+  </div>
+
+  <div class="modal fade" id="staticBackdropadd" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Add category</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form  id="addCategoryForm">
+      <div class="modal-body">
+    <div class="mb-2">
+    <label for="nameex" class="form-label">Name </label>
+    <input type="text" class="form-control"  name="name" required>
+
+  </div>
+  <div class="mb-2">
+    <label for="inputdescription" class="form-label">Description </label>
+    <input type="textarea" class="form-control"  name="description"  required>
+
+  </div>
+  <div class="mb-2">
+    <label for="inputofferPrice" class="form-label">Offer price in Percentage </label>
+    <input type="number" class="form-control"  name="offerprice"  >
+
+  </div>
+ 
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Add</button>
+      </div>
+      </div>
+      </form>
+      </div>
+    </div>
+  </div>
+ <script>
+  document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); // Stop normal form submission
+
+    const formData = new FormData(e.target);
+    const data = {
+      name: formData.get("name"),
+      description: formData.get("description"),
+      offerprice: formData.get("offerprice")
+    };
+
+    try {
+      const response = await fetch("/admin/addCategory", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if(response.ok){
+        Swal.fire({
+          icon: "success",
+          title: result.message,
+          showConfirmButton: true
+        }).then(() => {
+          location.reload(); // or close modal manually
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: result.error,
+          showConfirmButton: true
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Something went wrong!",
+        showConfirmButton: true
+      });
+    }
+  });
+</script>
+   {{> admin-foote }}

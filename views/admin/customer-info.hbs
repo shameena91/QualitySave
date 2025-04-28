@@ -1,0 +1,85 @@
+ {{> admin-header }}
+ <div class="main-content " id="mainContent">
+    <h1>Customer List</h1>
+
+<form class="mx-auto" role="search" method="GET" action="/search" style="max-width: 400px; width: 100%;">
+  <div class="input-group">
+    <input type="search" name="query" class="form-control" placeholder="Search users..." aria-label="Search">
+    <button class="btn  search-button" type="submit">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+</form>
+
+  <div class="table-responsive mt-4">
+  <table class="table table-striped shadow-sm rounded-3">
+    <thead class=" text-white">
+      <tr >
+        <th class="custom-color" scope="col">Customer Name</th>
+        <th class="custom-color" scope="col">Email</th>
+        <th class="custom-color"scope="col">Phone No</th>
+        {{!-- <th class="custom-color" scope="col"></th> --}}
+        {{!-- <th class="custom-color" scope="col">Status</th> --}}
+        <th class="custom-color" scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+         {{#each userData}}
+      <tr>
+        <td>{{this.name}}</td>
+        <td>{{this.email}}</td>
+        <td>{{this.phone}}</td>
+        <td>
+          {{#if this.isBlocked}}
+            <button class="btn btn-danger btn-sm" >
+              <a href="/admin/unblockUser?id={{this._id}}">Unblock</a>
+            </button>
+            {{else}}
+            <button class="btn btn-success btn-sm">
+              <a href="/admin/blockUser?id={{this._id}}">block</a>
+            </button>
+            {{/if}}
+        </td>
+       
+       
+      
+     
+      </tr>
+      {{/each}}
+    </tbody>
+   
+     
+ 
+  </table>
+</div>
+<div class="d-flex justify-content-end mt-4">
+
+
+<nav aria-label="page-navigation">
+  <ul class="pagination">
+    <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+    </li>
+
+    
+      {{#each (range 1 totalPages)}}
+      <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+        <a class="page-link" href="?page={{this}}">{{this}}</a>
+      </li>
+    {{/each}}
+
+
+    <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{add currentPage 1}}">next</a></li>
+    
+  </ul>
+</nav>
+</div>
+
+
+
+
+
+  
+  </div>
+   {{> admin-foote }}

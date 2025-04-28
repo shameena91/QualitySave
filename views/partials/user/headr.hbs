@@ -272,9 +272,30 @@
 
           <div class="col-lg-4">
             <ul class="navbar-nav list-unstyled d-flex flex-row gap-3 gap-lg-5 justify-content-center flex-wrap align-items-center mb-0 fw-bold text-uppercase text-dark">
-              <li class="nav-item active">
+              {{!-- <li class="nav-item active">
                 <a href="index.html" class="nav-link">Home</a>
+              </li> --}}
+              {{!-- <li class="nav-item active">
+                <a href="/signUp" class="nav-link">Signup</a>
+
+              </li> --}}
+              {{#if user}}
+              <div class="dropdown">
+  <a href="" class="nav-link">{{user.name}}</a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="#">Profile</a></li>
+    <li><a class="dropdown-item" href="#">Another action</a></li>
+    <li><a class="dropdown-item" href="#">Logout</a></li>
+  </ul>
+</div>
+{{else}}
+               <li class="nav-item active">
+                <a href="/login" class="nav-link">Login</a>               
               </li>
+              {{/if}}
+              {{!-- <li class="nav-item active">
+                <a href="index.html" class="nav-link">Login</a>
+              </li> --}}
               {{!-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle pe-3" role="button" id="pages" data-bs-toggle="dropdown" aria-expanded="false">Pages</a>
                 <ul class="dropdown-menu border-0 p-3 rounded-0 shadow" aria-labelledby="pages">
