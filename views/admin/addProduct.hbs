@@ -1,0 +1,267 @@
+{{> admin-header }}
+
+<!-- Cropper.js Styles & Script -->
+<link href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
+
+<style>
+  .image-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin-bottom: 20px;
+  }
+
+  .image-container img {
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .btn-crop {
+    margin-top: 10px;
+  }
+
+  #croppedPreviewContainer img {
+    max-width: 150px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 0.875rem;
+  }
+</style>
+
+<div class="main-content" id="mainContent">
+  <h3 class="text-start mb-4">Add New Product</h3>
+  <div class="bg-light">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div class="card shadow">
+            <div class="card-body">
+              <form id="productForm" method="POST" enctype="multipart/form-data">
+                <!-- Product Name -->
+                <div class="mb-4">
+                  <h5>Product Name</h5>
+                  <input type="text" class="form-control" name="productName" required />
+                  <div id="productName-error" class="error-message"></div>
+                </div>
+
+                <!-- Brand & Category -->
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <h5>Brand</h5>
+                    <select class="form-select" name="brand" required>
+                      <option value="">Select Brand</option>
+                      {{#each brand}}
+                      <option value="{{_id}}">{{brandName}}</option>
+                      {{/each}}
+                    </select>
+                    <div id="brand-error" class="error-message"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <h5>Category</h5>
+                    <select class="form-select" name="category" required>
+                      <option value="">Select Category</option>
+                      {{#each cat}}
+                      <option value="{{_id}}">{{name}}</option>
+                      {{/each}}
+                    </select>
+                    <div id="category-error" class="error-message"></div>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                  <h5>Description</h5>
+                  <textarea class="form-control" rows="4" name="descriptionData" required></textarea>
+                  <div id="description-error" class="error-message"></div>
+                </div>
+
+                <!-- Price & Stock -->
+                <div class="row mb-4">
+                  <div class="col-md-4">
+                    <h5>Regular Price</h5>
+                    <input type="number" class="form-control" name="regularPrice" required />
+                  </div>
+                  <div class="col-md-4">
+                    <h5>Sale Price</h5>
+                    <input type="number" class="form-control" name="salePrice" required />
+                  </div>
+                  <div class="col-md-4">
+                    <h5>Stock</h5>
+                    <input type="number" class="form-control" name="quantity" required />
+                  </div>
+                </div>
+
+                <!-- Image Input -->
+                <div class="mb-4">
+                  <h5>Add Product Images (Max 3)</h5>
+                  <input type="file" id="imageInput" accept="image/*" multiple />
+                  <div id="imageInput-error" class="error-message"></div>
+                </div>
+
+                <!-- Crop Containers -->
+                <div id="imageCropContainers" class="d-flex flex-wrap gap-4 mt-4"></div>
+
+                <!-- Preview -->
+                <h5 class="mt-5">Cropped Preview</h5>
+                <div id="croppedPreviewContainer" class="d-flex flex-wrap mt-3"></div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-5">
+                  <button class="btn btn-secondary" type="button" onclick="window.location.href='/admin/products'">Cancel</button>
+                  <button class="btn btn-success" type="submit">Publish</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script -->
+<script>
+  const imageInput = document.getElementById("imageInput");
+  const cropContainers = document.getElementById("imageCropContainers");
+  const previewContainer = document.getElementById("croppedPreviewContainer");
+  const croppedImages = [];
+
+  let croppers = [];
+
+ imageInput.addEventListener("change", (event) => {
+  const newFiles = Array.from(event.target.files);
+
+  // Check if adding these exceeds 3 images
+  if (croppedImages.length + newFiles.length > 3) {
+    Swal.fire("Limit Exceeded", "You can only add up to 3 images.", "warning");
+    imageInput.value = ""; // Reset input
+    return;
+  }
+
+  newFiles.forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const container = document.createElement("div");
+      container.className = "image-container";
+
+      const img = document.createElement("img");
+      img.src = e.target.result;
+
+      const cropBtn = document.createElement("button");
+      cropBtn.type = "button";
+      cropBtn.innerText = "Crop";
+      cropBtn.className = "btn btn-primary btn-crop";
+
+      const currentIndex = croppers.length; // Get current index
+      cropBtn.onclick = () => cropImage(currentIndex, img, container);
+
+      container.appendChild(img);
+      container.appendChild(cropBtn);
+      cropContainers.appendChild(container);
+
+      const cropper = new Cropper(img, {
+        aspectRatio: 1,
+        viewMode: 1,
+      });
+
+      croppers.push(cropper); // Track this cropper
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  // Reset file input so user can reselect same file later
+  imageInput.value = "";
+});
+
+
+  function cropImage(index, imgElement, container) {
+    const cropper = croppers[index];
+    const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+    const croppedURL = canvas.toDataURL("image/png");
+
+    container.innerHTML = "";
+    const croppedImg = document.createElement("img");
+    croppedImg.src = croppedURL;
+    croppedImg.className = "img-thumbnail";
+    container.appendChild(croppedImg);
+
+    previewContainer.appendChild(croppedImg.cloneNode());
+
+    canvas.toBlob((blob) => {
+      croppedImages[index] = blob;
+    }, "image/png");
+
+    Swal.fire({
+      icon: "success",
+      title: "Saved!",
+      text: "Image saved successfully.",
+    });
+  }
+
+  document.getElementById("productForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Basic Validation
+    document.getElementById("brand-error").textContent = "";
+    document.getElementById("category-error").textContent = "";
+    document.getElementById("description-error").textContent = "";
+    document.getElementById("imageInput-error").textContent = "";
+
+    if (!document.querySelector('[name="brand"]').value) {
+      document.getElementById("brand-error").textContent = "Please select a brand.";
+      return;
+    }
+
+    if (!document.querySelector('[name="category"]').value) {
+      document.getElementById("category-error").textContent = "Please select a category.";
+      return;
+    }
+
+    if (!document.querySelector('[name="descriptionData"]').value.trim()) {
+      document.getElementById("description-error").textContent = "Please enter a product description.";
+      return;
+    }
+
+    if (croppedImages.length === 0 || croppedImages.some(blob => !blob)) {
+      document.getElementById("imageInput-error").textContent = "Please crop and select at least one image.";
+      return;
+    }
+
+    // Submit Form
+    const formData = new FormData();
+    formData.append("productName", document.querySelector('[name="productName"]').value);
+    formData.append("regularPrice", document.querySelector('[name="regularPrice"]').value);
+    formData.append("salePrice", document.querySelector('[name="salePrice"]').value);
+    formData.append("quantity", document.querySelector('[name="quantity"]').value);
+    formData.append("brand", document.querySelector('[name="brand"]').value);
+    formData.append("category", document.querySelector('[name="category"]').value);
+    formData.append("descriptionData", document.querySelector('[name="descriptionData"]').value);
+
+    croppedImages.forEach((blob, i) => {
+      if (blob) {
+        formData.append("images", blob, `image${i + 1}.png`);
+      }
+    });
+
+    fetch("/admin/addProducts", {
+      method: "POST",
+      body: formData,
+    })
+      .then(res => res.json())
+      .then(data => {
+        Swal.fire("Success!", data.message || "Product added successfully!", "success")
+          .then(() => window.location.href = "/admin/productList");
+      })
+      .catch(err => {
+        Swal.fire("Error", err.message || "Something went wrong.", "error");
+      });
+  });
+</script>
+
+{{> admin-foote }}

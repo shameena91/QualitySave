@@ -14,7 +14,7 @@ productImage:{
 },
 brand:{
     type:String,
-    required:true
+    ref:"Brand"
 },
 category:{
     type:String,
@@ -28,6 +28,11 @@ salePrice:{
     type:Number,
     required:true
 },
+discountedPrice:{
+    type:Number,
+    default:0
+    
+},
 productOffer:{
     type:Number,
     default:0
@@ -40,16 +45,16 @@ isBlocked:{
     type:Boolean,
     default:false
 },
-unit:{
-    type:String,enum: ['kg', 'gm', 'ltr', 'ml', 'pcs'],
-     required: true,
-     default:"gm"
-    },
-status:{
-    type:String,
-    enum:["Available","Out of stock","Discontinued"],
-    default:"Available"
-}
+createdAt:{
+    type:Date,
+    default:Date.now
+},
+// unit:{
+//     type:String,enum: ['kg', 'gm', 'ltr', 'ml', 'pcs'],
+//      required: true,
+//      default:"gm"
+//     },
+
 
 },{timestamps:true})
 const Product=mongoose.model("Product",productSchema)

@@ -36,45 +36,7 @@ const userSchema=new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    cart:[{
-type:mongoose.Schema.Types.ObjectId,
-ref:"Cart"
-    }],
-    wallet:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Wallet"
-    }],
-    orderHistory:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Order"
-    }],
-    createdAt:{
-        type:Date,
-        default:Date.now
-    },
-    referalCode:{
-        type:String,
-    },
-    redeemed:{
-        type:Boolean
-    },
-    redeemedUsers:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
-    }],
-    searchHistory:[{
-        category:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Category"
-        },
-        brand:{
-            type:String
-        },
-        searchOn:{
-            type:Date,
-            // default:Date.now
-        } 
-    }]
+
 
 })
 

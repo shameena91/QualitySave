@@ -13,6 +13,12 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.19.1/dist/sweetalert2.min.css
 " rel="stylesheet">
 
 
+{{!-- <link href="
+https://cdn.jsdelivr.net/npm/cropper@4.1.0/dist/cropper.min.css
+" rel="stylesheet"> --}}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+
   <style>
     body { overflow-x: hidden; padding-top: 56px; }
     .sidebar {
@@ -119,6 +125,59 @@ border: 1px solid rgb(231, 230, 230);
    background-color:  #5404a0 !important;
   color:white !important
  }
+  .error-message{
+       color: red;
+   }
+
+
+       .thumbnails-container {
+           display: flex;
+           overflow-x: auto;
+       }
+
+
+       .thumbnail {
+           margin-right: 10px;
+
+
+       }
+.image-cropper {
+  position: relative;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.image-cropper img {
+  max-width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+
+
+.cropper-container {
+  position: relative;
+  margin-bottom: 10px;
+  max-width: 100%;
+  overflow: hidden;
+}
+.cropper-container .preview img {
+  max-width: 100%;
+  height: auto;
+}
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
 
   </style>
 </head>
@@ -149,7 +208,7 @@ border: 1px solid rgb(231, 230, 230);
     <a href="/admin/dashboard">Dashboard</a>
     <a href="/admin/users">Users</a>
     <a href="/admin/category">Category</a>
-    <a href="#">Orders</a>
-    <a href="#">Reports</a>
+    <a href="/admin/productList">Products</a>
+    <a href="/admin/brand">Brands</a>
     <a href="#">Logout</a>
   </div>

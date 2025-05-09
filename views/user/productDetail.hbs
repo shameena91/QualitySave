@@ -1,0 +1,300 @@
+{{> headr}}
+<style>
+  .main-image-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .zoom-hover {
+    transition: transform 0.1s ease;
+    will-change: transform;
+  }
+
+  .carousel-item img {
+    object-fit: cover;
+    width: 100%;
+    height: 200px;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .product-card {
+    width: 250px;
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: 0.3s ease;
+    position: relative;
+    text-align: center;
+    height: auto;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-card img {
+    max-width: 200px;
+    height: 200px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+.carousel-item img {
+  object-fit: contain;
+  height: 200px;
+  width: 100%;
+}
+
+.carousel-control-prev, .carousel-control-next {
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+  .product-card h4 {
+    font-size: 18px;
+    color: #333;
+    margin: 10px 0 5px;
+  }
+
+  .product-card p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+
+  .wishlist-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #ff4d4f;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .add-to-cart-btn {
+    background-color: #1e918b;
+    color: #fff;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+  }
+
+  .add-to-cart-btn:hover {
+    background-color: #156f6b;
+  }
+</style>
+
+<main class="main py-4">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb bg-light px-3 py-2 rounded shadow-sm">
+        <li class="breadcrumb-item text-decoration-none"><a href="/" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="/shop" class="text-decoration-none">Shopping</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Product Details</li>
+      </ol>
+    </nav>
+
+    <!-- Product Detail Section -->
+    <div class="row g-4">
+      <!-- Product Images -->
+      <div class="col-md-6">
+        <div class="main-image-wrapper position-relative overflow-hidden border rounded" style="height: auto;width: 600px;">
+          <img id="mainProductImage"
+               src="/uploads/re-image/{{product.productImage.[0]}}"
+               alt="{{product.productName}}"
+               class="img w-100 object-fit-cover zoom-hover"
+               style="transform-origin: center;">
+        </div>
+
+        <!-- Thumbnails -->
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          {{#each product.productImage}}
+            <img src="/uploads/re-image/{{this}}"
+                 alt="Thumbnail"
+                 class="img-thumbnail thumbnail-img"
+                 style="width: 80px; height: 80px; cursor: pointer;">
+          {{/each}}
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="col-md-6">
+        <h2 class="fw-bold mb-3" style="text-transform:capitalize">{{product.productName}}</h2>
+        <p class="text-muted">Brand: &nbsp;<span style="text-transform:capitalize">{{brand.brandName}}</span><a href="#"></a> |
+          {{#if stock}} 
+            <span class="text-success">In Stock</span>
+          {{else}}
+            <span class="text-danger">Out of Stock</span>
+          {{/if}}
+        </p>
+
+        <!-- Rating -->
+        <div class="mb-2">
+          <span class="text-warning">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+          <small class="text-muted">(25 reviews)</small>
+        </div>
+
+        <!-- Price -->
+        <div class="mb-3">
+          {{#if productOffer}}
+            <span class="fs-4 text-primary fw-bold">₹{{product.discountedPrice}}</span>
+            <span class="text-muted text-decoration-line-through ms-3">₹{{product.salePrice}}</span>
+            <span class="badge bg-success ms-2">&nbsp;&nbsp;{{productOffer}}% off</span>
+          {{else}}
+            <span class="fs-4 text-primary fw-bold">₹{{product.salePrice}}</span>
+          {{/if}}
+        </div>
+
+        <!-- Offers -->
+        <ul class="list-unstyled mb-4">
+          <li><i class="bi bi-arrow-repeat me-2"></i>Easy Doorstep Return</li>
+          <li><i class="bi bi-cash me-2"></i>Cash on Delivery available</li>
+        </ul>
+
+        <!-- Quantity + Buttons -->
+        {{#if stock}}
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="input-group" style="width: 120px;">
+              <button class="btn btn-outline-secondary btn-sm" type="button">-</button>
+              <input type="text" class="form-control text-center" value="1">
+              <button class="btn btn-outline-secondary btn-sm" type="button">+</button>
+            </div>
+            <button class="btn btn-lg" style="background-color:#1e918b"><i class="bi bi-cart-plus me-2"></i>Add to Cart</button>
+            <a href="#" class="btn btn-outline-danger btn-lg"><i class="bi bi-heart-fill"></i></a>
+          </div>
+        {{else}}
+          <h4 style="color:red">Currently unavailable</h4>
+        {{/if}}
+
+        <!-- Product Meta -->
+        <div class="text-muted small mt-4">
+          <p>Stock Code: <strong>FWM15VKT</strong></p>
+          <p>Tags: <a href="#" class="text-decoration-none">{{category.name}}</a></p>
+        </div>
+
+        <div>
+          <p class="lead" style="font-weight:700;font-size:20px">Product Details</p>
+          <span>{{product.description}}</span>
+        </div>
+
+        <div class="border border-2 p-3 mt-3">
+          <h5 style="font-weight:700;font-size:20px">Review and Ratings</h5>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products Section with Carousel -->
+   <h3 class="mt-5 mb-3">Related Products</h3>
+<div class="position-relative">
+
+  <!-- Scrollable container -->
+  <div class="d-flex overflow-auto hide-scrollbar gap-3 px-2" id="relatedScroll" style="scroll-behavior: smooth;">
+    {{#each relatedProducts}}
+      <div class="card flex-shrink-0 border-0" style="width: 250px;height:auto ">
+
+        <div class="product-card">
+            <span class="wishlist-btn">❤️</span>
+            <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{this.productImage.[0]}}" alt="{{productName}}" /></a>
+            <h4>{{this.productName}}</h4>
+            <p>Brand: {{brand.brandName}}</p>
+            {{#if productOffer}}
+
+
+            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
+            
+            
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off</span>
+            {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
+
+           
+            </p>
+             {{/if}}
+             {{#if quantity}}
+            <button class="add-to-cart-btn">Add to Cart</button>
+            {{else}}
+             <h5 style="color:red">Currently unavailable</h5>
+             {{/if}}
+          </div>
+      </div>
+    {{/each}}
+  </div>
+
+  <!-- Scroll buttons -->
+  <button class="btn btn-light shadow-sm position-absolute top-50 start-0 translate-middle-y" onclick="scrollLeft()" style="z-index: 10;">
+    <i class="bi bi-chevron-left"></i>
+  </button>
+  <button class="btn btn-light shadow-sm position-absolute top-50 end-0 translate-middle-y" onclick="scrollRight()" style="z-index: 10;">
+    <i class="bi bi-chevron-right"></i>
+  </button>
+</div>
+
+  </div>
+</main>
+
+<!-- Required Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+
+  function scrollLeft() {
+    document.getElementById("relatedScroll").scrollBy({ left: -220, behavior: 'smooth' });
+  }
+
+  function scrollRight() {
+    document.getElementById("relatedScroll").scrollBy({ left: 220, behavior: 'smooth' });
+  }
+
+  const mainImage = document.getElementById('mainProductImage');
+  const wrapper = mainImage.parentElement;
+
+  // Hover Zoom
+  wrapper.addEventListener('mousemove', (e) => {
+    const { left, top, width, height } = wrapper.getBoundingClientRect();
+    const x = ((e.pageX - left - window.scrollX) / width) * 100;
+    const y = ((e.pageY - top - window.scrollY) / height) * 100;
+
+    mainImage.style.transformOrigin = `${x}% ${y}%`;
+    mainImage.style.transform = 'scale(2)';
+  });
+
+  wrapper.addEventListener('mouseleave', () => {
+    mainImage.style.transform = 'scale(1)';
+    mainImage.style.transformOrigin = 'center';
+  });
+
+  // Thumbnail Click
+  document.querySelectorAll('.thumbnail-img').forEach(thumb => {
+    thumb.addEventListener('click', function () {
+      mainImage.src = this.src;
+    });
+  });
+
+  // Zoom Button
+  const zoomBtn = document.getElementById('zoomBtn');
+  const zoomModal = new bootstrap.Modal(document.getElementById('zoomImageModal'));
+  const modalZoomImage = document.getElementById('modalZoomImage');
+
+  zoomBtn.addEventListener('click', () => {
+    modalZoomImage.src = mainImage.src;
+    zoomModal.show();
+  });
+</script>
+
+{{> foote}}

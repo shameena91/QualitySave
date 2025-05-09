@@ -2,9 +2,9 @@
  <div class="main-content " id="mainContent">
     <h1>category List</h1>
 <div class="d-flex justify-content-between align-items-center mb-3">
-<form class="mx-auto" role="search" method="GET" action="/search" style="max-width: 400px; width: 100%;">
+<form class="mx-auto" role="search" style="max-width: 400px; width: 100%;">
   <div class="input-group">
-    <input type="search" name="query" class="form-control" placeholder="Search users..." aria-label="Search">
+    <input type="search" name="search" class="form-control" placeholder="Search category name..." aria-label="Search">
     <button class="btn  search-button" type="submit">
       <i class="fas fa-search"></i>
     </button>
@@ -57,9 +57,10 @@
             {{/if}}
         </td>
         <td>
-          <a href="/admin/edit-category?id={{this._id}}">
+          <a href="/admin/category/{{this._id}}">
              <i class="bi bi-pencil "></i></a>
-     <i class="bi bi-trash"></i>  <!-- Trash icon -->
+             <a href="javascript:void(0)" onclick="deleteCategory('{{this._id}}')"> <i class="bi bi-trash"></i> </a>
+     <!-- Trash icon -->
    
         </td>
      
@@ -131,9 +132,10 @@
     </div>
   </div>
  <script>
-  document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
-    e.preventDefault(); // Stop normal form submission
 
+
+  document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
     const formData = new FormData(e.target);
     const data = {
       name: formData.get("name"),
@@ -142,7 +144,8 @@
     };
 
     try {
-      const response = await fetch("/admin/addCategory", {
+      const response = await fetch("/admin/Category", 
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json" 
@@ -158,7 +161,7 @@
           title: result.message,
           showConfirmButton: true
         }).then(() => {
-          location.reload(); // or close modal manually
+          location.reload(); 
         });
       } else {
         Swal.fire({
@@ -175,5 +178,45 @@
       });
     }
   });
+
+
+
+   function deleteCategory(id) {
+
+    Swal.fire({
+      title: 'Are you sure?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.isConfirmed) {
+    
+        $.ajax({
+          url: `/admin/category/${id}`,
+          method: "DELETE",
+          success: function(data) {          
+            Swal.fire({
+              title: 'Deleted!',
+              text: data.message,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              location.reload(); 
+            });
+          },
+          error: function(err) {
+         
+            Swal.fire({
+              title: 'Error!',
+              text: 'An error occurred while deleting the category.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        });
+      }
+    });
+  }
 </script>
    {{> admin-foote }}

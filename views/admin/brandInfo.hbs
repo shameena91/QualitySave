@@ -1,0 +1,331 @@
+{{> admin-header }}
+ <div class="main-content " id="mainContent">
+    <h1>Brand</h1>
+
+<div class="container-fluid my-5" >
+  <div class="row">
+  
+    <!-- Left Side: Add Brand Form -->
+    <div class="col-md-4">
+      <div class="card shadow rounded" >
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Add Brand</h4>
+        </div>
+        <div class="card-body">
+          <form action="/admin/brand" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="brandName" class="form-label">Brand Name</label>
+              <input type="text" class="form-control" id="brandName" name="name" placeholder="Enter brand name">
+            </div>
+            <div class="mb-3">
+              <label for="brandImage" class="form-label">Brand Image</label>
+              <input class="form-control" type="file" id="brandImage" name="image">
+            </div>
+            <button type="submit" class="btn btn-success ">Add Brand</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side: Brand List -->
+    <div class="col-md-8 mt-4 mt-md-0">
+      <div class="card shadow rounded">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">Brand List</h4>
+        </div>
+        <div class="card-body">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Brand Name</th>
+                <th>Logo</th>
+                   <th>Status</th>
+                <th>Actions</th>
+                  <th>edit/delete</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              {{#each data}}
+              <tr>
+          
+             
+                <td>{{this.brandName}}</td>
+                <td><img src="/uploads/re-image/{{this.brandImage}}" 
+                alt="{{this.name}}" style="width:50px;height:50px;"/>
+                </td>
+             
+                <td>
+                     {{#if this.isBlocked}}
+                  <span class="badge bg-danger">Unlisted</span>
+                   {{else}}
+                    <span class="badge bg-success">Listed</span>
+                    {{/if}}
+                </td>
+
+<td>
+   {{#if this.isBlocked}}
+ <button class="btn btn-danger btn-sm" onclick="unblockBrand('{{this._id}}')">
+             Unblock
+
+            </button>
+            
+             {{else}}
+           <button class="btn btn-success btn-sm"  onclick="blockBrand('{{this._id}}')">
+              block
+              </button>
+            {{/if}}
+</td>
+
+                {{!-- <td><button class="btn btn-danger btn-sm">
+              <a href="">Unlist</a>
+              </button>
+         
+            <button class="btn btn-success btn-sm">
+              <a href="">List</a>
+
+            </button></td> --}}
+            <td> 
+              <button class="btn btn-primary" data-bs-toggle="modal"
+               data-bs-target="#editBrandModal" 
+               data-id="{{brand._id}}" 
+               data-name="{{this.brandName}}"  
+               data-image="{{this.brandImage}}">
+  Edit 
+</button> 
+         <button class="btn btn-danger" onclick="deleteBrand('{{this._id}}')">Delete</button>
+   
+        </td>
+              </tr>
+              {{/each}}
+             
+    
+              <!-- Add more rows dynamically as needed -->
+               
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+  </div>
+
+<!-- Modal -->
+<div class="modal fade" id="editBrandModal" tabindex="-1" aria-labelledby="editBrandModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editBrandModalLabel">Edit Brand</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+     <form id="editBrandForm" method="post" enctype="multipart/form-data">
+  <div class="form-group">
+    <label for="name">Brand Name</label>
+    <input type="text" id="name" name="name" class="form-control" required>
+  </div>
+
+  <div class="form-group">
+    <label for="image">Brand Image</label>
+    <input type="file" id="image" name="image" class="form-control">
+    <img id="brandImagePreview" src="" alt="Brand Image" width="100" class="mt-2">
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <div class="d-flex justify-content-end mt-4">
+<nav aria-label="page-navigation">
+  <ul class="pagination">
+    <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+    </li>
+
+    
+      {{#each (range 1 totalPages)}}
+      <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+        <a class="page-link" href="?page={{this}}">{{this}}</a>
+      </li>
+    {{/each}}
+
+
+    <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{add currentPage 1}}">next</a></li>
+    
+  </ul>
+</nav>
+</div>
+<script>
+
+
+function blockBrand(id)
+{
+    $.ajax({
+    url: `/admin/brand/${id}/block`,
+    method: "POST",
+    success: function (data) {
+
+Swal.fire({
+  title:"Blocked",
+  text:data.message,
+   icon: 'success',
+  confirmButtonText: 'OK'
+}).then ((result)=>{
+   location.reload(); 
+})
+    
+    },
+    error: function (err) {
+      Swal.fire({
+              title: 'Error!',
+              text: 'An error occurred while deleting the brand.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+    },
+  });
+}
+
+
+function unblockBrand(id)
+{
+    $.ajax({
+    url: `/admin/brand/${id}/unblock`,
+    method: "PATCH",
+    success: function (data) {
+
+Swal.fire({
+  title:"Unblocked",
+  text:data.message,
+   icon: 'success',
+  confirmButtonText: 'OK'
+}).then ((result)=>{
+   location.reload(); 
+})
+    
+    },
+    error: function (err) {
+      Swal.fire({
+              title: 'Error!',
+              text: 'An error occurred while deleting the brand.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+    },
+  });
+}
+
+
+ function deleteBrand(id) {
+
+    Swal.fire({
+      title: 'Are you sure?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.isConfirmed) {
+    
+        $.ajax({
+          url: `/admin/brand/${id}`,
+          method: "DELETE",
+          success: function(data) {          
+            Swal.fire({
+              title: 'Deleted!',
+              text: data.message,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              location.reload(); 
+            });
+          },
+          error: function(err) {
+         
+            Swal.fire({
+              title: 'Error!',
+              text: 'An error occurred while deleting the brand.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // Handle form submission via AJAX using Fetch
+document.getElementById('editBrandForm').addEventListener('submit', function(e) {
+  e.preventDefault(); // Prevent normal form submission
+
+  const formData = new FormData(this);
+
+  // Log form data for debugging
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value); // Check if image is added correctly
+  }
+
+  fetch(this.action, {
+    method: 'PATCH', // Use PATCH for updates
+    body: formData
+  })
+  .then(response => response.json()) // Expecting JSON response
+  .then(data => {
+    if (data.success) {
+      // If successful, show success message
+      Swal.fire({
+        title: 'Success!',
+        text: 'Brand has been updated.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        window.location.href = '/admin/brand'; // Redirect to brand page
+      });
+    } else {
+      // If there was an error, show error message
+      Swal.fire({
+        title: 'Error!',
+        text: data.message || 'There was a problem updating the brand.',
+        icon: 'error',
+        confirmButtonText: 'Try Again'
+      });
+    }
+  })
+  .catch(error => {
+    // Handle network or other errors
+    Swal.fire({
+      title: 'Error!',
+      text: 'Something went wrong, please try again later.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  });
+});
+
+// Set up modal fields dynamically when opening the modal
+document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+  button.addEventListener('click', function() {
+    const brandId = this.getAttribute('data-id');
+    const brandName = this.getAttribute('data-name');
+    const brandImage = this.getAttribute('data-image');
+
+    document.getElementById('name').value = brandName;
+    if (brandImage) {
+      document.getElementById('brandImagePreview').src = "/uploads/re-image/" + brandImage;
+    } else {
+      document.getElementById('brandImagePreview').src = "";
+    }
+
+    // Dynamically set the action URL of the form to use PATCH
+    document.getElementById('editBrandForm').action = `/admin/brand/${brandId}`;
+  });
+});
+</script>
+{{> admin-foote }}

@@ -1,0 +1,409 @@
+{{> admin-header }}
+<style>
+  .image-container {
+    position: relative;
+    max-width: 300px;
+    margin-bottom: 20px;
+  }
+
+  .image-container img {
+    max-width: 100%;
+    display: block;
+  }
+
+  .btn-crop {
+    margin-top: 10px;
+  }
+
+  #croppedPreviewContainer img {
+    max-width: 150px;
+    margin-right: 10px;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 0.875rem;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.7;
+    text-shadow: 0 1px 0 black;
+  }
+
+  .close-btn:hover {
+    opacity: 1;
+  }
+</style>
+<div class="main-content" id="mainContent">
+  <h3 class="text-start mb-4">Edit Product</h3>
+
+  <div class="bg-light">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+
+          <div class="card shadow">
+            <div class="card-body">
+              <form onsubmit="return validateAndSubmit('{{product._id}}')" method="post" enctype="multipart/form-data">
+
+                <div class="mb-4 mt-4">
+                  <h5 class="mb-3">Product Name</h5>
+                  <input type="text" class="form-control" value="{{product.productName}}" name="productName" >
+                  <div id="productName-error" class="error-message"></div>
+                </div>
+
+                <div class="row mb-4">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label"><strong>Brand</strong></label>
+                    <select class="form-select" name="brand">
+                      {{#each brand}}
+                        <option value="{{_id}}" {{#if (eq brand.brandName ../brand)}}selected{{/if}}>{{brandName}}</option>
+                      {{/each}}
+                    </select>
+                    <div id="brand-error" class="error-message text-danger"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label"><strong>Category</strong></label>
+                    <select class="form-select" name="category">
+                      {{#each cat}}
+                        <option value="{{_id}}" {{#if (eq _id ../category)}}selected{{/if}}>{{name}}</option>
+                      {{/each}}
+                    </select>
+                    <div id="category-error" class="error-message text-danger"></div>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <h5 class="mb-3">Product Description</h5>
+                  <textarea class="form-control" rows="4" name="descriptionData" id="descriptionId">{{product.description}}</textarea>
+                  <div id="description-error" class="error-message"></div>
+                </div>
+
+                <div class=" mb-3">
+                  <div class="row">
+                    {{#each product.productImage}}
+                      <div class="col-2 mb-3 position-relative">
+                        <div class="position-relative">
+                          <img src="/uploads/product-images/{{this}}" alt="Product Image" class="img-fluid rounded" height="150px" width="150px"/>
+                          <button type="button" class="close-btn position-absolute" onclick="removeImage('{{this}}','{{../product._id}}')">
+                            &#x2716;
+                          </button>
+                        </div>
+                      </div>
+                    {{/each}}
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <h5>Add Product Images (Max 3)</h5>
+                  <input type="file" id="imageInput"  name="images"  accept="image/*" multiple />
+                  <div id="imageInput-error" class="error-message"></div>
+                </div>
+
+                <div id="imageCropContainers" class="d-flex flex-wrap gap-4 mt-4"></div>
+
+                <h5 class="mt-5">Cropped Preview</h5>
+                <div id="croppedPreviewContainer" class="d-flex flex-wrap mt-3"></div>
+
+                <div class="row mb-4 m-2">
+                  <div class="col-md-6 mb-3">
+                    <h5 class="mb-3">Regular Price</h5>
+                    <input type="number" class="form-control" value="{{product.regularPrice}}" name="regularPrice">
+                    <div id="regularPrice-error" class="error-message"></div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <h5 class="mb-3">Sale Price</h5>
+                    <input type="text" class="form-control" value="{{product.salePrice}}" name="salePrice">
+                    <div id="salePrice-error" class="error-message"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <h5 class="mb-3">Stock</h5>
+                    <input type="number" class="form-control" value="{{product.quantity}}" name="quantity">
+                    <div id="quantity-error" class="error-message"></div>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 m-5">
+                  <button class="btn btn-secondary" type="button" onclick="window.location.href='/admin/productList'">Cancel</button>
+                  <button class="btn btn-success" type="submit" >Update</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<script>
+  const imageInput = document.getElementById("imageInput");
+  const cropContainers = document.getElementById("imageCropContainers");
+  const previewContainer = document.getElementById("croppedPreviewContainer");
+  const croppedImages = [];
+  const productId = '{{product._id}}';
+
+  let croppers = [];
+
+imageInput.addEventListener("change", function (event) {
+  const existingCount = croppers.length;
+  const files = Array.from(event.target.files).slice(0, 3 - existingCount); 
+
+  if (existingCount + files.length > 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Limit Exceeded',
+      text: 'You can only add up to 3 images.'
+    });
+    return;
+  }
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const container = document.createElement("div");
+        container.classList.add("image-container");
+
+        const image = document.createElement("img");
+        image.src = e.target.result;
+        image.id = `image-${index}`;
+
+        const cropBtn = document.createElement("button");
+        cropBtn.type = "button";
+        cropBtn.innerText = "Save";
+        cropBtn.classList.add("btn", "btn-primary", "btn-crop");
+
+        cropBtn.onclick = () => cropImage(index, image, container);
+
+        container.appendChild(image);
+        container.appendChild(cropBtn);
+
+        cropContainers.appendChild(container);
+
+        const cropper = new Cropper(image, {
+          aspectRatio: 1,
+          viewMode: 1,
+        });
+
+        croppers[index] = cropper;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    imageInput.value = "";
+  });
+
+ 
+  function cropImage(index, imgElement, container) {
+    if (!croppers[index]) return; 
+
+    const cropper = croppers[index];
+
+  
+    const canvas = cropper.getCroppedCanvas({
+      width: 500,
+      height: 500,
+    });
+
+ 
+    const croppedImageURL = canvas.toDataURL("image/png");
+
+    container.innerHTML = ''; 
+
+    const croppedImage = document.createElement("img");
+    croppedImage.src = croppedImageURL;
+
+    previewContainer.appendChild(croppedImage);
+
+
+    canvas.toBlob((blob) => {
+      croppedImages[index] = blob; 
+    }, "image/png");
+
+    Swal.fire({
+      icon: "success",
+      title: "Image Saved!",
+      text: "The image has been saved successfully.",
+    });
+  }
+
+  function validateAndSubmit( productId) {
+    event.preventDefault();
+
+    if (validateForm()) {
+      const form = document.forms[0];
+      const formData = new FormData(form);
+
+    
+     
+      croppedImages.forEach((blob, i) => {
+        if (blob) {
+          formData.append("images", blob, `image${i + 1}.png`);
+        }
+      });
+console.log("hooooooooooo",formData)
+     
+      fetch(`/admin/editProduct/${productId}`, {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: data.message || 'Product updated successfully!'
+          }).then(() => {
+            window.location.href = data.redirectUrl;   // Redirect to the product list
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: data.message || 'An error occurred.'
+          });
+        }
+      })
+      .catch(err => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Network Error',
+          text: err.message || 'Something went wrong during the update.'
+        });
+      });
+    }
+  }
+
+  function removeImage(imageName, productId) {
+    console.log("Product ID:", productId);
+    console.log("Image Name:", imageName);
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You want to remove the image "${imageName}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Remove the image container from the UI
+        const imageElement = document.querySelector(`img[src='/uploads/product-images/${imageName}']`);
+        const buttonElement = imageElement.closest('.position-relative');
+        if (buttonElement) {
+          buttonElement.remove();
+        }
+
+        fetch('/admin/deleteImage', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageNameToServer: imageName, productIdToServer: productId }), // Send imageName and productId to backend
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status) {
+            Swal.fire(
+              'Deleted!',
+              'Image has been deleted successfully.',
+              'success'
+            );
+          } else {
+            Swal.fire(
+              'Error!',
+              data.message || 'Error deleting image.',
+              'error'
+            );
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire(
+            'Error!',
+            'An error occurred while deleting the image.',
+            'error'
+          );
+        });
+      }
+    });
+  }
+
+  function validateForm() {
+    let isValid = true;
+    clearErrorMessages();
+
+    const name = document.getElementsByName('productName')[0].value;
+    const description = document.getElementsByName('descriptionData')[0].value;
+    const brand = document.getElementsByName('brand')[0].value;
+    const price = document.getElementsByName('regularPrice')[0].value;
+    const saleprice = document.getElementsByName('salePrice')[0].value;
+    const category = document.getElementsByName('category')[0].value;
+    const quantity = document.getElementsByName('quantity')[0].value;
+
+
+    if (name.trim() === "") {
+      displayErrorMessage('productName-error', 'Please enter a product name.');
+      isValid = false;
+    }
+
+    if (description.trim() === "") {
+      displayErrorMessage('description-error', 'Please enter a product description.');
+      isValid = false;
+    }
+
+
+    if (brand.trim() === "") {
+      displayErrorMessage('brand-error', 'Please select a brand.');
+      isValid = false;
+    }
+
+    if (category.trim() === "") {
+      displayErrorMessage('category-error', 'Please select a category.');
+      isValid = false;
+    }
+
+    if (parseInt(quantity) < 0 || isNaN(quantity)) {
+      displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
+      isValid = false;
+    }
+
+   
+    if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) <= 0) {
+      displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
+      isValid = false;
+    }
+
+    if (saleprice.trim() !== "" && (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0)) {
+      displayErrorMessage('salePrice-error', 'Please enter a valid non-negative sale price.');
+      isValid = false;
+    }
+
+
+    return isValid;
+  }
+
+  function displayErrorMessage(elementId, message) {
+    const errorElement = document.getElementById(elementId);
+    errorElement.innerText = message;
+    errorElement.style.display = "block";
+  }
+
+  function clearErrorMessages() {
+    const errorElements = document.getElementsByClassName('error-message');
+    Array.from(errorElements).forEach(element => {
+      element.innerText = '';
+      element.style.display = 'none';
+    });
+  }
+</script>
+{{> admin-foote}}

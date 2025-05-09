@@ -33,6 +33,10 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
+  res.locals.currentUser = req.user || null;
+  next();
+})
+app.use((req, res, next) => {
     res.set("Cache-Control", "no-store");
     next();
 });
@@ -53,6 +57,7 @@ app.engine('hbs', engine({
       sub: (a, b) => a - b,
       mul: (a, b) => a * b,
       and: (a, b) => a && b,
+      gt:(a,b)=>a>b,
       not: value => !value,
       range: (start, end) => {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
