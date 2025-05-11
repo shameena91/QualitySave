@@ -9,7 +9,7 @@ const cartSchema=new mongoose.Schema({
         required:true
 
     },
-    items:[{
+    cartItems:[{
         productId:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Product',
@@ -31,10 +31,7 @@ const cartSchema=new mongoose.Schema({
             type:String,
             default:"placed"
         },
-        cancellationreason:{
-            type:String,
-            default:"none"
-        }
+       
     }]
 })
 

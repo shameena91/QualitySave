@@ -287,7 +287,8 @@
         
         {{#each products}}
           <div class="product-card">
-            <span class="wishlist-btn">❤️</span>
+        
+            <span class="wishlist-btn" onclick="addToWishlist('{{_id}}')">❤️</span>
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{productImage.[0]}}" alt="{{productName}}" /></a>
             <h4>{{productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
@@ -305,7 +306,7 @@
             </p>
              {{/if}}
              {{#if quantity}}
-            <button class="add-to-cart-btn">Add to Cart</button>
+            <button class="add-to-cart-btn" onclick="addToCart('{{_id}}')">Add to Cart</button>
             {{else}}
              <h5 style="color:red">Currently unavailable</h5>
              {{/if}}
@@ -337,6 +338,75 @@
 </div>
   </section>
 </div>
-{{> foote}}
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script>
+  function addToWishlist(proId)
+  {
+    $.ajax({
+      url:'/addToWishlist',
+      method:"POST",
+      data:{proId:proId},
+      success:(response)=>{
+        if(response.status){
+          Swal.fire({
+            title:"added to wishlist",
+            text:"the product hasbeenn added to wish list",
+            icon:'success',
+            timer:2000
+          })
+        }else{
+           Swal.fire({
+            title:" already in wishlist",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
+
+      },
+      error:(error)=>{
+        Swal.fire({
+          title:'Error',
+          text:"There was an error",
+          icon:'error',
+          timer:2000
+        })
+      }
+
+    })
+  }
+
+ function addToCart(proId) {
+  $.ajax({
+    url: '/addToCart',
+    method: "POST",
+    data: { proId: proId },
+    success: (response) => {
+      if (response.status) {
+        Swal.fire({
+          title: "Added to Cart",
+          text: response.message,
+          icon: 'success',
+          timer: 2000
+        });
+      }
+    },
+    error: (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: "There was an error",
+        icon: 'error',
+        timer: 2000
+      });
+    }
+  });
+}
+
+
+</script>
+
+
+
+{{> foote}}

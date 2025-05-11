@@ -3,6 +3,8 @@ const nodeMailer=require('nodemailer')
 const bcrypt=require('bcrypt')
 const env=require("dotenv").config()
 const session =require("express-session")
+const fs = require('fs')
+const path = require('path');
 
 const securePassword=async(password)=>{
     try {
@@ -179,11 +181,252 @@ const resetPassword = async (req, res) => {
     }
 };
 
+
+// userProgile management
+
+const userProfile=async(req,res)=>{
+    try {
+        const userId=req.session.user
+        const userData=await User.findById({_id:userId}).lean()
+        res.render("userProfile",{
+            user:userData,
+        })
+    } catch (error) {
+      console.error("eroor occured when retrieving profile Data",error) 
+      res.redirect("/pageNotFound") 
+    }
+}
+
+const editUserProfile = async (req, res) => {
+  try {
+    const { name, gender, phone, email } = req.body;
+    const profileImage = req.file;
+    const userId = req.session.user;
+
+    const updateData = {
+      name,
+      gender,
+      phone,
+      email,
+    };
+
+    if (profileImage) {
+      updateData.profileImage = profileImage.filename;
+    }else{
+      updateData.profileImage = null
+    }
+
+    await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+    res.status(200).json({ success: true, message: "Updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+const deleteProfileImage=async(req,res)=>{
+    try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if the user has a profile image
+    if (user.profileImage) {
+      const imagePath = path.join('public','uploads', 're-image', user.profileImage);;
+      console.log(imagePath)
+
+      try {
+        await fs.promises.unlink(imagePath);
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to delete image file' });
+      }
+
+      // Remove the image from the user's profile in the database
+      user.profileImage = null;
+      await user.save();
+
+      return res.status(200).json({ message: 'Profile image removed successfully' });
+    } else {
+      return res.status(400).json({ error: 'No profile image to remove' });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+
+
+
+}
+
+
+const getChangeEmail=async(req,res)=>{
+try {
+  res.render("change-email")
+} catch (error) {
+  
+}
+}
+
+const varifyChangeEmail=async(req,res)=>{
+  try {
+    const {email}=req.body
+    console.log("ffffff",email)
+    const findUser=await User.findOne({email:email});
+    console.log("oooo",findUser)
+
+        if(findUser){
+            const otp=generateOtp();
+            console.log(otp)
+            const emailSent=await sendVarificationEmail(email,otp)
+            if(emailSent)
+            {
+                req.session.userOtp=otp
+                req.session.email=email
+                req.session.userData=req.body
+                res.render("change-email-otp")
+                console.log("reserOPT",otp)
+            }else{
+                res.json({message:"please try again later"})
+            }
+        }else{
+            res.render("change-email",{message:"UserWith this email doennot exist"})
+        }
+  } catch (error) {
+    console.log(error)
+    res.redirect("/pageNotFound")
+  }
+}
+const varifyEmailOtp = async (req, res) => {
+  try {
+    const enteredOtp = req.body.otp;
+    const sessionOtp = req.session.userOtp;
+
+    console.log("Entered OTP:", enteredOtp);
+    console.log("Session OTP:", sessionOtp);
+
+    if (!sessionOtp) {
+      console.log("OTP expired. Please request a new one");
+      return res.render("change-email-otp", {
+        message: "OTP expired. Please request a new one.",
+      });
+    }
+
+    if (enteredOtp === sessionOtp) {
+      // Clear the OTP from session to prevent reuse
+      req.session.userOtp = null;
+
+      // Use session-stored user data
+      const userData = req.session.userData;
+
+      return res.render("new-email", {
+        userData,
+      });
+    } else {
+      return res.render("change-email-otp", {
+        message: "OTP not matching",
+        userData: req.session.userData,
+      });
+    }
+  } catch (error) {
+    console.error("Error in OTP verification:", error);
+    res.redirect("/pageNotFound");
+  }
+};
+    
+const updateEmail=async(req,res)=>{
+  try {
+    const {newEmail}=req.body
+    const userId=req.session.user
+    await User.findByIdAndUpdate(userId,{email:newEmail})
+res.redirect("/user-profile")
+  } catch (error) {
+     res.redirect("/pageNotFound");
+  }
+}
+
+// password change
+
+const getChangePwd=async(req,res)=>{
+  try {
+    res.render("change-password")
+  } catch (error) {
+     res.redirect("/pageNotFound");
+  }
+}
+
+const varifyChangePswd=async(req,res)=>{
+  try {
+    const {email}=req.body
+    console.log("ffffff",email)
+    const findUser=await User.findOne({email:email});
+    console.log("oooo",findUser)
+
+        if(findUser){
+            const otp=generateOtp();
+            console.log(otp)
+            const emailSent=await sendVarificationEmail(email,otp)
+            if(emailSent)
+            {
+                req.session.userOtp=otp
+                req.session.email=email
+                req.session.userData=req.body
+                res.render("change-pswd-otp")
+                console.log("reserOPT",otp)
+            }else{
+                res.json({message:"please try again later"})
+            }
+        }else{
+            res.render("change-password",{message:"UserWith this email doennot exist"})
+        }
+  } catch (error) {
+    console.log(error)
+    res.redirect("/pageNotFound")
+  }
+}
+
+const varifyPswdOtp= async (req, res) => {
+  try {
+    const enteredOtp = req.body.otp;
+    const sessionOtp = req.session.userOtp;
+
+    console.log("Entered OTP:", enteredOtp);
+    console.log("Session OTP:", sessionOtp);
+
+  
+
+    if (enteredOtp === sessionOtp) {
+      // Clear the OTP from session to prevent reuse
+      req.session.userOtp = null;
+
+      res.json({success:true,redirectUrl:"/resetPassword"})
+    } else {
+      res.json({success:false,message:"OTP not matching"})
+    }
+  } catch (error) {
+    console.error("Error in OTP verification:", error);
+    res.redirect("/pageNotFound");
+  }
+};
+
 module.exports={
     loadForgotPassword,
     forgotPassword,
     forgotPassVarifyOtp,
     getResetPassPage,
     resendForgotPass,
-    resetPassword
+    resetPassword,
+    userProfile,
+    editUserProfile,
+    deleteProfileImage,
+    getChangeEmail,
+    varifyChangeEmail,
+    varifyEmailOtp,
+    updateEmail,
+    getChangePwd,
+    varifyChangePswd,
+    varifyPswdOtp
 }

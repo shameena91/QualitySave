@@ -1,0 +1,272 @@
+{{> headr}}
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f1f3f6;
+  }
+
+  .cart-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+  }
+
+  .cart-item {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 20px 0;
+  }
+
+  .cart-item img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+  }
+
+  .product-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .product-details {
+    margin-bottom: 10px;
+  }
+
+  .product-price {
+    font-weight: 600;
+    color: #212121;
+  }
+
+  .quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .qty-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    background-color: white;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .quantity-circle {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    font-weight: 500;
+  }
+
+  .action-links {
+    margin-top: 10px;
+  }
+
+  .action-links a {
+    font-size: 14px;
+    margin-right: 15px;
+    color: #2874f0;
+    cursor: pointer;
+  }
+
+  .cart-summary {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    height: fit-content;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+</style>
+
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 cart-container">
+      <h4>My Cart (1)</h4>
+      {{#if cartProducts.length}}
+      {{#each cartProducts}}
+<div class="cart-item">
+    <div>
+        <a href="/productDetails/{{this.productId._id}}">
+            <img src="/uploads/re-image/{{this.productId.productImage.[0]}}" 
+                 style="height:120px;width:120px;padding:15px" 
+                 alt="{{this.productId.productName}}" />
+        </a>
+        <div class="quantity-control justify-content-center mt-2">
+            <div class="qty-btn" onclick="decreaseQty('{{this.productId._id}}')">-</div>
+            <div class="quantity-circle" id="qtyDisplay-{{this.productId._id}}">{{this.quantity}}</div>
+            <div class="qty-btn" onclick="increaseQty('{{this.productId._id}}')">+</div>
+        </div>
+    </div>
+
+    <div class="product-section">
+        <div class="product-details">
+            <h5>{{this.productId.productName}}</h5>
+            
+            {{#if this.productId.productOffer}}
+                <span class="text-muted text-decoration-line-through ms-1">₹{{this.productId.salePrice}}</span>
+                <span class="fs-4 text-primary fw-bold" id="totalPrice-{{this.productId._id}}">₹{{this.totalPrice}}</span>
+                <span class="text-muted" id="price-{{this.productId._id}}" style="display:none;">{{this.price}}</span>
+
+                <span class="offer ms-2" style="color:green;font-size:20px;font-weight:600">&nbsp;{{this.productId.productOffer}}% off</span>
+            {{else}}
+                <span class="fs-4 text-primary fw-bold" id="totalPrice-{{this.productId._id}}">₹{{this.totalPrice}}</span>
+            {{/if}}          
+        </div>
+        <div class="action-links">
+            <a class="text-danger text-decoration-none fw-bold" onclick="removeItem('{{this.productId._id}}')">REMOVE</a>
+        </div>
+    </div>
+</div>
+{{/each}}
+{{else}}
+ <div class="text-center py-5">
+    <h5>Your cart is empty.</h5>
+    <a href="/shop" class="btn btn-primary mt-3">Continue Shopping</a>
+  </div>
+{{/if}}
+    </div>
+
+    <div class="col-md-4">
+      <div class="cart-summary">
+        <h5>PRICE DETAILS</h5>
+        <hr>
+        <div class="d-flex justify-content-between">
+          <span>Price (1 item)</span>
+          <span>₹1000</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span>Delivery Charges</span>
+          <span class="text-success">FREE</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold">
+          <span>Total Amount</span>
+          <span>₹1000</span>
+        </div>
+        <button class="btn btn-warning w-100 mt-4">Place Order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  
+ <script>
+  function increaseQty(productId) {
+  // Get the quantity element and parse the current quantity
+  const qtyDisplay = document.getElementById(`qtyDisplay-${productId}`);
+  let quantity = parseInt(qtyDisplay.textContent);
+  quantity++; // Increase the quantity
+
+  // Update the quantity on the frontend
+  qtyDisplay.textContent = quantity;
+
+  // Get the price per item from the HTML (assuming the price is in a span with a specific ID)
+  const price = parseFloat(document.getElementById(`price-${productId}`).textContent); // Price should be stored in a specific element
+
+  // Calculate the new total price
+  const totalPrice = price * quantity;
+
+  // Update the total price on the frontend
+  document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
+
+  // Call the backend to update the cart with the new quantity and total price
+  updateCart(productId, quantity, totalPrice);
+}
+
+function decreaseQty(productId) {
+  // Get the quantity element and parse the current quantity
+  const qtyDisplay = document.getElementById(`qtyDisplay-${productId}`);
+  let quantity = parseInt(qtyDisplay.textContent);
+  
+  if (quantity > 1) { // Prevent quantity from going below 1
+    quantity--; // Decrease the quantity
+
+    // Update the quantity on the frontend
+    qtyDisplay.textContent = quantity;
+
+    // Get the price per item
+    const price = parseFloat(document.getElementById(`price-${productId}`).textContent); // Price should be stored in a specific element
+    console.log(price)
+    // Calculate the new total price
+    const totalPrice = price * quantity;
+    console.log(totalPrice)
+
+    // Update the total price on the frontend
+    document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
+
+    // Call the backend to update the cart with the new quantity and total price
+    updateCart(productId, quantity, totalPrice);
+  }
+}
+
+function updateCart(productId, quantity,totalPrice ) {
+  $.ajax({
+    url: '/updateCart',  // Backend route to update the cart
+    method: 'POST',
+    data: { productId, quantity, totalPrice },
+    success: (response) => {
+      if (response.status) {
+        Swal.fire({
+          title: 'Cart Updated',
+          text: `The quantity and total price have been updated successfully.`,
+          icon: 'success',
+          timer: 2000
+        });
+      }
+    },
+    error: (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: "There was an error updating the cart.",
+        icon: 'error',
+        timer: 2000
+      });
+    }
+  });
+}
+function removeItem(productId) {
+  $.ajax({
+    url: '/removeItem',
+    method: 'POST',
+    data: { productId },
+    success: (response) => {
+      if (response.status) {
+        Swal.fire({
+          title: 'Item Removed',
+          text: `The item has been removed from your cart.`,
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        }).then(() => {
+          location.reload(); // ✅ reload the cart after removing item
+        });
+      }
+    },
+    error: (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: "There was an error removing the item.",
+        icon: 'error',
+        timer: 2000
+      });
+    }
+  });
+}
+
+</script>
+
+{{> foote}}

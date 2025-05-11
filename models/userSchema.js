@@ -17,6 +17,15 @@ const userSchema=new mongoose.Schema({
         sparse:true,
         default:null
     },
+    gender:{
+        type:String,
+        required:false,
+        default:null
+    },
+    profileImage:{
+        type:String,
+        required:false
+    },
     googleId:{
         type:String,
         unique:true,
@@ -36,6 +45,7 @@ const userSchema=new mongoose.Schema({
         type:Boolean,
         default:false
     },
+   
 
 
 })

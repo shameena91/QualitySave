@@ -10,7 +10,11 @@ const addressSchema=new mongoose.Schema({
             type:String,
             required:true,
         },
-        name:{
+        fullName:{
+           type:String,
+            required:true 
+        },
+      houseDetails:{
             type:String,
             required:true
         },
@@ -20,7 +24,7 @@ const addressSchema=new mongoose.Schema({
         },
         landMark:{
             type:String,
-            required:true
+            required:false
         },
         state:{
             type:String,
@@ -36,7 +40,7 @@ const addressSchema=new mongoose.Schema({
         },
         altPhone:{
             type:String,
-            required:true
+            required:false
         }
 
     }]
