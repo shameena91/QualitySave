@@ -1,6 +1,7 @@
 const Cart = require("../../models/cartSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
+const Wishlist = require("../../models/wishlistSchema");
 
 const getCart = async (req, res) => {
   try {
@@ -15,13 +16,22 @@ const getCart = async (req, res) => {
    const cart=await Cart.findOne({userId:userId})
    .populate('cartItems.productId')
    .lean()
-   if (!cart) {
-      console.log("cart not found");
-      return res.redirect("/pageNotFound"); 
-    }
-   console.log("Wishlist data:", cart); 
+ 
   const cartProducts=cart? cart.cartItems :[];
-    res.render("cart",{cartProducts});
+  for(let i=0;i<cartProducts.length;i++)
+  {
+
+  }
+  const sumTotalPrice=cartProducts.reduce((acc,curr)=>{
+    return acc+curr.totalPrice
+  },0)
+  const sumSalePrice=cartProducts.reduce((acc,curr)=>{
+    return acc+curr.totalSalePrice
+  },0)
+
+  const discount=sumSalePrice-sumTotalPrice
+  
+    res.render("cart",{cartProducts,sumTotalPrice,sumSalePrice,discount});
   }catch (error) {
   console.error("Get Cart Error:", error);
   return res.status(500).render("errorPage", { message: "Internal Server Error" });
@@ -32,6 +42,8 @@ const addToCart = async (req, res) => {
   try {
     const productId = req.body.proId;
     const userId = req.session.user;
+    const wishlist=await Wishlist.findOne({userId:userId})
+
 
     if (!productId || !userId) {
       return res.status(400).json({ status: false, message: "Missing product or user ID" });
@@ -40,9 +52,21 @@ const addToCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ status: false, message: "Product not found" });
     }
-     const quantity = 1;
+
+
+    const productExists = wishlist.products.some(p => p.productId.toString() === productId);
+      if (productExists) {
+       await wishlist.updateOne({
+      $pull: { products: {productId: productId } }
+    });
+      }
+       const quantity = 1;
+      let maxQuantity=5
+    
         const price = product.discountedPrice;
         const totalPrice = quantity * price;
+        const salePrice=product.salePrice
+        const totalSalePrice=quantity*salePrice
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -52,15 +76,21 @@ const addToCart = async (req, res) => {
             productId,
             quantity,
             price,
-            totalPrice
+            salePrice,
+            totalPrice,
+            totalSalePrice
         }]
       });
     } else {
       // Check if product already exists in cart
       const productExists = cart.cartItems.find(item => item.productId.toString() === productId);
-      if (productExists) {
+      if (productExists ) {
+         if (productExists.quantity + 1 > maxQuantity) {
+    return res.status(200).json({ status: false, message: `You can only add up to ${maxQuantity} units of this product.` });
+  }
         productExists.quantity += 1;
         productExists.totalPrice = productExists.quantity * price;
+        productExists.totalSalePrice = productExists.quantity *salePrice;
 
         // Save the updated cart
         await cart.save();
@@ -70,7 +100,9 @@ const addToCart = async (req, res) => {
         cart.cartItems.push({ productId,
             quantity,
             price,
-            totalPrice });
+            salePrice,
+            totalPrice,
+            totalSalePrice });
     }
 
     await cart.save();
@@ -86,9 +118,10 @@ const updateCart = async (req, res) => {
   try {
     const userId = req.session.user;
       console.log("User ID:", userId);
-    const { productId, quantity, totalPrice } = req.body;
+    const { productId, quantity, totalPrice,totalSalePrice } = req.body;
     console.log("Received Data:", req.body);
-   
+  
+    
     
 
     let cart = await Cart.findOne({ userId:userId });
@@ -101,7 +134,8 @@ const updateCart = async (req, res) => {
 //   console.log("Cart Items:", cart.cartItems); //
     if (cartItem) {
       cartItem.quantity = quantity;
-      cartItem.totalPrice = totalPrice; // Update totalPrice based on quantity
+      cartItem.totalPrice = totalPrice; 
+      cartItem.totalSalePrice=totalSalePrice// Update totalPrice based on quantity
     }
 
     await cart.save();

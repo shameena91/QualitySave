@@ -391,7 +391,14 @@
           icon: 'success',
           timer: 2000
         });
-      }
+      }else{
+           Swal.fire({
+            title:" Exceed",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
     },
     error: (error) => {
       Swal.fire({

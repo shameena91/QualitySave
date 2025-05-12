@@ -94,9 +94,12 @@
 <div class="container mt-5">
   <div class="row">
     <div class="col-md-8 cart-container">
-      <h4>My Cart (1)</h4>
+
+      <h4>My Cart ({{cartProducts.length}})</h4>
+      
       {{#if cartProducts.length}}
       {{#each cartProducts}}
+      {{#if this.productId.quantity}}
 <div class="cart-item">
     <div>
         <a href="/productDetails/{{this.productId._id}}">
@@ -112,11 +115,12 @@
     </div>
 
     <div class="product-section">
-        <div class="product-details">
-            <h5>{{this.productId.productName}}</h5>
+        <div class="product-details" >
+            <a href="/productDetails/{{this.productId._id}}" class= "text-decoration-none" style="color:black"><h5>{{this.productId.productName}}</h5></a>
             
             {{#if this.productId.productOffer}}
-                <span class="text-muted text-decoration-line-through ms-1">₹{{this.productId.salePrice}}</span>
+                <span class="text-muted text-decoration-line-through ms-1"  style="display:none;" id="salePrice-{{this.productId._id}}">₹{{this.salePrice}}</span>
+                  <span class="text-muted text-decoration-line-through ms-1" id="totalSalePrice-{{this.productId._id}}">₹{{this.totalSalePrice}}</span>
                 <span class="fs-4 text-primary fw-bold" id="totalPrice-{{this.productId._id}}">₹{{this.totalPrice}}</span>
                 <span class="text-muted" id="price-{{this.productId._id}}" style="display:none;">{{this.price}}</span>
 
@@ -130,6 +134,21 @@
         </div>
     </div>
 </div>
+{{else}}
+<div>
+        <a href="/productDetails/{{this.productId._id}}">
+            <img src="/uploads/re-image/{{this.productId.productImage.[0]}}" 
+                 style="height:120px;width:120px;padding:15px" 
+                 alt="{{this.productId.productName}}" />
+        </a>
+        </div>
+           <div class="product-section">
+        <div class="product-details" >
+            <a href="/productDetails/{{this.productId._id}}"  class= "text-decoration-none" style="color:black"><h5>{{this.productId.productName}}</h5></a>
+            <h5 style="color:red">Currently unavailable</h5>
+            </div>
+            </div>
+{{/if}}
 {{/each}}
 {{else}}
  <div class="text-center py-5">
@@ -144,19 +163,29 @@
         <h5>PRICE DETAILS</h5>
         <hr>
         <div class="d-flex justify-content-between">
-          <span>Price (1 item)</span>
-          <span>₹1000</span>
+          <span >Price ( {{cartProducts.length}} Items)</span>
+          <span >₹ {{sumSalePrice}}</span>
         </div>
-        <div class="d-flex justify-content-between">
+         <div class="d-flex justify-content-between pt-2">
+          <span>Discount</span>
+          <span class="text-success">- ₹{{discount}}</span>
+        </div>
+        <div class="d-flex justify-content-between pt-2">
           <span>Delivery Charges</span>
           <span class="text-success">FREE</span>
         </div>
         <hr>
         <div class="d-flex justify-content-between fw-bold">
           <span>Total Amount</span>
-          <span>₹1000</span>
+          <span id="sumTotalPrice">₹{{sumTotalPrice}}</span>
         </div>
-        <button class="btn btn-warning w-100 mt-4">Place Order</button>
+        {{#if cartProducts.length}}
+        <a href="/checkout">
+        <button class="btn btn-warning w-100 mt-4">Place Order</button></a>
+        {{else}}
+        
+        <button class="btn btn-warning w-100 mt-4 disabled">Place Order</button>
+        {{/if}}
       </div>
     </div>
   </div>
@@ -166,58 +195,72 @@
   
  <script>
   function increaseQty(productId) {
-  // Get the quantity element and parse the current quantity
   const qtyDisplay = document.getElementById(`qtyDisplay-${productId}`);
   let quantity = parseInt(qtyDisplay.textContent);
-  quantity++; // Increase the quantity
+  const maxQuantity = 5;
 
-  // Update the quantity on the frontend
-  qtyDisplay.textContent = quantity;
+  if (quantity < maxQuantity) {
+    quantity++;
+    qtyDisplay.textContent = quantity;
 
-  // Get the price per item from the HTML (assuming the price is in a span with a specific ID)
-  const price = parseFloat(document.getElementById(`price-${productId}`).textContent); // Price should be stored in a specific element
+    const price = parseFloat(document.getElementById(`price-${productId}`).textContent);
+    const salePriceText = document.getElementById(`salePrice-${productId}`).textContent;
+    const salePrice = parseFloat(salePriceText.replace('₹', '').trim());
 
-  // Calculate the new total price
-  const totalPrice = price * quantity;
+    let sumTotalPrice = parseFloat(document.getElementById(`sumTotalPrice`).textContent.replace('₹', '').trim());
 
-  // Update the total price on the frontend
-  document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
+    const totalPrice = price * quantity;
+    const totalSalePrice = salePrice * quantity;
+    const sumTotalPriceNew = sumTotalPrice + price;
 
-  // Call the backend to update the cart with the new quantity and total price
-  updateCart(productId, quantity, totalPrice);
+    document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
+    document.getElementById(`totalSalePrice-${productId}`).textContent = `₹${totalSalePrice}`;
+    document.getElementById(`sumTotalPrice`).textContent = `₹${sumTotalPriceNew}`;
+
+    updateCart(productId, quantity, totalPrice, totalSalePrice);
+  } else {
+    Swal.fire({
+      title: "Limit Reached",
+      text: `You can only add up to ${maxQuantity} units of this product.`,
+      icon: 'warning',
+      timer: 2000
+    });
+  }
 }
-
 function decreaseQty(productId) {
   // Get the quantity element and parse the current quantity
   const qtyDisplay = document.getElementById(`qtyDisplay-${productId}`);
   let quantity = parseInt(qtyDisplay.textContent);
   
-  if (quantity > 1) { // Prevent quantity from going below 1
+  if (quantity > 1 ) { // Prevent quantity from going below 1
     quantity--; // Decrease the quantity
 
     // Update the quantity on the frontend
     qtyDisplay.textContent = quantity;
 
     // Get the price per item
-    const price = parseFloat(document.getElementById(`price-${productId}`).textContent); // Price should be stored in a specific element
-    console.log(price)
-    // Calculate the new total price
+    const price = parseFloat(document.getElementById(`price-${productId}`).textContent);
+  const salePriceText = document.getElementById(`salePrice-${productId}`).textContent;
+const salePrice = parseFloat(salePriceText.replace('₹', '').trim());
+
+
     const totalPrice = price * quantity;
-    console.log(totalPrice)
+      const totalSalePrice= salePrice * quantity
 
     // Update the total price on the frontend
     document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
+      document.getElementById(`totalSalePrice-${productId}`).textContent = `₹${totalSalePrice}`;
 
     // Call the backend to update the cart with the new quantity and total price
-    updateCart(productId, quantity, totalPrice);
+    updateCart(productId, quantity, totalPrice,totalSalePrice);
   }
 }
 
-function updateCart(productId, quantity,totalPrice ) {
+function updateCart(productId, quantity,totalPrice ,totalSalePrice) {
   $.ajax({
     url: '/updateCart',  // Backend route to update the cart
     method: 'POST',
-    data: { productId, quantity, totalPrice },
+    data: { productId, quantity, totalPrice ,totalSalePrice},
     success: (response) => {
       if (response.status) {
         Swal.fire({

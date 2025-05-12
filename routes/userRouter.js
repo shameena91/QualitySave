@@ -7,6 +7,7 @@ const profileController=require('../controllers/user/profileController')
 const addressController=require('../controllers/user/addressController')
 const wishlistController=require('../controllers/user/wishlistController')
 const cartController=require('../controllers/user/cartController')
+const checkoutController=require('../controllers/user/checkoutController')
 const multer=require("multer")
 const storage=require("../helpers/multer")
 const uploads=multer({storage:storage})
@@ -104,6 +105,12 @@ router.route("/cart")
 router.post("/addToCart",userAuth,cartController.addToCart)
 router.post('/updateCart',userAuth,cartController.updateCart)
 router.post('/removeItem',userAuth,cartController.removeCartItem)
+
+// checkout
+
+router.get("/checkout",userAuth,checkoutController.getCheckout)
+
+router.post("/createOrder",userAuth,checkoutController.createOrder)
 
 
 module.exports=router
