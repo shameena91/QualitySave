@@ -1,0 +1,49 @@
+
+{{> headr}}
+<style>
+    body {
+      background-color: #f1f3f6;
+    }
+    .success-container {
+      max-width: 700px;
+      margin: 80px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      padding: 30px;
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 60px;
+      color: #2e7d32;
+    }
+    .order-details {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .btn-group {
+      gap: 10px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container success-container">
+    <div class="success-icon mb-3">✅</div>
+    <h2 class="text-success">Your order has been placed!</h2>
+    <p class="text-muted">Thank you for shopping with us.</p>
+
+    <div class="order-details text-start">
+      <p><strong>Order ID:</strong>{{orderId}}</p>
+      <p><strong>Expected Delivery:</strong> 4 - 6 Business Days</p>
+    </div>
+
+    <div class="d-flex justify-content-center btn-group flex-wrap">
+      <a href="/" class="btn btn-outline-primary">Continue Shopping</a>
+      <a href="/my-orders" class="btn btn-primary">View My Orders</a>
+    </div>
+  </div>
+  {{>foote}}

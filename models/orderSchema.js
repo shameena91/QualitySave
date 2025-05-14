@@ -27,6 +27,11 @@ userId:{
       type: Number,
       required: true,
     },
+    status: {
+    type: String,
+    required: true,
+    enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Returned'],
+  },
   }],
 
   totalPrice: {
@@ -49,14 +54,6 @@ userId:{
     ref: 'Address',
     required: true,
   },
-
-  status: {
-    type: String,
-    required: true,
-    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned'],
-  },
-
-  
   paymentMethod: {
   type: String,
   enum: ['cod', 'creditCard', 'paypal'], // or whatever you support

@@ -5,6 +5,7 @@ const adminController=require("../controllers/admin/adminController")
 const categoryController=require("../controllers/admin/categoryController")
 const productController=require("../controllers//admin/productController")
 const brandController=require("../controllers/admin/brandContoller")
+const orderController=require('../controllers/admin/orderController')
 const {userAuth,adminAuth}=require("../middlewares/auth")
 const multer=require("multer")
 const storage=require("../helpers/multer")
@@ -89,6 +90,11 @@ router.post("/admin/removeProductOffer",adminAuth,productController.removeProduc
 
 router.get("/admin/blockProduct",adminAuth,productController.blockProduct)
 router.get("/admin/unblockProduct",adminAuth,productController.unblockProduct)
+
+
+// orderManagement
+
+router.get('/admin/orderManagement',adminAuth,orderController.getOrderDetails)
 
 
 

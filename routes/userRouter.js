@@ -111,6 +111,13 @@ router.post('/removeItem',userAuth,cartController.removeCartItem)
 router.get("/checkout",userAuth,checkoutController.getCheckout)
 
 router.post("/createOrder",userAuth,checkoutController.createOrder)
+router.get("/orderSuccess/:orderId",userAuth,checkoutController.getOrderSuccess)
+
+
+router.get ("/my-orders",userAuth,checkoutController.getMyOrders)
+router.get ("/view-orderDetails/:orderId/:productId",userAuth,checkoutController.getOrderDetail)
+router.post("/cancel-order",userAuth,checkoutController.cancelOrder)
+
 
 
 module.exports=router

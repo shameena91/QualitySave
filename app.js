@@ -62,6 +62,13 @@ app.engine('hbs', engine({
       range: (start, end) => {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     },
+    formatDate:(date)=>{
+      return new Date(date).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
+    },
     runtimeOptions: {
       allowProtoPropertiesByDefault: true,   // to avoid prototype access errors
       allowProtoMethodsByDefault: true

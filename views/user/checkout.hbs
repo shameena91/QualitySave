@@ -162,7 +162,9 @@ id="address-{{this._id}}"
         text: 'Your order has been successfully created.',
         icon: 'success',
         confirmButtonText: 'OK'
-      })
+      }).then(() => {
+        window.location.href = `/orderSuccess/${response.orderId}`;
+      });
       
     },
     error: function (error) {
