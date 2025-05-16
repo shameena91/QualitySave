@@ -8,6 +8,7 @@ const addressController=require('../controllers/user/addressController')
 const wishlistController=require('../controllers/user/wishlistController')
 const cartController=require('../controllers/user/cartController')
 const checkoutController=require('../controllers/user/checkoutController')
+const walletController=require('../controllers/user/walletController')
 const multer=require("multer")
 const storage=require("../helpers/multer")
 const uploads=multer({storage:storage})
@@ -117,7 +118,8 @@ router.get("/orderSuccess/:orderId",userAuth,checkoutController.getOrderSuccess)
 router.get ("/my-orders",userAuth,checkoutController.getMyOrders)
 router.get ("/view-orderDetails/:orderId/:productId",userAuth,checkoutController.getOrderDetail)
 router.post("/cancel-order",userAuth,checkoutController.cancelOrder)
-
+router.post('/request-return/:orderId/:productId',userAuth,checkoutController.returnRequest)
+router.get("/wallet",userAuth,walletController.getWallet)
 
 
 module.exports=router

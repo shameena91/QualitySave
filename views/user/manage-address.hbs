@@ -7,83 +7,9 @@
     color: #333;
   }
 
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
 
-  .main-container {
-    display: flex;
-    max-width: 1200px;
-    margin: 30px auto;
-    gap: 25px;
-  }
 
-ul{
-  list-style: none;
-}
 
-.left-panel {
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .sidebar-header {
-    background-color: #ffffff;
-    border-radius: 10px;
-    padding: 20px;
-    height: 100px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  }
-
-  .sidebar-header h6 {
-    margin-top: 10px;
-    font-weight: 600;
-    color: #1e918b;
-  }
-
-  .sidebar {
-    background-color: #ffffff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-    flex: 1;
-  }
-
-  .sidebar-title {
-    font-weight: 600;
-    font-size: 18px;
-    text-transform: uppercase;
-    color: #979797;
-  }
-
-  .sidebar-item {
-    padding: 10px 0;
-    font-size: 16px;
-    text-transform: capitalize;
-  }
-
-.sidebar hr {
-  border: none;
-  border-top: 1px solid #ddd;
-  width: 100%;
-  padding:0px !important
-}
-
-.sidebar-item a {
-    color: #555;
-    transition: 0.3s;
-  }
-
-  .sidebar-item a:hover {
-    color: #1e918b;
-  }
-
-  .sidebar i{
-    color:#1e918b
-  }
 
 .product-grid {
     flex: 1;
@@ -98,34 +24,7 @@ ul{
 
 <div class="main-container">
   <!-- Sidebar Group -->
-  <div class="left-panel">
-    <div class="sidebar-header">
-      Hi,
-      <h6>Customer</h6>
-    </div>
-    <aside class="sidebar">
-      <div class="sidebar-title"><i class="fa-solid fa-user me-3"></i>Account Settings</div>
-      <ul>
-        <li class="sidebar-item"><a href="/user-profile">Personal Info</a></li>
-        <li class="sidebar-item"><a href="/manage-address">Manage Addresses</a></li>
-      </ul>
-      <hr>
-      <div class="sidebar-title"><i class="fa-solid fa-wallet me-3"></i>Wallet</div>
-      <ul>
-        <li class="sidebar-item"><a href="#">My wallet</a></li>
-        <li class="sidebar-item"><a href="#">WalletTransaction</a></li>
-      </ul>
-      <hr>
-        <div class="sidebar-title"><i class="fa-solid fa-clipboard-user me-3"></i>My Stuff</div>
-         <ul>
-          
-        <li class="sidebar-item"><a href="#">My orders</a></li>
-        <li class="sidebar-item"><a href="#">my wishlist</a></li>
-      </ul>
-      <hr>
-      <div class="sidebar-title"><i class="fa-solid fa-right-from-bracket me-3"></i>Logout</div>
-    </aside>
-  </div>
+  {{> profilesidebar}}
 
   <!-- Main Content -->
  <main class="product-grid">
@@ -151,14 +50,13 @@ ul{
     <button class="btn btn-primary btn-sm me-4">edit</button></a>
     
    
-    <button  class="btn btn-danger btn-sm" onclick="deleteAddress('{{{this._id}}}')">delete</button>
+    <button  class="btn btn-danger btn-sm" onclick="deleteAddress('{{this._id}}')">delete</button>
     </div>
 </div>
 {{/each}}
   </div>
 </div>
 
-<!-- Edit Modal -->
 
 <script> 
 function deleteAddress(id) {
@@ -171,7 +69,7 @@ function deleteAddress(id) {
   }).then((result) => {
     if (result.isConfirmed) {
       $.ajax({
-        url: `/delete-address/${id}`, // check route
+        url: `/delete-address/${id}`, 
         method: "DELETE",
         success: function(data) {
           Swal.fire({
@@ -184,19 +82,18 @@ function deleteAddress(id) {
           });
         },
         error: function(err) {
-  else {
-    Swal.fire({
-      title: 'Error!',
-      text: 'An unexpected error occurred.',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
-  }
-}
+          Swal.fire({
+            title: 'Error!',
+            text: err.responseJSON?.message || 'An unexpected error occurred.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
       });
     }
   });
 }
+
 </script>
 
 {{> foote }}

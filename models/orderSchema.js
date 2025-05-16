@@ -30,8 +30,19 @@ userId:{
     status: {
     type: String,
     required: true,
-    enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Returned'],
+    enum: ['Pending', 'Shipped', 'Out for Delivery','Delivered', 'Cancelled', 'Returned'],
   },
+  returnStatus:{
+    type:String,
+    enum:['Rejected','Approved','Requested',]
+  },
+  returnReason:{
+type:String,
+  },
+  deliveredAt:{
+    type:Date,
+    
+  }
   }],
 
   totalPrice: {
@@ -56,7 +67,7 @@ userId:{
   },
   paymentMethod: {
   type: String,
-  enum: ['cod', 'creditCard', 'paypal'], // or whatever you support
+  enum: ['cod', 'creditCard', 'paypal'], 
   required: true,
 },
 invoiceDate: {

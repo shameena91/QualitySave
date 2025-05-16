@@ -2,6 +2,7 @@ const Address = require("../../models/addressSchema");
 const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
+const User = require("../../models/userSchema");
 const { editAddressPage } = require("./addressController");
 
 
@@ -11,7 +12,7 @@ const getCheckout = async (req, res) => {
     const userId = req.session.user;
 
     const userAddressDoc = await Address.findOne({ userId:userId }).lean();
-
+    const user = await User.findById(userId).lean()
     const cartItemsDoc=await Cart.findOne({userId:userId})
     .populate("cartItems.productId")
     .lean();
@@ -36,7 +37,7 @@ const getCheckout = async (req, res) => {
 
 
 
-    res.render("checkout", { addresses,cartProducts,finalSalePrice,finalTotalPrice,totalDiscount });
+    res.render("checkout", {user, addresses,cartProducts,finalSalePrice,finalTotalPrice,totalDiscount });
   } catch (error) {
     console.error("Error in getCheckout:", error.message);
     res.status(500).render("errorPage", { message: "Something went wrong during checkout." });
@@ -61,7 +62,8 @@ const getCheckout = async (req, res) => {
         product:item.productId,
         quantity:item.quantity,
         price:item.price,
-        status:item.status
+        status:"Pending"
+
     }))
     console.log("odrer",orderItems)
 
@@ -108,8 +110,11 @@ console.log("nnnn",newOrder)
 
  const getOrderSuccess=async(req,res)=>{
   try {
-    orderId=req.params.orderId
-    res.render("orderPlaced",{orderId})
+    const orderId=req.params.orderId
+    const userId=req.session.user
+    const user = await User.findById(userId).lean()
+
+    res.render("orderPlaced",{orderId,user})
   } catch (error) {
     
   }
@@ -118,19 +123,18 @@ console.log("nnnn",newOrder)
 const getMyOrders = async (req, res) => {
   try {
     const userId = req.session.user;
-
+const user = await User.findById(userId).lean()
     const orederedProduct = await Order.find({ userId: userId })
       .sort({ createdOn: -1 })
       .populate('orderItems.product')
       .lean();
 
-    // Flatten all orderItems from each order
     const products = orederedProduct.flatMap(order => order.orderItems);
 
     console.log("Orders:", orederedProduct);
     console.log("All Ordered Products:", products);
 
-    res.render("myOrders", { orederedProduct, products });
+    res.render("myOrders", { orederedProduct, products ,user});
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).send("Internal Server Error");
@@ -144,9 +148,10 @@ const getOrderDetail=async(req,res)=>{
  const userId=req.session.user
  const {orderId,productId}=req.params
     console.log("orderid",orderId)
+    const user = await User.findById(userId).lean()
 
 console.log("proid",productId)
- const order=await Order.findOne({ _id: orderId, userId:userId })
+ const order=await Order.findOne({ orderId: orderId, userId:userId })
  .populate('orderItems.product')
 
     .lean()
@@ -176,7 +181,11 @@ const discount=totalPrice-finalAmount
       quantity: specifiedProduct.quantity,
       price: specifiedProduct.price,
       status:specifiedProduct.status,
-      specifiedAddress,totalPrice,finalAmount,discount,orderId
+      returnStatus:specifiedProduct.returnStatus,
+      specifiedAddress,totalPrice,finalAmount,
+      discount,
+      orderId,
+      user
 
     
     });
@@ -203,8 +212,6 @@ const cancelOrder= async(req,res)=>{
     });
       specifiedProduct.status = 'Cancelled';
 
-    // Optional: Store cancellation reason
-    specifiedProduct.cancelReason = reason;
 
     await order.save();
      await Product.findByIdAndUpdate(productId, {
@@ -218,12 +225,50 @@ const cancelOrder= async(req,res)=>{
   }
 
 }
+
+const returnRequest=async(req,res)=>{
+
+  try {
+    const { orderId, productId } = req.params;
+    console.log(orderId, productId)
+    const {reason}=req.body
+    console.log(reason)
+
+    const order = await Order.findOne({ orderId:orderId });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    const item = order.orderItems.find(
+      i => i.product.toString() === productId
+    );
+    if (!item) return res.status(404).json({ message: 'Product not found in order' });
+
+    if (item.status !== 'Delivered') {
+      return res.status(400).json({ message: 'Return can only be requested for delivered items' });
+    }
+   if (item.returnStatus ) {
+      return res.status(400).json({ message: 'Already send return request cannot send again' });
+    }else{
+    item.returnStatus = 'Requested';
+    item.returnReason=reason;
+    await order.save();
+
+    res.json({ message: 'Return request submitted successfully.' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
 module.exports={
     getCheckout,
     createOrder,
     getOrderSuccess,
     getMyOrders,
     getOrderDetail,
-    cancelOrder
+    cancelOrder,
+    returnRequest
 
 }

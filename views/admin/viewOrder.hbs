@@ -1,0 +1,366 @@
+{{!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" /> --}}
+{{> admin-header}}
+<style>
+    body{
+        background-color: #f2f3f5;
+    }
+  .tracker {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 50px;
+    position: relative;
+  }
+
+  .step {
+    text-align: center;
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .circle {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 50%;
+    background-color: #dee2e6;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 8px;
+    z-index: 1;
+  }
+  .status-pill {
+     padding: 2px 10px; 
+     border-radius: 20px; 
+     font-size: 0.8rem;
+     text-transform: uppercase;
+      }
+
+  .step.completed .circle {
+    background-color: #28a745;
+  }
+
+  .step.active .circle {
+    background-color: #0d6efd;
+  }
+
+  .step span {
+    font-size: 14px;
+    color: #333;
+  }
+
+  .connector {
+    position: absolute;
+    top: 18px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background-color: #8d8d8c; /* default orange */
+    z-index: 0;
+  }
+
+  .step.completed .connector.completed {
+    background-color: #28a745; /* green when step is completed */
+  }
+
+  .step:last-child .connector {
+    display: none;
+  }
+</style>
+<div class="container my-5">
+    <div>
+        <h1>Order Details</h1>
+        
+    </div>
+  
+
+ 
+
+
+  <!-- Two Column Order Details Layout -->
+  <div class="row" >
+   
+    <!-- Left Column: Product Info -->
+    <div class="col-md-8" style="background:white">
+        <div >
+                   
+         <h5 class="mt-4 mb-3">{{orderId}}</h5>
+       
+  
+        </div>
+       
+        {{!-- <div class="tracker mt-5">
+   {{#if (eq orderProduct.status "Cancelled")}}
+     <div class="step completed">
+    <div class="circle">1</div>
+    <span>Processing</span>
+    <div class="connector completed"></div>
+   
+  </div>
+  <div class="step completed">
+    <div class="circle bg-danger">2</div>
+    <span>Cancelled</span>
+    <div class="connector completed"></div>
+  </div>
+  {{/if}}
+    {{#if (eq orderProduct.status "Pending")}}
+  <div class="step completed">
+    <div class="circle">1</div>
+    <span>Processing</span>
+    <div class="connector "></div>
+   
+  </div>
+  <div class="step completed ">
+    <div class="circle">2</div>
+    <span>shipped</span>    
+    <div class="connector completed"></div>
+  </div>
+ 
+  <div class="step completed">
+    <div class="circle">3</div>
+    <span>Out for delivery</span>
+    <div class="connector"></div>
+    <!-- No connector here -->
+  </div>
+  <div class="step">
+    <div class="circle">4</div>
+    <span>Delivered</span>
+  </div>
+  {{/if}}
+</div> --}}
+
+      <div class="card p-3 mb-4 mt-4">
+         {{#if (eq orderProduct.status "Cancelled")}}
+    <span class="position-absolute top-0 end-0 m-2 badge bg-danger">
+      {{orderProduct.status}}
+    </span>
+  {{else if (eq orderProduct.status "Delivered")}}
+    <span class="position-absolute top-0 end-0 m-2 badge bg-success">
+      {{orderProduct.status}}
+    </span>
+  {{else}}
+    <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark">
+      {{orderProduct.status}}
+    </span>
+  {{/if}}
+
+        <div class="d-flex align-items-center  py-3">
+          <img src="/uploads/re-image/{{orderProduct.product.productImage.[0]}}" class="me-3" style="height: 100px;" />
+          <div>
+            <h4 class="mb-1">{{orderProduct.product.productName}}</h4>
+            <p class="mb-1">Qty: {{orderProduct.quantity}}</p>
+            <p class="mb-2">Price: {{orderProduct.price}}</p>
+
+    
+          </div>
+         
+        </div>
+
+
+
+
+        <div class="text-end">
+    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#cancelModal">
+ Update Status
+</button>
+
+        </div>
+         
+      </div>
+        <div>
+   {{#if (eq orderProduct.status "Delivered")}}
+   <p>
+         <strong>Order At:</strong> {{date}} , {{time}} 
+      </p>
+   <p>
+      <strong>Delivered At: </strong>{{deliveryDate}} , {{deliveryTime}}
+
+      </p>
+      {{else}}
+     
+       <p>
+         <strong>Order At : </strong>{{date}} , {{time}} 
+      </p>
+ {{#if (eq orderProduct.status "Cancelled")}}
+ <h6>  Order Cancelled  </h6>
+
+      {{/if}}
+   {{/if}}
+  {{#if orderProduct.returnStatus}}
+    <div class="mt-3">
+      {{!-- <span class="badge  bg-secondary text-white p-2 ps-2 pe-2"> --}}
+      
+<p>
+        <strong>Return Status :</strong> {{orderProduct.returnStatus}}
+      </p>
+      <p class="mt-2"><strong>Reason:</strong> {{orderProduct.returnReason}}</p>
+
+      {{#if (eq orderProduct.returnStatus "Requested")}}
+      <!-- Admin return status update form -->
+      <form id="returnUpdateForm" class="d-flex align-items-center gap-2 mt-2">
+        <select class="form-select form-select-sm w-auto" name="newStatus" required>
+          <option value="">Select</option>
+          <option value="Approved">Approve</option>
+          <option value="Rejected">Reject</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-success">Update Return</button>
+        <input type="hidden" name="orderId" value="{{orderId}}">
+        <input type="hidden" name="productId" value="{{orderProduct.product._id}}">
+      </form>
+      {{/if}}
+
+    </div>
+  {{/if}}
+{{!-- {{/if}} --}}
+
+     </div>  
+           
+    </div>
+
+    <!-- Right Column: Address + Summary + Payment -->
+    <div class="col-md-4">
+      <!-- Shipping Address -->
+      <div class="card mb-4">
+        <div class=" p-2 ps-3" style="border-bottom:1px solid rgb(192, 191, 191);color:rgb(194, 193, 193)">
+        <h6 >Shipping Address</h6>
+        </div>
+        <div class="p-3">
+        <h4 class="mb-3 fw-semibold">{{productshipAddress.fullName}}</h4>
+        <p class="mb-1">{{productshipAddress.houseDetails}}</p>
+        <p class="mb-1">{{productshipAddress.city}}</p>
+        <p class="mb-1">{{productshipAddress.state}} - {{productshipAddress.pincode}}</p>
+        <h6>Phone number: {{productshipAddress.phone}}</h6>
+      </div>
+</div>
+      <!-- Order Summary -->
+      <div class="card p-3 mb-4">
+        <h6>Order Summary</h6>
+        <div class="d-flex justify-content-between">
+          <span>Total Price:</span>
+          <span>₹{{totalPrice}}</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span>Discount:</span>
+          <span>-₹{{discount}}</span>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold">
+          <span>Final Amount:</span>
+          <span>₹{{finalAmount}}</span>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="card p-3">
+        <h6>Payment Method</h6>
+        <p>Cash on Delivery</p>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Cancel Reason Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form  id="updateStatusForm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="updateStatus" class="form-label">Select a status</label>
+            <select class="form-select" name="status" id="updateStatus" required>
+             <option value="">All Statuses </option>
+        <option value="Pending">Pending</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Out for Delivery">Out for Delivery</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="Returned">Returned</option>
+            </select>
+          </div>
+          <input type="hidden" name="orderId" value="{{orderId}}">
+          <input type="hidden" name="productId" value="{{orderProduct.product._id}}">
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Confirm </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{> admin-foote}}
+<script>
+    document.getElementById('updateStatusForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const status = form.status.value;
+  const orderId = form.orderId.value;
+  const productId = form.productId.value;
+
+
+   $.ajax({
+  url: `/admin/update-status/${orderId}/${productId}`,
+  type: 'PATCH',
+
+  data: { status: status },
+  success: (data) => {
+      Swal.fire({
+        title: "Updated",
+        text: data.message || "Status updated successfully.",
+        icon: "success",
+        confirmButtonText: "OK"
+      }).then(() => {
+        window.location.reload();
+      });
+    },
+ error: (err) => {
+      console.log(err);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to update status.",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
+    }
+});
+});
+    
+  
+  document.getElementById("returnUpdateForm")?.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const newStatus = form.newStatus.value;
+    const orderId = form.orderId.value;
+    const productId = form.productId.value;
+
+    $.ajax({
+      url: `/admin/update-return/${orderId}/${productId}`,
+      type: 'PATCH',
+      data: { returnStatus: newStatus },
+      success: (data) => {
+        Swal.fire("Success", data.message || "Return status updated.", "success")
+          .then(() => window.location.reload());
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire("Error", "Failed to update return status.", "error");
+      }
+    });
+  });
+</script>
+
+</script>
+

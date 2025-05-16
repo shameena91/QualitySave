@@ -57,7 +57,8 @@ app.engine('hbs', engine({
       sub: (a, b) => a - b,
       mul: (a, b) => a * b,
       and: (a, b) => a && b,
-      gt:(a,b)=>a>b,
+      gt: (a,b)=> a > b,
+      or: (a,b)=> a || b,
       not: value => !value,
       range: (start, end) => {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);

@@ -1,0 +1,14 @@
+{{> admin-header}}
+
+<div class="main-content" id="mainContent">
+  <div class="text-center mt-5">
+    {{#if search}}
+    <h2>No results found for '{{search}}'</h2>
+    {{else}}
+    <h2>No results found for '{{statusFilter}}'</h2>
+    {{/if}}
+    <a href="/admin/orderManagement" class="btn btn-primary mt-3">Back to Order List</a>
+  </div>
+</div>
+
+{{> admin-foote}}

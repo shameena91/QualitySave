@@ -397,7 +397,7 @@ const filterByPrice = async (req, res) => {
     if (!findProducts || findProducts.length === 0) {
       res.redirect("/no-data-found");
     }
-    findProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    findProducts.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const itemsPerPage = 6;
     const currentPage = parseInt(req.query.page) || 1;

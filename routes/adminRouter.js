@@ -97,7 +97,11 @@ router.get("/admin/unblockProduct",adminAuth,productController.unblockProduct)
 router.get('/admin/orderManagement',adminAuth,orderController.getOrderDetails)
 
 
+router.patch("/admin/update-status/:orderId/:productId",adminAuth,orderController.updateStatus
+)
+router.get("/admin/orderView/:orderId/:productId",adminAuth,orderController.orderView)
 
+router.patch('/admin/update-return/:orderId/:productId',adminAuth, orderController.updateReturnStatus)
 
 
 

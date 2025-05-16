@@ -8,7 +8,7 @@ const getCart = async (req, res) => {
  const userId = req.session.user; 
     console.log("userId from session:", userId);
 
-    const user = await User.findById(userId); 
+    const user = await User.findById(userId).lean(); 
     if (!user) {
       console.log("User not found");
       return res.redirect("/pageNotFound"); 
@@ -31,7 +31,7 @@ const getCart = async (req, res) => {
 
   const discount=sumSalePrice-sumTotalPrice
   
-    res.render("cart",{cartProducts,sumTotalPrice,sumSalePrice,discount});
+    res.render("cart",{cartProducts,sumTotalPrice,sumSalePrice,discount,user});
   }catch (error) {
   console.error("Get Cart Error:", error);
   return res.status(500).render("errorPage", { message: "Internal Server Error" });
@@ -43,6 +43,7 @@ const addToCart = async (req, res) => {
     const productId = req.body.proId;
     const userId = req.session.user;
     const wishlist=await Wishlist.findOne({userId:userId})
+   
 
 
     if (!productId || !userId) {

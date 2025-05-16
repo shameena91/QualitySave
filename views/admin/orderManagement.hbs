@@ -1,11 +1,24 @@
 {{> admin-header}}
+<style>
+   .status-pill {
+     padding: 2px 10px; 
+     border-radius: 20px; 
+     font-size: 0.8rem; }
+
+.btn-req{
+background-color: rgb(247, 153, 30);
+}
+.btn-req:hover{
+background-color: rgb(223, 133, 15);
+}
+</style>
 <div class="main-content " id="mainContent">
 
 
 <h2 class="mb-4">Order Management</h2>
 
   <!-- Search, Filter, Sort -->
-  <form class="row mb-3 g-2" method="get" action="/admin/orders">
+  <form class="row mb-3 g-2" method="get" action="/admin/orderManagement">
     <div class="col-md-3">
       <input type="text" class="form-control" name="search" placeholder="Search Order ID / User" value="{{search}}" />
     </div>
@@ -20,16 +33,74 @@
         <option value="Returned">Returned</option>
       </select>
     </div>
-    <div class="col-md-3">
-      <select name="sort" class="form-select">
-        <option value="date_desc">Date: Newest First</option>
-        <option value="date_asc">Date: Oldest First</option>
-      </select>
-    </div>
+   
     <div class="col-md-3 d-flex">
       <button type="submit" class="btn btn-primary me-2">Apply</button>
-      <a href="/admin/orders" class="btn btn-secondary">Clear</a>
+      <a href="/admin/orderManagement" class="btn btn-secondary">Clear</a>
     </div>
+     {{!-- <div class="col-md-3 d-flex justify-content-end"> --}}
+   <div class="col-md-3 d-flex justify-content-end position-relative">
+
+<button type="button" class="btn btn-req position-relative"  onclick="showRequestMenu()">
+  Requests
+  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+    {{requestCount}}
+    <span class="visually-hidden">unread messages</span>
+  </span>
+</button>
+
+
+
+
+
+
+  {{!-- <button type="button" class="btn btn-success" onclick="showRequestMenu()">Requests {{requestCount}}</button> --}}
+
+  <!-- Menu Box -->
+  <div id="requestMenu" class="card p-3 position-absolute end-0 mt-2 shadow" style="display: none; z-index: 1000; min-width: 250px;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <strong>Return Requests</strong>
+      <button class="btn-close" onclick="hideRequestMenu()"></button>
+    </div>
+   
+    <ul class="list-group list-group-flush">
+      {{#if (eq requestCount 0)}}
+      <li>
+        <p>
+           No Return Requests
+        </p>
+      
+      </li>
+      {{/if}}
+       {{#each requestProduct}}
+
+                      <a href="/admin/orderView/{{this.orderId}}/{{this.productId}}" 
+                      class="text-decoration-none">
+
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-md-2">
+        <img src="/uploads/re-image/{{this.productImage}}" class="me-3" style="height: 50px;" />
+
+          </div>
+          <div class="col-md-10">
+{{this.productName}}
+          </div>
+
+        </div>
+
+
+       
+      </li>
+</a>
+      {{/each}}
+      
+    </ul>
+  </div>
+</div>
+
+
+  {{!-- </div> --}}
   </form>
 
   <!-- Orders Table -->
@@ -51,30 +122,50 @@
       <tbody class="text-center">
      {{#each products}}
         <tr>
-          <td>{{this.orderId}}</td>
+          <td>{{this.orderId}} </td>
           <td>{{this.orderDate}}
             {{this.orderTime}}
           </td>
-          <td>{{this.user}}</td>
-              <td>{{this.productName}}</td>
+          <td>{{this.user}}
+           
+          </td>
+              <td class="text-start">
+        <img src="/uploads/re-image/{{this.productImage}}" class="me-3" style="height: 50px;" />
+
+            
+                {{this.productName}}
+                </td>
                 <td>{{this.quantity}}</td>
            
           <td>₹{{this.price}}</td>
-          <td>{{status}}</td>
-          
+<td>
+           {{#if (eq status "Cancelled")}}
+      <span class="status-pill bg-danger text-white p-1 ps-2 pe-2">{{status}}</span>
+    {{else if (eq status "Delivered")}}
+    {{#if this.returnStatus}}
+      <span class="status-pill bg-secondary text-white p-1  ps-2 pe-2">Retun {{this.returnStatus}}</span>
+{{else}}
+      <span class="status-pill bg-success text-white p-1  ps-2 pe-2">{{status}}</span>
+       {{/if}}
+       {{else}}
+      <span class="status-pill bg-warning p-1 ps-2 pe-2 border-rounded">{{status}}</span>
+    {{/if}}
+         
+       </td>   
           <td style="width:150px">
-  <form action="/admin/orders/<%= order._id %>/update-status" method="POST" class="d-flex flex-nowrap align-items-center" style="gap: 4px;">
+  <form  onsubmit="updateStatus('{{this.orderId}}','{{this.productId}}', event)"  class="d-flex flex-nowrap align-items-center" style="gap: 4px;">
     <select name="status" class="form-select form-select-sm" style="width: auto; min-width: 120px;">
+      <option value="" selected disabled>Select status</option>
       <option value="Pending">Pending</option>
       <option value="Shipped">Shipped</option>
       <option value="Out for Delivery">Out for Delivery</option>
       <option value="Delivered">Delivered</option>
       <option value="Cancelled">Cancelled</option>
     </select>
-    <button type="submit" class="btn btn-sm btn-success px-2">update</button>
+    <button  type="submit" class="btn btn-sm btn-success px-2">update</button>
   </form>
 </td>
-          <td><a href="/admin/order/{{this._id}}" class="btn btn-sm btn-info">View</a></td>
+          <td><a href="/admin/orderView/{{this.orderId}}/{{this.productId}}" class="btn btn-sm btn-info">View</a></td>
         </tr>
         {{/each}}
      
@@ -93,5 +184,81 @@
     </ul>
   </nav>
 </div>
+<div class="d-flex justify-content-end mt-4">
 
+
+<nav aria-label="page-navigation">
+  <ul class="pagination">
+    <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+    </li>
+
+    
+      {{#each (range 1 totalPages)}}
+      <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+        <a class="page-link" href="?page={{this}}">{{this}}</a>
+      </li>
+    {{/each}}
+
+
+    <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{add currentPage 1}}">next</a></li>
+    
+  </ul>
+</nav>
+</div>
+<script>
+
+  function showRequestMenu() {
+    document.getElementById("requestMenu").style.display = "block";
+  }
+
+  function hideRequestMenu() {
+    document.getElementById("requestMenu").style.display = "none";
+  }
+
+
+function updateStatus(orderId,productId, event) {
+  event.preventDefault();  // Prevent form submit reload
+
+  const select = event.target.closest('form').querySelector('select[name="status"]');
+  const status = select.value;
+
+  if (!status) {
+    Swal.fire({
+      title: "Error!",
+      text: "Please select a status before updating.",
+      icon: "warning",
+      confirmButtonText: "OK"
+    });
+    return;
+  }
+
+  $.ajax({
+    url: `/admin/update-status/${orderId}/${productId}`,
+    method: "PATCH",
+    data: { status: status },
+    success: (data) => {
+      Swal.fire({
+        title: "Updated",
+        text: data.message || "Status updated successfully.",
+        icon: "success",
+        confirmButtonText: "OK"
+      }).then(() => {
+        window.location.reload();
+      });
+    },
+    error: (err) => {
+      console.log(err);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to update status.",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
+    }
+  });
+}
+
+</script>
 {{>admin-foote}}

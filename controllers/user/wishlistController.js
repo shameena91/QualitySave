@@ -31,7 +31,7 @@ const getWishlist = async (req, res) => {
 
  console.log("Wishlist productssssss",wishlistItems);
     res.render("wishlist", {
-      wishlistItems
+      wishlistItems,user
     });
 
   } catch (error) {
