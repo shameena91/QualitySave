@@ -18,9 +18,12 @@
       background: #fff; }
 
 </style>
+
+   
+
 <div class="container my-5">
  
- 
+    
 
 
   <!-- Two Column Order Details Layout -->
@@ -65,10 +68,9 @@
       <div class="card p-3 mb-4 shadow-sm">
      
 
-        <div class="d-flex align-items-center mt-4 py-3">
+        <div class="d-flex justify-content-between mt-4 py-3">
           
-          <img src="/uploads/re-image/{{product.productImage.[0]}}" class="me-3" style="height: 100px;" />
-          <div>
+          <div class="ms-4">
             <h6 class="mb-1">{{product.productName}}</h6>
             <p class="mb-1">Qty: {{quantity}}</p>
             <p class="mb-2">Price: {{price}}
@@ -85,6 +87,11 @@
     {{/if}}
         </div>
           </div>
+          <div class="text-end">
+            <img src="/uploads/re-image/{{product.productImage.[0]}}" class="me-3" style="height: 100px;" />
+
+          </div>
+
         </div>
            <div class="text-end">
             {{#if (eq status "Pending") }}
@@ -94,36 +101,44 @@
 
 {{/if}}  
        </div>
-       <div class="text-end">
-         {{#if (eq status "Delivered") }}
-         {{#if (not returnStatus)}}
-         
-    <button class="btn btn-sm btn-outline-danger mt-2" 
-    data-bs-toggle="modal" data-bs-target="#returnModal">
-    Request Return
-  </button>
-  {{else}}
-  <button class="btn btn-sm btn-outline-danger mt-2 disabled" 
-    data-bs-toggle="modal" data-bs-target="#returnModal">
-    Request Return
-  </button>
-  {{/if}}
-  {{#if (eq returnStatus "Approved")}}
-  <div class="text-start">
-        Request approved 
+       <div class="text-end mt-3">
+
+  {{#if (eq status "Delivered")}}
+
+    <!-- Return Button -->
+    {{#if (not returnStatus)}}
+      <button class="btn btn-sm btn-outline-danger mb-2" 
+              data-bs-toggle="modal" data-bs-target="#returnModal">
+        <i class="fas fa-undo-alt me-1"></i> Request Return
+      </button>
+    {{else}}
+      <button class="btn btn-sm btn-outline-secondary mb-2" disabled>
+        <i class="fas fa-undo-alt me-1"></i> Return Requested
+      </button>
+    {{/if}}
+
+    <!-- Return Status Display -->
+    {{#if (eq returnStatus "Approved")}}
+      <div class="alert alert-success d-flex align-items-center mt-2 p-2" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <div>Return Request <strong>Approved</strong>. Refund credited to your wallet.</div>
       </div>
-      {{else if (eq returnStatus "Rejected")}}
-      <div class="text-start">
-        Request Rejected 
+    {{else if (eq returnStatus "Rejected")}}
+      <div class="alert alert-danger d-flex align-items-center mt-2 p-2" role="alert">
+        <i class="fas fa-times-circle me-2"></i>
+        <div>Return Request <strong>Rejected</strong>. Please contact support for details.</div>
       </div>
- {{else}}
-  <div class="text-start">
-        Request send for product return
+    {{else if returnStatus}}
+      <div class="alert alert-warning d-flex align-items-center mt-2 p-2" role="alert">
+        <i class="fas fa-hourglass-half me-2"></i>
+        <div>Return Request <strong>Pending Review</strong>.</div>
       </div>
-      {{/if}}
+    {{/if}}
+
   {{/if}}
 
-       </div>
+</div>
+
     
       </div>
          
@@ -175,6 +190,7 @@
     </div>
   </div>
 </div>
+
 
 
 <!-- Cancel Reason Modal -->

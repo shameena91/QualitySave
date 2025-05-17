@@ -13,33 +13,60 @@
     flex: 1;
   }
 </style>
+<div class="container ">
+   <nav aria-label="breadcrumb " class="mb-4 m-5" >
+      <ol class="breadcrumb bg-light px-3 py-2 rounded shadow-sm" >
+        <li class="breadcrumb-item text-decoration-none"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/shop" class="text-decoration-none">Shopping</a></li>
+        <li class="breadcrumb-item active"><a href="/user-profile">Profile</a></li>
+        <li class="breadcrumb-item active" ><a href="/myOrders"></a>My Orders</li>
+      </ol>
+    </nav>
 
-<div class="main-container">
+<div class="main-container ">
+  
   <!-- Sidebar -->
   {{> profilesidebar}}
   <!-- Orders -->
-  <div class="order-section">
-    <h3 class="mb-4">My Orders</h3>
+<div class="order-section">
+  <h3 class="mb-4">My Orders</h3>
+
+  <div class="row align-items-center mb-4">
+    <div class="col-md-6">
+      <form id="orderSearchForm" class="d-flex" role="search" action="/my-orders">
+        <input 
+          type="search"  name="search"
+          placeholder="Search orders by Order ID or Product Name" 
+          class="form-control me-2" 
+          id="orderSearchInput" 
+          aria-label="Search Orders"
+        />
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+  </div>
+
+  
 
     <!-- Example Order Card -->
-    {{#each orederedProduct}}
+    {{#each products}}
     <div class="order-card shadow-sm">
       <div class="d-flex justify-content-between">
         <div>
-          <div><strong>Order ID:</strong> {{orderId}}</div>
-          <div><strong>Placed on:</strong> {{ formatDate invoiceDate}}</div>
+          <div><strong>Order ID:</strong> {{this.orderId}}</div>
+          <div><strong>Placed on:</strong> {{ this.orderDate}}</div>
         </div>
        
       </div>
 
       <hr>
-{{#each this.orderItems}}
+
       <div class="row align-items-center mb-4 ">
         <div class="col-md-2">
-          <img src="/uploads/re-image/{{this.product.productImage.[0]}}" alt="Product" class="product-img">
+          <img src="/uploads/re-image/{{this.productImage}}" alt="Product" class="product-img">
         </div>
         <div class="col-md-6 ">
-          <h6>{{this.product.productName}}</h6>
+          <h6>{{this.productName}}</h6>
           <div>Quantity: {{this.quantity}}</div>
           <div>Price: {{this.price}}</div>
           
@@ -58,16 +85,17 @@
         </div>
         <div class="mt-4 mb-2">
     
-          <a href="/view-orderDetails/{{../orderId}}/{{product._id}}" class="btn btn-sm btn-outline-primary">View Details</a>
+          <a href="/view-orderDetails/{{this.orderId}}/{{this.productId}}" class="btn btn-sm btn-outline-primary">View Details</a>
         </div>
         </div>
       </div>
-      {{/each}}
+    
     </div>
     {{/each}}
 
     <!-- Repeat more .order-card blocks here for more orders -->
   </div>
+</div>
 </div>
 
 {{> foote}}

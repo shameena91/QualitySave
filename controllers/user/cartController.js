@@ -16,22 +16,25 @@ const getCart = async (req, res) => {
    const cart=await Cart.findOne({userId:userId})
    .populate('cartItems.productId')
    .lean()
- 
-  const cartProducts=cart? cart.cartItems :[];
-  for(let i=0;i<cartProducts.length;i++)
-  {
 
-  }
+  const cartProducts=cart? cart.cartItems :[];
+   console.log("cccccccccccc",cartProducts)
   const sumTotalPrice=cartProducts.reduce((acc,curr)=>{
     return acc+curr.totalPrice
   },0)
   const sumSalePrice=cartProducts.reduce((acc,curr)=>{
     return acc+curr.totalSalePrice
   },0)
-
+// findProduct.salePrice - Math.floor(findProduct.salePrice * (percentage / 100))
   const discount=sumSalePrice-sumTotalPrice
+ let hasStock=1;
+ if (cartProducts.length===1) {
+   hasStock=cartProducts[0].productId.quantity
   
-    res.render("cart",{cartProducts,sumTotalPrice,sumSalePrice,discount,user});
+ }
+  console.log(hasStock)
+  
+    res.render("cart",{hasStock,cartProducts,sumTotalPrice,sumSalePrice,discount,user});
   }catch (error) {
   console.error("Get Cart Error:", error);
   return res.status(500).render("errorPage", { message: "Internal Server Error" });
@@ -68,6 +71,8 @@ const addToCart = async (req, res) => {
         const totalPrice = quantity * price;
         const salePrice=product.salePrice
         const totalSalePrice=quantity*salePrice
+
+   
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {

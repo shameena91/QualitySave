@@ -122,14 +122,46 @@ console.log("nnnn",newOrder)
 
 const getMyOrders = async (req, res) => {
   try {
+    const search=req.query.search||''
     const userId = req.session.user;
-const user = await User.findById(userId).lean()
-    const orederedProduct = await Order.find({ userId: userId })
+
+    const user = await User.findById(userId).lean()
+      const searchExpn=new RegExp(search.trim(),"i")
+    const productIds=await Product.find({productName:searchExpn}).distinct("_id").lean()
+     console.log("kkkkkkkkkkkk",productIds)
+    
+      const query={userId,
+        $or:[
+          {orderId:{$regex:searchExpn}},
+          {"orderItems.product":{$in:productIds}}
+          
+        ]
+      }
+
+const orederedProduct = await Order.find(query)
       .sort({ createdOn: -1 })
       .populate('orderItems.product')
       .lean();
 
-    const products = orederedProduct.flatMap(order => order.orderItems);
+
+
+
+
+    const products = orederedProduct.flatMap(order => 
+      order.orderItems.map(item=>({
+        orderId:order.orderId,
+        orderDate:order.createdOn.toLocaleDateString(),
+        orderTime:order.createdOn.toLocaleDateString(),
+        productName: item.product?.productName || "deletedProduct",
+        productImage:item.product?.productImage[0],
+        quantity: item.quantity,
+        price: item.price * item.quantity,
+        productId:item.product?._id,
+    
+        status: item.status,
+        productId:item.product._id,
+  
+      })));
 
     console.log("Orders:", orederedProduct);
     console.log("All Ordered Products:", products);
@@ -153,11 +185,10 @@ const getOrderDetail=async(req,res)=>{
 console.log("proid",productId)
  const order=await Order.findOne({ orderId: orderId, userId:userId })
  .populate('orderItems.product')
+ .lean()
 
-    .lean()
     console.log(order)
-    const addressId=order.address
-   
+    const addressId=order.address 
     const viewAddress=await Address.findOne({userId:userId}).lean()
     specifiedAddress=viewAddress.address.find((item)=>{
       console.log("aaai",item._id)

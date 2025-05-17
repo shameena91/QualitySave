@@ -32,7 +32,6 @@ const userSchema=new mongoose.Schema({
         sparse:true,
        
     },
-
     password:{
         type:String,
         required:false,       
