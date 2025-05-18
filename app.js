@@ -2,7 +2,7 @@ const express=require('express')
 const app= express();
 const path=require('path');
 const passport=require('./config/passport')
-
+const puppeteer = require('puppeteer');
 const hbs=require('hbs')
 const { engine } = require('express-handlebars');
 const session=require('express-session')

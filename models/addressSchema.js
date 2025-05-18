@@ -41,7 +41,11 @@ const addressSchema=new mongoose.Schema({
         altPhone:{
             type:String,
             required:false
-        }
+        },
+        // setDefault:{
+        //     type:Boolean,
+        //     default:false
+        // }
 
     }]
 

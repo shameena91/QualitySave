@@ -69,6 +69,7 @@
      
 
         <div class="d-flex justify-content-between mt-4 py-3">
+  
           
           <div class="ms-4">
             <h6 class="mb-1">{{product.productName}}</h6>
@@ -183,7 +184,10 @@
         <p>Cash on Delivery</p>
         <div class="text-end">
           {{#if (eq status "Delivered")}}
-          <a href="#" class="btn btn-sm btn-outline-success">Download Invoice</a>
+                  <a href="/invoice/download/{{orderId}}/{{product._id}}" target="_blank"  class="btn btn-sm btn-outline-success">
+  Download Invoice PDF
+</a>
+          {{!-- <a href="#" class="btn btn-sm btn-outline-success">Download Invoice</a> --}}
           {{/if}}
         </div>
       </div>

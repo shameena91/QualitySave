@@ -7,6 +7,13 @@ const { editAddressPage } = require("./addressController");
 
 
 
+
+
+
+
+
+
+
 const getCheckout = async (req, res) => {
   try {
     const userId = req.session.user;
@@ -43,6 +50,68 @@ const getCheckout = async (req, res) => {
     res.status(500).render("errorPage", { message: "Something went wrong during checkout." });
   }
 };
+
+
+const checkoutAddaddress = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const {
+      fullName,
+      phone,
+      pincode,
+      city,
+      houseDetails,
+      state,
+      landMark,
+      altphone,
+      addressType,
+    } = req.body;
+    console.log(fullName, phone, pincode, city, houseDetails, addressType);
+    const userData = await User.findOne({ _id: userId });
+
+    const userAddress = await Address.findOne({ userId: userData._id });
+    if (!userAddress) {
+      const newAddress = new Address({
+        userId: userData._id,
+        address: [
+          {
+            addressType,
+            fullName,
+            houseDetails,
+            city,
+            landMark,
+            state,
+            pincode,
+            phone,
+            altphone,
+          },
+        ],
+      });
+      await newAddress.save();
+    } else {
+      userAddress.address.push({
+        addressType,
+        fullName,
+        houseDetails,
+        city,
+        landMark,
+        state,
+        pincode,
+        phone,
+        altphone,
+      });
+      await userAddress.save();
+    }
+    res.redirect("/checkout");
+  } catch (error) {
+    console.log(error);
+    res.redirect("/pageNotFound");
+  }
+};
+
+
+
+
  const createOrder=async(req,res)=>{
     try {
             const userId = req.session.user;
@@ -300,6 +369,8 @@ module.exports={
     getMyOrders,
     getOrderDetail,
     cancelOrder,
-    returnRequest
+    returnRequest,
+    checkoutAddaddress,
+ 
 
 }
