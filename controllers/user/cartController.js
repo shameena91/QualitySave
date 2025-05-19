@@ -88,7 +88,7 @@ const addToCart = async (req, res) => {
         }]
       });
     } else {
-      // Check if product already exists in cart
+     
       const productExists = cart.cartItems.find(item => item.productId.toString() === productId);
       if (productExists ) {
          if (productExists.quantity + 1 > maxQuantity) {
@@ -98,7 +98,7 @@ const addToCart = async (req, res) => {
         productExists.totalPrice = productExists.quantity * price;
         productExists.totalSalePrice = productExists.quantity *salePrice;
 
-        // Save the updated cart
+   
         await cart.save();
         return res.status(200).json({ status: true, message: "Your cart updated successfully" });
       }
@@ -141,7 +141,9 @@ const updateCart = async (req, res) => {
     if (cartItem) {
       cartItem.quantity = quantity;
       cartItem.totalPrice = totalPrice; 
-      cartItem.totalSalePrice=totalSalePrice// Update totalPrice based on quantity
+      cartItem.totalSalePrice=totalSalePrice
+ 
+      
     }
 
     await cart.save();

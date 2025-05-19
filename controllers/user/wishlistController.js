@@ -25,7 +25,8 @@ const getWishlist = async (req, res) => {
     
 
     const wishlistItems = wishlist ?
-     wishlist.products.sort((a, b) => new Date(b.addedOn) - new Date(a.addedOn)) 
+     wishlist.products.sort((a, b) =>
+       new Date(b.addedOn) - new Date(a.addedOn)) 
       : [];
   
 
@@ -43,7 +44,7 @@ const getWishlist = async (req, res) => {
 
 
 
-const addToWishlist = async (req, res) => {
+const addToWishlist = async (req, res,next) => {
   try {
     const proId = req.body.proId;
     const userId = req.session.user;
@@ -51,13 +52,13 @@ const addToWishlist = async (req, res) => {
     let wishlist = await Wishlist.findOne({ userId });
 
     if (!wishlist) {
-      // Create new wishlist if not exists
+   
       wishlist = new Wishlist({
         userId,
         products: [{ productId: proId }],
       });
     } else {
-      // Check if product is already in wishlist
+    
       const productExists = wishlist.products.some(p => p.productId.toString() === proId);
       if (productExists) {
         return res.status(200).json({ status: false, message: "The product is already in your wishlist" });
@@ -70,11 +71,10 @@ const addToWishlist = async (req, res) => {
     return res.status(200).json({ status: true, message: "Product added to your wishlist" });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ status: false, message: "Server Error" });
+    next(error)
   }
 };
-const removeWishlistItem=async(req,res)=>{
+const removeWishlistItem=async(req,res,next)=>{
   try {
     const productId=req.params.id
     console.log("wishid",productId)
@@ -88,8 +88,7 @@ const removeWishlistItem=async(req,res)=>{
          res.status(200).json({ message: 'Product removed from wishlist' });
 
   } catch (error) {
-     console.error("Error removing wishlist item:", error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    next(error)
   }
 }
 

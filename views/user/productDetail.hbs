@@ -174,8 +174,9 @@
               <input type="text" class="form-control text-center" value="1">
               <button class="btn btn-outline-secondary btn-sm" type="button">+</button>
             </div>
-            <button class="btn btn-lg" style="background-color:#1e918b"><i class="bi bi-cart-plus me-2" onclick="addToCatr('{{product._id}}')"></i>Add to Cart</button>
-            <a href="#" class="btn btn-outline-danger btn-lg"><i class="bi bi-heart-fill"></i></a>
+            <button class="btn btn-lg" style="background-color:#1e918b">
+              <i class="bi bi-cart-plus me-2" onclick="addToCart('{{product._id}}')"></i>Add to Cart</button>
+            <a href="#" class="btn btn-outline-danger btn-lg" onclick="addToWishlist('{{product._id}}')"><i class="bi bi-heart-fill"></i></a>
           </div>
         {{else}}
           <h4 style="color:red">Currently unavailable</h4>
@@ -208,7 +209,10 @@
       <div class="card flex-shrink-0 border-0" style="width: 250px;height:auto ">
 
         <div class="product-card">
-            <span class="wishlist-btn">❤️</span>
+
+            <span class="wishlist-btn"   >❤️</span>
+
+
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{this.productImage.[0]}}" alt="{{productName}}" /></a>
             <h4>{{this.productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
@@ -252,6 +256,75 @@
 
 
 <script>
+ function addToWishlist(proId)
+  {
+    $.ajax({
+      url:'/addToWishlist',
+      method:"POST",
+      data:{proId:proId},
+      success:(response)=>{
+        if(response.status){
+          Swal.fire({
+            title:"added to wishlist",
+            text:"the product hasbeenn added to wish list",
+            icon:'success',
+            timer:2000
+          })
+        }else{
+           Swal.fire({
+            title:" already in wishlist",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
+
+      },
+      error:(error)=>{
+        Swal.fire({
+          title:'Error',
+          text:"There was an error",
+          icon:'error',
+          timer:2000
+        })
+      }
+
+    })
+  }
+
+function addToCart(proId) {
+  $.ajax({
+    url: '/addToCart',
+    method: "POST",
+    data: { proId: proId },
+    success: (response) => {
+      if (response.status) {
+        Swal.fire({
+          title: "Added to Cart",
+          text: response.message,
+          icon: 'success',
+          timer: 2000
+        });
+      }else{
+           Swal.fire({
+            title:" Exceed",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
+    },
+    error: (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: "There was an error",
+        icon: 'error',
+        timer: 2000
+      });
+    }
+  });
+}
+
 
   function scrollLeft() {
     document.getElementById("relatedScroll").scrollBy({ left: -220, behavior: 'smooth' });

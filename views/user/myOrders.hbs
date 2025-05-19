@@ -40,6 +40,7 @@
           class="form-control me-2" 
           id="orderSearchInput" 
           aria-label="Search Orders"
+          value="{{search}}"
         />
         <button type="submit" class="btn btn-primary">Search</button>
       </form>
@@ -95,7 +96,17 @@
 
     <!-- Repeat more .order-card blocks here for more orders -->
   </div>
+
+ 
+
 </div>
+{{#if hasMore}}
+  <form method="GET" action="/my-orders" class="text-center mt-3">
+    <input type="hidden" name="page" value="{{add currentPage 1}}">
+    <input type="hidden" name="search" value="{{search}}">
+    <button type="submit" class="btn btn-primary">Show More</button>
+  </form>
+{{/if}}
 </div>
 
 {{> foote}}

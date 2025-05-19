@@ -233,7 +233,7 @@ const deleteProfileImage=async(req,res)=>{
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if the user has a profile image
+
     if (user.profileImage) {
       const imagePath = path.join('public','uploads', 're-image', user.profileImage);;
       console.log(imagePath)
@@ -244,7 +244,6 @@ const deleteProfileImage=async(req,res)=>{
         return res.status(500).json({ error: 'Failed to delete image file' });
       }
 
-      // Remove the image from the user's profile in the database
       user.profileImage = null;
       await user.save();
 
@@ -316,10 +315,8 @@ const varifyEmailOtp = async (req, res) => {
     }
 
     if (enteredOtp === sessionOtp) {
-      // Clear the OTP from session to prevent reuse
       req.session.userOtp = null;
 
-      // Use session-stored user data
       const userData = req.session.userData;
 
       return res.render("new-email", {
@@ -348,7 +345,7 @@ res.redirect("/user-profile")
   }
 }
 
-// password change
+
 
 const getChangePwd=async(req,res)=>{
   try {
@@ -388,7 +385,7 @@ const varifyChangePswd=async(req,res)=>{
   }
 }
 
-const varifyPswdOtp= async (req, res) => {
+const varifyPswdOtp= async (req, res,next) => {
   try {
     const enteredOtp = req.body.otp;
     const sessionOtp = req.session.userOtp;
@@ -399,7 +396,7 @@ const varifyPswdOtp= async (req, res) => {
   
 
     if (enteredOtp === sessionOtp) {
-      // Clear the OTP from session to prevent reuse
+ 
       req.session.userOtp = null;
 
       res.json({success:true,redirectUrl:"/resetPassword"})
@@ -407,8 +404,7 @@ const varifyPswdOtp= async (req, res) => {
       res.json({success:false,message:"OTP not matching"})
     }
   } catch (error) {
-    console.error("Error in OTP verification:", error);
-    res.redirect("/pageNotFound");
+    next(error)
   }
 };
 

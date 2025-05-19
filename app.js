@@ -1,6 +1,7 @@
 const express=require('express')
 const app= express();
 const path=require('path');
+const morgan = require('morgan');
 const passport=require('./config/passport')
 const puppeteer = require('puppeteer');
 const hbs=require('hbs')
@@ -10,9 +11,11 @@ const env=require("dotenv").config();
 const connectDb=require("./config/db")
 const userRouter=require('./routes/userRouter')
 const adminRouter=require('./routes/adminRouter')
+const errorHandler = require('./middlewares/errorHandler');
 
 connectDb();
 
+app.use(morgan('dev'));
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
@@ -90,7 +93,7 @@ app.use('/',adminRouter)
 
 
 
-
+app.use(errorHandler);
 app.listen(process.env.PORT,()=>{
     console.log("Server Running........")
     

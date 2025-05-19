@@ -86,7 +86,7 @@
     </div>
     
     <div class="mt-auto d-flex justify-content-end gap-2">
-      <button class="btn btn-primary btn-sm">Add to Cart</button>
+      <button class="btn btn-primary btn-sm" onclick="addToCart('{{this.productId._id}}')" >Add to Cart</button>
       <button class="btn btn-outline-danger btn-sm" onclick="removeWishlistItem('{{this.productId._id}}')">Remove</button>
     </div>
   </div>
@@ -146,6 +146,42 @@ function removeWishlistItem(productId) {
             confirmButtonText: 'OK'
           });
         }
+      });
+    }
+  });
+}
+
+
+ function addToCart(proId) {
+  $.ajax({
+    url: '/addToCart',
+    method: "POST",
+    data: { proId: proId },
+    success: (response) => {
+      if (response.status) {
+        Swal.fire({
+          title: "Added to Cart",
+          text: response.message,
+          icon: 'success',
+          timer: 2000
+        }).then(()=>{
+          location.reload()
+        });
+      }else{
+           Swal.fire({
+            title:" Exceed",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
+    },
+    error: (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: "There was an error",
+        icon: 'error',
+        timer: 2000
       });
     }
   });

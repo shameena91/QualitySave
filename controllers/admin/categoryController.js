@@ -5,7 +5,7 @@ const loadCategory= async(req,res)=>{
     try {
         const search=req.query.search || "";
         const page=parseInt(req.query.page)||1
-        const limit=4;
+        const limit=8;
         const skip=(page-1)*limit
 
        console.log("cat searc",search)
@@ -151,6 +151,34 @@ const deleteCategory=async(req,res)=>{
     }
 }
 
+const addCategoryOffer=async(req,res,next)=>{
+    try {
+              const { categoryId, percentage } = req.body;
+              const findCategory=await Category.findById({_id:categoryId})
+            if(!findCategory)
+            {
+                return res.json({ status: false, message: "Category not found" });
+            }
+            findCategory.categoryoffer=percentage
+            await findCategory.save();
+              return res.json({ status: true });
+    } catch (error) {
+        next(error)
+    }
+}
+
+const removeCategoryOffer=async(req,res)=>{
+    try {
+        const {categoryId}=req.body
+        const findCategory=await Category.findOne({_id:categoryId})
+        findCategory.categoryoffer=0
+        await findCategory.save()
+        res.json({status:true})
+    }catch(error)
+    {
+        res.redirect("/pageerrror")
+    }
+}
 
 
 module.exports={loadCategory,
@@ -158,4 +186,7 @@ module.exports={loadCategory,
     categoryListed,
     categoryunListed,
     editCategory,
-    updateCategory,deleteCategory}
+    updateCategory,deleteCategory,
+addCategoryOffer,
+removeCategoryOffer
+}

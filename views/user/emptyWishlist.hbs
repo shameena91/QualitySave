@@ -1,0 +1,44 @@
+{{> headr}}
+
+<style>
+  .empty-wishlist {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-wishlist img {
+    max-width: 300px;
+    margin-bottom: 30px;
+  }
+
+  .empty-wishlist h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+
+  .empty-wishlist p {
+    color: #6c757d;
+    margin-bottom: 25px;
+  }
+
+  .empty-wishlist a.btn {
+    padding: 10px 25px;
+    font-size: 1rem;
+  }
+</style>
+
+<div class="container">
+  <div class="empty-wishlist">
+    <img src="/images/empty-wishlist.png" alt="Empty Wishlist" />
+    <h2>Your Wishlist is Empty</h2>
+    <p>Looks like you haven’t added anything yet.</p>
+    <a href="/shop" class="btn btn-primary">Continue Shopping</a>
+  </div>
+</div>
+
+{{> foote}}

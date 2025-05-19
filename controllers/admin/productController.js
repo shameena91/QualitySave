@@ -10,7 +10,7 @@ const productList = async (req, res) => {
   try {
     const search = req.query.search || "";
     const page = parseInt(req.query.page) || 1;
-    const limit = 4;
+    const limit = 10;
  
     const searchExp = new RegExp(search.trim(), "i"); 
     const brandIds = await Brand.find({ brandName: { $regex: searchExp } }).distinct("_id");
@@ -131,12 +131,19 @@ const postProducts = async (req, res) => {
         regularPrice: products.regularPrice,
         salePrice: products.salePrice,
         quantity: products.quantity,
-        discountedPrice:products.salePrice,
+       
         createdAt: new Date(),
         productImage: images, 
         status: 'Available'
       });
-
+      console.log("jjjjjjj",categoryDoc.categoryoffer)
+console.log(newProduct)
+     if (!newProduct.productOffer && categoryDoc.categoryoffer) {
+    
+      // Optionally update discountedPrice here based on offer:
+      newProduct.discountedPrice = 
+        newProduct.salePrice - Math.floor(newProduct.salePrice * (categoryDoc.categoryoffer / 100));
+    }
       await newProduct.save();
       res.status(200).json({ message: 'Product added successfully' });
 
@@ -157,11 +164,27 @@ const addProductOffer = async (req, res) => {
       }
   
       const findCategory = await Category.findOne({ _id: findProduct.category });
-  
+      console.log("nnnnnnnnnnn",findCategory)
+
+  if(percentage>findCategory.categoryoffer)
+
+  {
+   
       findProduct.discountedPrice =
         findProduct.salePrice - Math.floor(findProduct.salePrice * (percentage / 100));
       findProduct.productOffer = parseInt(percentage);
-      await findProduct.save();
+      
+      //    console.log( findProduct.discountedPrice)
+  }else{
+    findProduct.productOffer = parseInt(percentage);
+    //  findProduct.discountedPrice =
+    //     findProduct.salePrice - Math.floor(findProduct.salePrice * (findCategory.productOffer / 100));
+    //   findProduct.productOffer = parseInt(findCategory.categoryoffer);
+    //   console.log( findProduct.discountedPrice)
+
+  }
+     
+  await findProduct.save();
   
       return res.json({ status: true });
     } catch (error) {
@@ -175,9 +198,29 @@ const removeProductOffer=async(req,res)=>{
     try {
         const {productId}=req.body
         const findProduct=await Product.findOne({_id:productId})
+        
+      const findCategory = await Category.findOne({ _id: findProduct.category });
+      console.log("nnnnnnnnnnn",findCategory)
         const percentage=findProduct.productOffer
-        findProduct.salePrice=findProduct.salePrice+Math.floor(findProduct.regularPrice*(percentage/100))
-        findProduct.productOffer=0
+
+    if (percentage > findCategory.categoryoffer) {
+      // Remove product offer, reset discountedPrice to salePrice
+      findProduct.discountedPrice = findProduct.salePrice;
+      findProduct.productOffer = 0;
+
+      // If category offer exists, apply category offer discount
+      if (findCategory.categoryoffer && findCategory.categoryoffer !== 0) {
+        findProduct.discountedPrice =
+          findProduct.salePrice - Math.floor(findProduct.salePrice * (findCategory.categoryoffer / 100));
+      }
+    } else {
+      // If product offer is less or equal to category offer, just reset productOffer to 0
+      findProduct.productOffer = 0;
+      // Optional: you might want to reset discountedPrice here as well
+      findProduct.discountedPrice = findProduct.salePrice;
+    }
+
+
         await findProduct.save()
         res.json({status:true})
     }catch(error)
