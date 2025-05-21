@@ -259,17 +259,21 @@ const loadShopPage = async (req, res) => {
     const user = req.session.user;
     const userData = await User.findOne({ _id: user }).lean();
     const categories = await Category.find({ isListed: true }).lean();
+    
     const categoryIds = categories.map((category) => category._id.toString());
     const page = parseInt(req.query.page) || 1;
     console.log("page", page);
     const limit = 9;
     const skip = (page - 1) * limit;
+
     let products = await Product.find({
       isBlocked: false,
       category: { $in: categories.map((category) => category._id) },
     })
       .populate("brand")
+      .populate("category")  
       .sort({ createdAt: -1 })
+
       .skip(skip)
       .limit(limit)
       .lean();
@@ -279,17 +283,24 @@ const loadShopPage = async (req, res) => {
       category: { $in: categoryIds },
     });
     const totalPages = Math.ceil(totalProducts / limit);
+
     const brands = await Brand.find({ isBlocked: false }).lean();
+
     const categorieswithIds = categories.map((category) => ({
       _id: category._id,
       name: category.name,
     }));
+  
     const productOffer = products.productOffer;
+
     console.log(productOffer);
 
     if (req.query.clearFilters === "true") {
       req.session.filteredProducts = null;
     }
+
+  
+    console.log("iiiiiiiiiiiiiiiiii",products)
     res.render("shop", {
       user: userData,
       products: products,
@@ -298,6 +309,7 @@ const loadShopPage = async (req, res) => {
       currentPage: page,
       brand: brands,
       totalPages: totalPages,
+
     });
   } catch (error) {
     return res.redirect("/pageNotFound");
@@ -321,7 +333,7 @@ const filterProduct = async (req, res) => {
 
     const query = {
       isBlocked: false,
-      quantity: { $gt: 0 },
+   
     };
 
     if (findCategory) {
@@ -333,7 +345,10 @@ const filterProduct = async (req, res) => {
     const searchCat = findCategory ? findCategory.name : null;
     const searchBrand = findBrand ? findBrand.brandName : null;
 
-    let findProducts = await Product.find(query).populate("brand").lean();
+    let findProducts = await Product.find(query)
+    .populate("brand")
+    .populate("category")
+    .lean();
 
     if (!findProducts || findProducts.length === 0) {
       return res.redirect("/no-data-found");
@@ -390,7 +405,8 @@ const filterByPrice = async (req, res) => {
     const findProducts = await Product.find({
       salePrice: { $gt: req.query.gt, $lt: req.query.lt },
       isBlocked: false,
-    })
+    }).populate("brand")
+     .populate("category")
     .lean();
 
     if (!findProducts || findProducts.length === 0) {

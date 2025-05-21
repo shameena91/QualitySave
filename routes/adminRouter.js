@@ -6,6 +6,7 @@ const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers//admin/productController");
 const brandController = require("../controllers/admin/brandContoller");
 const orderController = require("../controllers/admin/orderController");
+const couponController=require("../controllers/admin/couponController")
 const { userAuth, adminAuth } = require("../middlewares/auth");
 const multer = require("multer");
 const storage = require("../helpers/multer");
@@ -152,5 +153,16 @@ router.patch(
   adminAuth,
   orderController.updateReturnStatus
 );
+
+
+router.get("/admin/coupons",adminAuth,couponController.getCoupon)
+router.post("/admin/coupons",adminAuth,couponController.addCoupon)
+
+
+
+// router.get("admin/editCoupon/:id",adminAuth,couponController.getEditCoupon)
+router.patch("/admin/editCoupon/:couponId",adminAuth,couponController.updateCoupon)
+router.delete("/admin/deleteCoupon/:couponId",adminAuth,couponController.deleteCoupon)
+
 
 module.exports = router;

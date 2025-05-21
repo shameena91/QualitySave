@@ -1,0 +1,408 @@
+{{> admin-header}}
+<style>
+ .col-md-3 {
+   padding: 20px;
+   border: 1px solid #ddd;
+   border-radius: 10px;
+   margin: 10px;
+ }
+
+
+ .error-message {
+   color: red;
+   margin-top: 5px;
+ }
+
+
+ .form-label {
+   margin-bottom: 8px;
+ }
+
+
+ .form-control {
+   width: 100%;
+   padding: 8px;
+   margin-bottom: 10px;
+   border: 1px solid #ccc;
+   border-radius: 5px;
+   box-sizing: border-box;
+ }
+
+
+ .d-grid {
+   margin-top: 20px;
+ }
+
+
+ .btn-primary {
+   background-color: #06b331;
+   color: #fff;
+   border: 1px solid #06b331;
+   border-radius: 5px;
+   padding: 10px 20px;
+   cursor: pointer;
+ }
+
+
+ .btn-primary:hover {
+   background-color: #058b27;
+   border-color: #058b27;
+ }
+ </style>
+  <div class="main-content " id="mainContent">
+<section class="content-main">
+  <div class="content-header">
+    <h2 class="content-title card-title mb-5">Coupons</h2>
+  </div>
+
+  <div class="card mt-5">
+    <div class="card-body">
+      <div class="row">
+        <!-- Add Coupon Form -->
+        <div class="col-md-3">
+          <form method="post" action="/admin/coupons" onsubmit="return validateForm()">
+            <div class="mb-4">
+              <label for="coupon-name" class="form-label">Coupon Name</label>
+              <input type="text" id="coupon-name" name="couponName" placeholder="Type here" class="form-control" />
+              <div id="error-coupon-name" class="error-message"></div>
+            </div>
+
+            <div>
+              <label for="startingDate" class="form-label">Start Date</label>
+              <input type="date" name="startDate" class="form-control" id="startingDate" required />
+              <div id="error-start-date" class="error-message"></div>
+            </div>
+
+            <div>
+              <label for="expiringDate" class="form-label">End Date</label>
+              <input type="date" name="endDate" class="form-control" id="expiringDate" required />
+              <div id="error-end-date" class="error-message"></div>
+            </div>
+
+            <div>
+              <label for="offer-price" class="form-label">Offer Price</label>
+              <input type="text" name="offerPrice" placeholder="Type here" class="form-control" />
+              <div id="error-offer-price" class="error-message"></div>
+            </div>
+
+            <div>
+              <label for="minimum-price" class="form-label">Minimum Price</label>
+              <input type="text" name="minimumPrice" placeholder="Type here" class="form-control" />
+              <div id="error-minimum-price" class="error-message"></div>
+            </div>
+
+            <div class="d-grid">
+              <button class="btn btn-primary mt-20" type="submit">Add Coupon</button>
+            </div>
+
+            <div id="err-msg" class="error-message"></div>
+          </form>
+        </div>
+
+        <!-- Coupon List Table -->
+        <div class="col-md-8 ml-105">
+          <div class="table-responsive table-bordered">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th class="custom-color">Name</th>
+                  <th class="custom-color">Created On</th>
+                  <th class="custom-color">Expire On</th>
+                  <th class="custom-color">Offer Price</th>
+                  <th class="custom-color">Minimum Price</th>
+                  <th class="custom-color">Status</th>
+                  <th class="custom-color">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each coupons}}
+                <tr>
+                  <td>{{name}}</td>
+                  <td>{{formatDate createdOn}}</td>
+                  <td>{{formatDate expireOn }}</td>
+                  <td>{{offerPrice}}</td>
+                  <td>{{minimumPrice}}</td>
+                  <td>{{#if this.status}}Active{{else}}Inactive{{/if}}</td>
+                  <td>
+                    {{!-- <a href="/admin/editcoupon/{{_id}}" class="btn btn-success btn-sm">Edit</a> --}}
+
+<button class="btn btn-success btn-sm edit-coupon-btn"
+  data-id="{{_id}}"
+  data-code="{{name}}"
+  data-discount="{{offerPrice}}"
+  data-createdon="{{createdOn}}"
+  data-expireon="{{expireOn}}"
+  data-minimumPrice="{{minimumPrice}}"
+  data-bs-toggle="modal"
+  data-bs-target="#editCouponModal">
+  Edit
+</button>
+
+                    <span><a href="#" onclick="confirmDelete('{{_id}}')" class="btn btn-danger btn-sm">Delete</a>
+                  </span></td>
+                </tr>
+                {{else}}
+                <tr>
+                  <td colspan="7" class="text-center">No coupons found</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+
+
+<!-- Edit Coupon Modal -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editCouponForm" >
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <input type="hidden" name="couponId" id="modalCouponId" />
+
+          <div class="mb-3">
+            <label for="modalCouponCode" class="form-label">Code</label>
+            <input type="text" class="form-control" name="code" id="modalCouponCode"  />
+          </div>
+
+          <div class="mb-3">
+            <label for="modalDiscount" class="form-label">Offer Price</label>
+            <input type="number" class="form-control" name="discount" id="modalDiscount"  />
+          </div>
+           <div class="mb-3">
+            <label for="modalminimumPrice" class="form-label">Minimum Price</label>
+            <input type="number" class="form-control" name="minimumPrice" id="modalMinimumPrice"  />
+          </div>
+
+          <div class="mb-3">
+            <label for="modalStartDate" class="form-label">Start Date</label>
+            <input type="date" class="form-control" name="startDate" id="modalStartDate"  />
+          </div>
+
+          <div class="mb-3">
+            <label for="modalEndDate" class="form-label">End Date</label>
+            <input type="date" class="form-control" name="endDate" id="modalEndDate"  />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="updateCoupon(event)">Update</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<script>
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`; //
+};
+
+   document.querySelectorAll('.edit-coupon-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      document.getElementById('modalCouponId').value = this.dataset.id;
+      document.getElementById('modalCouponCode').value = this.dataset.code;
+      document.getElementById('modalDiscount').value = this.dataset.discount;
+      document.getElementById('modalMinimumPrice').value = this.dataset.minimumprice;
+      document.getElementById('modalStartDate').value = formatDate(this.dataset.createdon);
+      document.getElementById('modalEndDate').value = formatDate(this.dataset.expireon);
+
+    });
+  });
+
+
+  function updateCoupon(event) {
+    event.preventDefault()
+      console.log('Update button clicked!'); 
+     const couponId= document.getElementById('modalCouponId').value.trim()
+    const code = document.getElementById('modalCouponCode').value.trim();
+    const discount = document.getElementById('modalDiscount').value.trim();
+    const minimumPrice = document.getElementById('modalMinimumPrice').value.trim();
+    const startDate = document.getElementById('modalStartDate').value;
+    const endDate = document.getElementById('modalEndDate').value;
+
+    // Basic validation
+    if (!code || !discount || !minimumPrice || !startDate || !endDate) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Failed',
+        text: 'Please fill in all required fields.',
+      });
+      return;
+    }
+
+    // Date validation
+    if (new Date(startDate) > new Date(endDate)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Dates',
+        text: 'End date must be after start date.',
+      });
+      return;
+    }
+
+
+  $.ajax({
+    url: `/admin/editCoupon/${couponId}`,
+    method: 'PATCH',
+    contentType: 'application/json',
+ data: JSON.stringify({
+    code: code,
+    discount: discount,
+    minimumPrice: minimumPrice,
+    startDate: startDate,
+    endDate: endDate
+  }) ,  
+   success: (res)=> {
+    
+Swal.fire({
+  title: "Updated",
+        text:  "Status updated successfully.",
+        icon: "success",
+        confirmButtonText: "OK"
+}).then(()=>{
+  window.location.reload();
+})
+      
+      
+    },
+    error: function (err) {
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to update status.",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
+    },
+  });
+}
+
+ function validateForm() {
+   document.querySelectorAll(".error-message").forEach((element) => (element.innerHTML = ""));
+   const strtDate = document.getElementsByName("startDate")[0].value;
+   const endDate = document.getElementsByName("endDate")[0].value;
+   const strtDateObj = new Date(strtDate);
+   const endDateObj = new Date(endDate);
+   const todayDateObj = new Date();
+   todayDateObj.setHours(0, 0, 0, 0);
+
+
+   if (strtDateObj > endDateObj) {
+     document.getElementById("error-end-date").innerHTML ="End date should be after the start date";
+     return false;
+   }
+
+
+   if (strtDateObj <= todayDateObj) {
+     document.getElementById("error-start-date").innerHTML ="Starting date should be greater than or equal to today's date";
+     return false;
+   }
+
+
+   let name = document.getElementsByName("couponName")[0].value;
+   const nameRegex = /^[A-Za-z0-9]{1,50}$/;
+
+
+   if (!nameRegex.test(name)) {
+     document.getElementById("error-coupon-name").innerHTML =
+       "Coupon Name error";
+     return false;
+   }
+
+
+   const offerPriceInput = document.getElementsByName("offerPrice")[0];
+   const minimumPriceInput = document.getElementsByName("minimumPrice")[0];
+
+
+   const offerPrice = offerPriceInput.value.trim() !== ""? parseInt(offerPriceInput.value): NaN;
+   const minimumPrice = minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
+
+
+   if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= minimumPrice) {
+     document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
+     return false;
+   }
+
+
+   if (isNaN(offerPrice) || isNaN(minimumPrice)) {
+     document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
+     return false;
+   }
+
+
+       const formData = {
+       couponName: name,
+       startDate: strtDateObj,
+       endDate: endDateObj,
+       offerPrice: offerPrice,
+       minimumPrice: minimumPrice
+   };
+   return true;
+ }
+
+
+ function confirmDelete(couponId) {
+   Swal.fire({
+     title: "Are you sure?",
+     text: "You won't be able to revert this!",
+     icon: "warning",
+     showCancelButton: true,
+     confirmButtonColor: "#d33",
+     cancelButtonColor: "#3085d6",
+     confirmButtonText: "Yes, delete it!",
+   }).then((result) => {
+     if (result.isConfirmed) {
+       deleteCoupon(couponId);
+     }
+   });
+ }
+
+
+ function deleteCoupon(couponId) {
+   $.ajax({
+     url: `/admin/deleteCoupon/${couponId}`,
+     method: "DELETE",
+     success: function () {
+       Swal.fire({
+         icon: "success",
+         title: "Deleted!",
+         text: "The coupon has been deleted.",
+         confirmButtonText: "OK",
+       }).then(() => {
+         window.location.reload();
+       });
+     },
+     error: function () {
+       Swal.fire({
+         icon: "error",
+         title: "Error!",
+         text: "Failed to delete the coupon. Please try again.",
+       });
+     },
+   });
+ } 
+</script>
+{{>admin-foote}}
+
+

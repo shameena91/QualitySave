@@ -1,62 +1,287 @@
 {{> headr}}
 
 <style>
-  .order-card { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; padding: 15px; background: #fff; }
-  .status-pill { padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; }
-  .status-pending { background-color: #fff3cd; color: #856404; }
-  .status-delivered { background-color: #d4edda; color: #155724; }
-  .status-cancelled { background-color: #f8d7da; color: #721c24; }
-  .product-img { height: 100px; width: auto; object-fit: contain; }
-
- 
-  .order-section {
-    flex: 1;
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f1f3f6;
+  }
+  .shipping {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
   }
 </style>
 
-<div class="main-container">
-  <!-- Sidebar -->
-  {{> profilesidebar}}
-  <!-- Orders -->
-  <div class="order-section">
-    <h3 class="mb-4">My Orders</h3>
-
-    <!-- Example Order Card -->
-    {{#each orederedProduct}}
-    <div class="order-card shadow-sm">
-      <div class="d-flex justify-content-between">
-        <div>
-          <div><strong>Order ID:</strong> {{orderId}}</div>
-          <div><strong>Placed on:</strong> {{ formatDate invoiceDate}}</div>
-        </div>
-        {{!-- <div>
-          <span class="status-pill status-pending">{{status}}</span>
-        </div> --}}
-      </div>
-
-      <hr>
-{{#each this.orderItems}}
-      <div class="row align-items-center mb-3">
-        <div class="col-md-2">
-          <img src="/uploads/re-image/{{this.product.productImage.[0]}}" alt="Product" class="product-img">
-        </div>
-        <div class="col-md-6">
-          <h6>{{this.product.productName}}</h6>
-          <div>Quantity: {{this.quantity}}</div>
-          <div>Price: {{this.price}}</div>
-        </div>
-        <div class="col-md-4 text-end">
-          <button class="btn btn-sm btn-danger">Cancel Order</button>
-          <a href="/view-orderDetails/{{../_id}}/{{product._id}}" class="btn btn-sm btn-outline-primary">View Details</a>
-        
+<div class="container my-5">
+  <div class="row justify-content-between">
+    
+    <!-- Left Column: Address and Products -->
+    <div class="col-lg-8">
+      
+      <!-- Shipping Address Section -->
+      <h4 class="mb-3">Shipping Address</h4>
+      {{#each addresses}}
+      <div class="mb-3 shipping">
+        <div class="form-check border rounded p-3 mb-2">
+<input
+ class="form-check-input"
+ type="radio" 
+name="address"
+ data-id="{{this._id}}" 
+id="address-{{this._id}}"
+  {{#if this.isDefault}}checked{{else}}{{#if @first}}checked{{/if}}{{/if}} />          
+  
+  <label class="form-check-label" for="address{{@index}}">
+            <span class="border px-2 py-1 bg-light">{{this.addressType}}</span>
+            <p class="mb-1 mt-2">
+              <strong class="text-uppercase">{{this.fullName}}</strong> &nbsp; {{this.phone}}
+            </p>
+            <p class="mb-1">{{this.houseDetails}}, {{this.city}}, {{this.state}} - <strong>{{this.pincode}}</strong></p>
+            {{#if this.altPhone}}<p class="mb-1">Alt Phone: {{this.altPhone}}</p>{{/if}}
+            {{#if this.landMark}}<p class="mb-0">Landmark: {{this.landMark}}</p>{{/if}}
+          </label>
+          <a href="/edit-address/{{this._id}}">
+          <button class="btn btn-sm btn-outline-primary float-end mt-2">Edit</button>
+        </a>
         </div>
       </div>
       {{/each}}
-    </div>
-    {{/each}}
+      {{!-- <button class="btn btn-success mt-2">+ Add New Address</button> --}}
+      <button type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+ + Add New Address
+</button>
 
-    <!-- Repeat more .order-card blocks here for more orders -->
+      <!-- Order Summary Section -->
+      <h4 class="mt-5 mb-3">Order Summary</h4>
+      {{#each cartProducts}}
+      
+      <div class="card mb-3">
+        <div class="row g-0 p-3">
+          <div class="col-md-2">
+            <img src="/uploads/re-image/{{this.productId.productImage.[0]}}" 
+            class="img-fluid rounded"
+             alt="{{this.productId.productName}}" 
+             style="height:120px;width:120px;padding:15px" />
+          </div>
+          <div class="col-md-10">
+            <div class="card-body p-0">
+              <h6 class="card-title">{{this.productId.productName}}</h6>
+              <p class="mb-1">Qty: {{this.quantity}}</p>
+              <p class="mb-1">Price: ₹{{this.price}}</p>
+              <p class="mb-0 fw-bold">Item Total: ₹{{this.totalPrice}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    
+
+    </div>
+<!-- Right Column: Price Summary -->
+<!-- Right Column: Price Summary -->
+<!-- Right Column: Price Summary -->
+<div class="col-lg-4 mt-lg-0">
+  <div class="card p-3 shadow-sm mt-5">
+    <h5 class="mb-3">Price Details</h5>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex justify-content-between border-0">
+        <span>Subtotal</span>
+        <span>₹{{finalSalePrice}}</span>
+      </li>
+     
+      <li class="list-group-item d-flex justify-content-between border-0">
+        <span>Discount</span>
+        <span class="text-success">-₹{{totalDiscount}}</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between border-0">
+        <span>Shipping</span>
+        <span class="text-success text-bold">Free</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between border-0 pt-2 mb-3">
+        <strong class="fs-5">Total</strong>
+        <strong class="text-primary fs-5" >₹{{finalTotalPrice}}</strong>
+      </li>
+    </ul>
+
+    <!-- Payment Methods Section -->
+    <h5 class="mb-3 mt-4">Select Payment Method</h5>
+    <div class="mb-3">
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="creditCard">
+        <label class="form-check-label" for="creditCard">
+          <i class="bi bi-credit-card" style="font-size: 20px;"></i> Credit Card
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" value="paypal">
+        <label class="form-check-label" for="paypal">
+          <i class="bi bi-paypal" style="font-size: 20px;"></i> PayPal
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod">
+        <label class="form-check-label" for="cod">
+          <i class="bi bi-cash" style="font-size: 20px;"></i> Cash on Delivery
+        </label>
+      </div>
+      <div class="form-check">
+  <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
+  <label class="form-check-label" for="razorpay">
+    <img src="https://cdn.razorpay.com/logo.svg" alt="Razorpay" height="20">
+  
+  </label>
+</div>
+
+    </div>
+
+    <button class="btn btn-primary w-100 mt-3" onclick="createOrder()">Proceed to Payment</button>
+  </div>
+</div>
+
+
+
+  </div>
+</div>
+
+
+
+
+{{!-- modal for add address --}}
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/checkout-addAddress" method="POST" class="row g-3 mt-3 p-3" id="addAddressForm">
+          <div class="col-md-6">
+            <input type="text" class="form-control" name="fullName" placeholder="Full Name">
+            <div id="fulname-error" class="error-message"></div>
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control" name="phone" placeholder="Phone Number">
+            <div id="phone-error" class="error-message"></div>
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control" name="pincode" placeholder="Pincode">
+            <div id="pincode-error" class="error-message"></div>
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control" name="city" placeholder="City">
+            <div id="city-error" class="error-message"></div>
+          </div>
+          <div class="col-12">
+            <textarea class="form-control" name="houseDetails" placeholder="Full Address" rows="3"></textarea>
+            <div id="Fullad-error" class="error-message"></div>
+          </div>
+          <div class="col-md-6">
+            <select class="form-select" name="state">
+              <option value="">Select State</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option>
+              <option value="Assam">Assam</option>
+              <option value="Bihar">Bihar</option>
+              <option value="Chhattisgarh">Chhattisgarh</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Goa">Goa</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Haryana">Haryana</option>
+              <option value="Himachal Pradesh">Himachal Pradesh</option>
+              <option value="Jharkhand">Jharkhand</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Kerala">Kerala</option>
+              <option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Odisha">Odisha</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Rajasthan">Rajasthan</option>
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Telangana">Telangana</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Uttarakhand">Uttarakhand</option>
+              <option value="West Bengal">West Bengal</option>
+            </select>
+            <div id="state-error" class="error-message"></div>
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control" name="landmark" placeholder="Landmark (optional)">
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control" name="altPhone" placeholder="Alternate Phone (optional)">
+              <div id="altphone-error" class="error-message"></div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold me-3">Address Type:</label>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="addressType" id="home" value="Home" checked>
+              <label class="form-check-label" for="home">Home</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="addressType" id="work" value="Work">
+              <label class="form-check-label" for="work">Work</label>
+            </div>
+            <div id="addtype-error" class="error-message"></div>
+          </div>
+          
+       
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save </button>
+      
+      </div>
+       </form>
+    </div>
   </div>
 </div>
 
 {{> foote}}
+<script>
+ function createOrder() {
+        const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
+    const selectedAddressId = selectedAddressRadio ? selectedAddressRadio.getAttribute('data-id') : null;
+
+    const selectedPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
+    const paymentMethod = selectedPaymentRadio ? selectedPaymentRadio.value : null;
+   if (!selectedAddressId || !paymentMethod) {
+     Swal.fire({
+      title: 'Missing Information',
+      text: 'Please select both an address and a payment method.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+    }
+
+    $.ajax({
+    url: '/createOrder',
+    method: 'POST',
+ 
+    data: {
+      addressId: selectedAddressId,
+      paymentMethod: paymentMethod
+    },
+
+    
+    success: function (response) {
+      Swal.fire({
+        title: 'Order Placed!',
+        text: 'Your order has been successfully created.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        window.location.href = `/orderSuccess/${response.orderId}`;
+      });
+      
+    },
+    error: function (error) {
+      Swal.fire({
+        title: 'Order Failed',
+        text: 'Something went wrong. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
+  });
+}
+</script>
+

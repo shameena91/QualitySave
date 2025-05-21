@@ -147,17 +147,46 @@
         <div class="mb-2">
           <span class="text-warning">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
           <small class="text-muted">(25 reviews)</small>
+       
         </div>
 
         <!-- Price -->
         <div class="mb-3">
-          {{#if productOffer}}
+
+{{#if (gt category.categoryoffer productOffer )}}
+{{#if category.categoryoffer}}
+            <p style="font-size:18px;font-weight:600">₹{{product.discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{product.salePrice}}</strike></span>
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{category.categoryoffer}}% off </span>
+ {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{product.salePrice}}
+
+           
+           {{!-- <p>Category: {{category.categoryoffer}}</p> --}}
+           {{/if}}
+           {{else}}
+           {{#if productOffer}}
+
+            <p style="font-size:18px;font-weight:600">₹{{product.discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{product.salePrice}}</strike></span>
+            
+            
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off </span>
+           {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{product.salePrice}}
+
+           
+           {{!-- <p>pro: {{productOffer}}</p> --}}
+           {{/if}}
+
+{{/if}}
+
+
+          {{!-- {{#if productOffer}}
             <span class="fs-4 text-primary fw-bold">₹{{product.discountedPrice}}</span>
             <span class="text-muted text-decoration-line-through ms-3">₹{{product.salePrice}}</span>
             <span class="badge bg-success ms-2">&nbsp;&nbsp;{{productOffer}}% off</span>
           {{else}}
             <span class="fs-4 text-primary fw-bold">₹{{product.salePrice}}</span>
-          {{/if}}
+          {{/if}} --}}
         </div>
 
         <!-- Offers -->
@@ -216,19 +245,34 @@
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{this.productImage.[0]}}" alt="{{productName}}" /></a>
             <h4>{{this.productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
-            {{#if productOffer}}
+          {{#if (gt category.categoryoffer productOffer )}}
+{{#if category.categoryoffer}}
+            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{category.categoryoffer}}% off </span>
+ {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
 
+           
+           {{!-- <p>Category: {{category.categoryoffer}}</p> --}}
+           {{/if}}
+           {{else}}
+           {{#if productOffer}}
 
             <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
             
             
-            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off</span>
-            {{else}}
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off </span>
+           {{else}}
                         <p style="font-size:18px;font-weight:600">₹{{salePrice}}
 
            
-            </p>
-             {{/if}}
+           {{!-- <p>pro: {{productOffer}}</p> --}}
+           {{/if}}
+
+{{/if}}
+
+
+
              {{#if quantity}}
             <button class="add-to-cart-btn">Add to Cart</button>
             {{else}}

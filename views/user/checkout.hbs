@@ -124,6 +124,14 @@ id="address-{{this._id}}"
           <i class="bi bi-cash" style="font-size: 20px;"></i> Cash on Delivery
         </label>
       </div>
+      <div class="form-check">
+  <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
+  <label class="form-check-label" for="razorpay">
+    <img src="https://cdn.razorpay.com/logo.svg" alt="Razorpay" height="20">
+  
+  </label>
+</div>
+
     </div>
 
     <button class="btn btn-primary w-100 mt-3" onclick="createOrder()">Proceed to Payment</button>
@@ -243,35 +251,82 @@ id="address-{{this._id}}"
     });
     return;
     }
-
+ if (paymentMethod === 'cod') {
+    // COD route
     $.ajax({
-    url: '/createOrder',
-    method: 'POST',
- 
-    data: {
-      addressId: selectedAddressId,
-      paymentMethod: paymentMethod
-    },
-    success: function (response) {
-      Swal.fire({
-        title: 'Order Placed!',
-        text: 'Your order has been successfully created.',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        window.location.href = `/orderSuccess/${response.orderId}`;
-      });
-      
-    },
-    error: function (error) {
-      Swal.fire({
-        title: 'Order Failed',
-        text: 'Something went wrong. Please try again.',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
-    }
-  });
+      url: '/createOrder',
+      method: 'POST',
+      data: {
+        addressId: selectedAddressId,
+        paymentMethod: 'cod'
+      },
+      success: function (response) {
+        Swal.fire({
+          title: 'Order Placed!',
+          text: 'Your COD order has been successfully created.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          window.location.href = `/orderSuccess/${response.orderId}`;
+        });
+      },
+      error: function () {
+        Swal.fire({
+          title: 'Order Failed',
+          text: 'Something went wrong. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  } 
+  else if (paymentMethod === 'razorpay') {
+    // Razorpay route
+    $.ajax({
+      url: '/createRazorpayOrder',
+      method: 'POST',
+      data: {
+        addressId: selectedAddressId,
+         paymentMethod: 'razorpay'
+      },
+      success: function (response) {
+        const options = {
+          key: response.key,
+          amount: response.amount,
+          currency: response.currency,
+          name: "Your Shop Name",
+          description: "Order Payment",
+          order_id: response.razorpayOrderId,
+          handler: function (paymentResult) {
+            verifyPayment(paymentResult, response.orderId);
+          },
+          modal: {
+            ondismiss: function () {
+              Swal.fire({
+                title: 'Payment Cancelled',
+                text: 'You cancelled the payment. Please try again.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+              });
+            }
+          },
+          theme: {
+            color: "#3399cc"
+          }
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+      },
+      error: function () {
+        Swal.fire({
+          title: 'Order Failed',
+          text: 'Something went wrong while initiating Razorpay payment.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
+  }
 }
 </script>
 

@@ -3,6 +3,10 @@ const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
+const RazorPay=require('razorpay')
+const razorpayInstance=require('../../config/razorpay')
+const env=require('dotenv').config();
+
 const { editAddressPage } = require("./addressController");
 
 const getCheckout = async (req, res) => {
@@ -384,6 +388,76 @@ const returnRequest = async (req, res) => {
   }
 };
 
+const createRazorpayOrder = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const { addressId, paymentMethod } = req.body;
+
+    if (!addressId || !paymentMethod) {
+      return res.status(400).json({ message: "Address and payment method required." });
+    }
+
+    // 1. Get user's cart
+    const userCart = await Cart.findOne({ userId }).populate('cartItems.productId').lean();
+    
+    // 2. Calculate totals
+ const finalAmount = userCart.cartItems.reduce(
+      (sum, item) => sum + item.totalPrice,
+      0
+    ); // Sum of all item totals
+    const totalAmount = userCart.cartItems.reduce(
+      (sum, item) => sum + item.totalSalePrice,
+      0
+    );
+     const discount = totalAmount - finalAmount;
+    // const totalPrice = userCart.cartItemsitems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    // const discount = 0; // apply logic if needed
+    // const finalAmount = totalPrice - discount;
+
+    // 3. Create the Order (not marking as paid yet)
+    const newOrder = new Order({
+      userId,
+      orderItems: userCart.cartItems.map(item => ({
+        product: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        status: 'Pending'
+      })),
+      totalPrice:totalAmount,
+      discount,
+      finalAmount,
+      address: addressId,
+      paymentMethod,
+      invoiceDate: new Date(),
+      razorpayStatus:"created"
+    });
+
+    await newOrder.save();
+
+    // 4. Create Razorpay order
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: finalAmount * 100, // in paise
+      currency: "INR",
+      receipt: String(newOrder._id),
+      payment_capture: 1,
+    });
+
+    // 5. Return data to client
+    res.status(200).json({
+      key: process.env.RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      orderId: newOrder._id,
+      razorpayOrderId: razorpayOrder.id,
+    });
+
+  } catch (error) {
+    console.error("Razorpay Order Creation Error:", error);
+    res.status(500).json({ message: "Server error while creating Razorpay order." });
+  }
+};
+
+
 module.exports = {
   getCheckout,
   createOrder,
@@ -393,4 +467,5 @@ module.exports = {
   cancelOrder,
   returnRequest,
   checkoutAddaddress,
+  createRazorpayOrder
 };

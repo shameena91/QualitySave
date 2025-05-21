@@ -1,6 +1,7 @@
 
 const { response } = require("express");
-const Category =require("../../models/categorySchema")
+const Category =require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
 const loadCategory= async(req,res)=>{
     try {
         const search=req.query.search || "";
@@ -151,34 +152,94 @@ const deleteCategory=async(req,res)=>{
     }
 }
 
-const addCategoryOffer=async(req,res,next)=>{
-    try {
-              const { categoryId, percentage } = req.body;
-              const findCategory=await Category.findById({_id:categoryId})
-            if(!findCategory)
-            {
-                return res.json({ status: false, message: "Category not found" });
-            }
-            findCategory.categoryoffer=percentage
-            await findCategory.save();
-              return res.json({ status: true });
-    } catch (error) {
-        next(error)
-    }
-}
+const addCategoryOffer = async (req, res, next) => {
+  try {
+    const { categoryId, percentage } = req.body;
 
-const removeCategoryOffer=async(req,res)=>{
-    try {
-        const {categoryId}=req.body
-        const findCategory=await Category.findOne({_id:categoryId})
-        findCategory.categoryoffer=0
-        await findCategory.save()
-        res.json({status:true})
-    }catch(error)
-    {
-        res.redirect("/pageerrror")
+    // Validate input
+    if (!categoryId || percentage == null) {
+      return res.status(400).json({ status: false, message: "Category ID and percentage are required." });
     }
-}
+
+    // Find the category
+    const findCategory = await Category.findById(categoryId);
+    if (!findCategory) {
+      return res.status(404).json({ status: false, message: "Category not found" });
+    }
+
+    // Update category offer
+    findCategory.categoryoffer = parseInt(percentage);
+    await findCategory.save();
+
+    // Fetch and update all products under this category
+    const products = await Product.find({ category: categoryId });
+
+    for (let product of products) {
+      const productOffer = product.productOffer || 0;
+      const categoryOffer = parseInt(percentage);
+
+      // Apply category offer only if it's greater than or equal to product offer
+      if (productOffer < categoryOffer) {
+        product.discountedPrice =
+          product.salePrice - Math.floor(product.salePrice * (categoryOffer / 100));
+      } else {
+        // Keep the existing product offer discount if it's higher
+        product.discountedPrice =
+          product.salePrice - Math.floor(product.salePrice * (productOffer / 100));
+      }
+
+      await product.save();
+    }
+
+    return res.json({ status: true, message: "Category offer updated and products adjusted." });
+
+  } catch (error) {
+    console.error("Error in addCategoryOffer:", error);
+    next(error); // Pass to error handler middleware
+  }
+};
+
+const removeCategoryOffer = async (req, res) => {
+  try {
+    const { categoryId } = req.body;
+
+    if (!categoryId) {
+      return res.status(400).json({ status: false, message: "Category ID is required." });
+    }
+
+    const findCategory = await Category.findOne({ _id: categoryId });
+    if (!findCategory) {
+      return res.status(404).json({ status: false, message: "Category not found" });
+    }
+
+    // Reset category offer
+    findCategory.categoryoffer = 0;
+    await findCategory.save();
+
+    // Fetch all products in the category
+    const products = await Product.find({ category: categoryId });
+
+    for (let product of products) {
+      const productOffer = product.productOffer || 0;
+
+      if (productOffer > 0) {
+        product.discountedPrice =
+          product.salePrice - Math.floor(product.salePrice * (productOffer / 100));
+      } else {
+        product.discountedPrice = product.salePrice;
+      }
+
+      await product.save();
+    }
+
+    return res.json({ status: true, message: "Category offer removed and products updated." });
+
+  } catch (error) {
+    console.error("Error in removeCategoryOffer:", error);
+    return res.status(500).json({ status: false, message: "Internal server error" });
+  }
+};
+
 
 
 module.exports={loadCategory,

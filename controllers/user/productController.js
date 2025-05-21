@@ -36,9 +36,13 @@ const productInfo = async (req, res) => {
       category: productData.category._id,
       _id: { $ne: productData._id },
     })
+     .populate("category")
+      .populate("brand")
       .limit(9)
       .lean();
 
+
+     
     console.log("relateddddddddd", relatedProducts.length);
     res.render("productDetail", {
       relatedProducts: relatedProducts,
@@ -46,8 +50,10 @@ const productInfo = async (req, res) => {
       product: productData,
       category: findCategory,
       productOffer: productOffer,
+      
       stock: productData.quantity,
       brand: brand,
+   
     });
   } catch (error) {
     console.error("Error while loading product details:", error);

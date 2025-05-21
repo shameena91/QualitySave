@@ -292,19 +292,35 @@
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{productImage.[0]}}" alt="{{productName}}" /></a>
             <h4>{{productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
-            {{#if productOffer}}
+         
 
+{{#if (gt category.categoryoffer productOffer )}}
+{{#if category.categoryoffer}}
+            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{category.categoryoffer}}% off </span>
+ {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
+
+           
+           {{!-- <p>Category: {{category.categoryoffer}}</p> --}}
+           {{/if}}
+           {{else}}
+           {{#if productOffer}}
 
             <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
             
             
-            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off</span>
-            {{else}}
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off </span>
+           {{else}}
                         <p style="font-size:18px;font-weight:600">₹{{salePrice}}
 
            
-            </p>
-             {{/if}}
+           {{!-- <p>pro: {{productOffer}}</p> --}}
+           {{/if}}
+
+{{/if}}
+
+           
              {{#if quantity}}
             <button class="add-to-cart-btn" onclick="addToCart('{{_id}}')">Add to Cart</button>
             {{else}}

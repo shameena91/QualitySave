@@ -124,6 +124,12 @@ router.get(
   userAuth,
   checkoutController.getOrderSuccess
 );
+
+
+
+router.post("/createRazorpayOrder",userAuth, checkoutController.createRazorpayOrder)
+
+
 router.post(
   "/checkout-addAddress",
   userAuth,
