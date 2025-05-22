@@ -3,11 +3,65 @@ const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
+const Coupon=require("../../models/couponSchema")
 const RazorPay=require('razorpay')
+
 const razorpayInstance=require('../../config/razorpay')
 const env=require('dotenv').config();
+const crypto = require("crypto");
 
 const { editAddressPage } = require("./addressController");
+
+
+
+const applyCoupon=async(req,res)=>{
+  try {
+    const code=req.body.code
+    const userId=req.session.user
+    const coupon=await Coupon.findOne({name:code})
+   
+    if (!coupon.usedUsers) {
+      coupon.usedUsers = [];
+    }
+     if (!coupon.usedUsers.includes(userId)) {
+      coupon.usedUsers.push(userId);
+      await coupon.save();
+       req.session.code=code
+       return res.json({ success: true });
+    }else
+    {
+      return res.json({ success: false });
+    }
+
+
+
+
+  } catch (error) {
+    console.error('Error updating coupon usage:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
+  }
+}
+
+const removeCoupon=async(req,res)=>{
+  try {
+    const code=req.session.code
+    const userId=req.session.user
+
+    const coupon=await Coupon.findOneAndUpdate({name:code},
+      {$pull:{usedUsers:userId}})
+       req.session.code = null;
+    
+    await coupon.save()
+     return res.json({ success: true });
+    
+  } catch (error) {
+    console.error('Error updating coupon usage:', error);
+    return res.status(500).json({ success: false, message: 'Server error.' });
+  }
+}
+
+
+
 
 const getCheckout = async (req, res) => {
   try {
@@ -18,6 +72,7 @@ const getCheckout = async (req, res) => {
     const cartItemsDoc = await Cart.findOne({ userId: userId })
       .populate("cartItems.productId")
       .lean();
+
 
     if (
       !userAddressDoc ||
@@ -41,7 +96,11 @@ const getCheckout = async (req, res) => {
       return acc + curr.totalPrice;
     }, 0);
     const totalDiscount = finalSalePrice - finalTotalPrice;
-
+const coupons = await Coupon.find({
+  minimumPrice: { $lt: finalTotalPrice },
+  isList: true
+}).lean();
+  console.log("coupons",coupons)
     res.render("checkout", {
       user,
       addresses,
@@ -49,6 +108,7 @@ const getCheckout = async (req, res) => {
       finalSalePrice,
       finalTotalPrice,
       totalDiscount,
+      coupons
     });
   } catch (error) {
     console.error("Error in getCheckout:", error.message);
@@ -161,7 +221,7 @@ const createOrder = async (req, res) => {
       address: addressId,
 
       invoiceDate: new Date(),
-      paymentMethod,
+      paymentMethod:paymentMethod,
     });
     console.log("nnnn", newOrder);
     await newOrder.save();
@@ -187,18 +247,7 @@ const createOrder = async (req, res) => {
   }
 };
 
-const getOrderSuccess = async (req, res) => {
-  try {
-    const orderId = req.params.orderId;
-    const userId = req.session.user;
-    const user = await User.findById(userId).lean();
 
-    res.render("orderPlaced", { orderId, user });
-  } catch (error) {
-    console.error( error);
-    res.status(500).send("Internal Server Error");
-  }
-};
 
 const getMyOrders = async (req, res) => {
   try {
@@ -427,7 +476,7 @@ const createRazorpayOrder = async (req, res) => {
       discount,
       finalAmount,
       address: addressId,
-      paymentMethod,
+      paymentMethod:paymentMethod,
       invoiceDate: new Date(),
       razorpayStatus:"created"
     });
@@ -449,6 +498,12 @@ const createRazorpayOrder = async (req, res) => {
       currency: razorpayOrder.currency,
       orderId: newOrder._id,
       razorpayOrderId: razorpayOrder.id,
+      orderDetails: {
+        totalAmount,
+        discount,
+        finalAmount,
+      
+      }
     });
 
   } catch (error) {
@@ -456,6 +511,72 @@ const createRazorpayOrder = async (req, res) => {
     res.status(500).json({ message: "Server error while creating Razorpay order." });
   }
 };
+
+
+
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature, orderId } = req.body;
+console.log("ttttttt",razorpayOrderId, razorpayPaymentId, razorpaySignature)
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .digest("hex");
+console.log("gggggg",generatedSignature)
+    if (generatedSignature !== razorpaySignature) {
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+const order= await Order.findById(orderId)
+   await Order.findByIdAndUpdate(orderId, {
+  razorpayOrderId,
+  razorpayPaymentId,
+  razorpaySignature,
+  razorpayStatus: 'paid',
+ 
+});
+
+
+    for (let item of order.orderItems) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { quantity: -item.quantity }
+      });
+    }
+
+    await Cart.findOneAndDelete({ userId: order.userId });
+
+    res.status(200).json({ message: "Payment verified" });
+  } catch (err) {
+    console.error("Payment verification failed:", err);
+    res.status(500).json({ message: "Error verifying payment" });
+  }
+};
+
+
+const getOrderSuccess = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.session.user;
+    const user = await User.findById(userId).lean();
+
+    res.render("orderPlaced", { orderId, user });
+  } catch (error) {
+    console.error( error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+const getOrderFailure=async(req,res)=>{
+  try {
+     const orderId = req.params.orderId;
+       const userId = req.session.user;
+    const user = await User.findById(userId).lean();
+    res.render("orderFailure",{orderId,user})
+  } catch (error) {
+     console.error( error);
+    res.status(500).send("Internal Server Error");
+  }
+}
 
 
 module.exports = {
@@ -467,5 +588,9 @@ module.exports = {
   cancelOrder,
   returnRequest,
   checkoutAddaddress,
-  createRazorpayOrder
+  createRazorpayOrder,
+  verifyPayment,
+  getOrderFailure,
+  applyCoupon,
+  removeCoupon
 };

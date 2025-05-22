@@ -165,4 +165,5 @@ router.patch("/admin/editCoupon/:couponId",adminAuth,couponController.updateCoup
 router.delete("/admin/deleteCoupon/:couponId",adminAuth,couponController.deleteCoupon)
 
 
+
 module.exports = router;

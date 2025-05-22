@@ -10,6 +10,58 @@
     padding: 20px;
     border-radius: 5px;
   }
+
+
+  
+  /* Coupon Dropdown Styles */
+  .coupon-modal-overlay {
+  display: none;
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+
+.coupon-modal-content {
+  background-color: #fff;
+  margin: auto;
+  max-width: 500px;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.coupon-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.coupon-item:hover {
+  background-color: #f0f0f0;
+}
+
 </style>
 
 <div class="container my-5">
@@ -97,11 +149,69 @@ id="address-{{this._id}}"
         <span>Shipping</span>
         <span class="text-success text-bold">Free</span>
       </li>
+       <li class="list-group-item d-flex justify-content-between border-0" >
+        <span id="discountSave" class= "text-success" style="display:none;font-weight:600">ddd</span>
+      </li>
       <li class="list-group-item d-flex justify-content-between border-0 pt-2 mb-3">
         <strong class="fs-5">Total</strong>
-        <strong class="text-primary fs-5" >₹{{finalTotalPrice}}</strong>
+        <strong class="text-primary fs-5" id="finalAmount" value="{{finalTotalPrice}}">₹{{finalTotalPrice}}</strong>
       </li>
     </ul>
+
+    <div class="mt-4">
+
+<div class="position-relative d-inline-block">
+  <!-- Apply Coupon Button -->
+    <div class="position-relative d-inline-block w-100" id="couponSection">
+            <!-- Apply Coupon Button -->
+   <div class="d-flex align-items-center gap-2" id="couponSection">
+  <!-- Apply Coupon Button -->
+  <button class="btn btn-success" onclick="toggleCouponModal()" id="applyCouponBtn">
+    Apply Coupon
+  </button>
+
+  <!-- Remove Button (Hidden Initially) -->
+  <button class="btn btn-secondary" style="display: none;" onclick="removeCoupon()" id="removeBtn">
+    Remove
+  </button>
+</div>
+      
+
+            <!-- Coupon Dropdown -->
+            <!-- Apply Coupon Modal -->
+<div class="coupon-modal-overlay" id="couponModal">
+  <div class="coupon-modal-content">
+    <div class="modal-header">
+      <h5>Select a Coupon</h5>
+      <button class="btn-close" onclick="closeCouponModal()">&times;</button>
+    </div>
+    {{#each coupons}}
+    <div class="modal-body">
+      
+      <div class="coupon-item" onclick="applyCoupon('{{this.name}}', {{this.offerPrice}}, {{this.minimumPrice}})">
+        <div class="coupon-code" style="color:green">{{this.name}}</div>
+        <div class="coupon-description" >{{this.offerPrice}}% off on Purchase Above {{this.minimumPrice}}</div>
+        <div class="coupon-expiry text-danger">Valid until Dec 31, 2024</div>
+      </div>
+   
+      <!-- Repeat other coupons similarly -->
+    </div>
+       {{/each}}
+  </div>
+</div>
+
+          </div>
+        </div>
+   
+
+  <!-- Coupon Dropdown -->
+        {{!-- <button class="btn btn-secondary" style="display:none"
+         onclick="removeCoupon()" id="removeBtn">
+  remove
+</button> --}}
+</div>
+
+
 
     <!-- Payment Methods Section -->
     <h5 class="mb-3 mt-4">Select Payment Method</h5>
@@ -143,7 +253,8 @@ id="address-{{this._id}}"
   </div>
 </div>
 
-
+   
+</div>
 
 
 {{!-- modal for add address --}}
@@ -235,7 +346,132 @@ id="address-{{this._id}}"
 </div>
 
 {{> foote}}
+
+
+
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+const originalAmount=document.getElementById("finalAmount").textContent
+
+
+function toggleCouponModal() {
+  document.getElementById('couponModal').style.display = 'block';
+}
+
+function closeCouponModal() {
+  document.getElementById('couponModal').style.display = 'none';
+}
+
+
+
+
+
+function applyCoupon(code, discount, minimumPrice) {
+  console.log(`Coupon Applied: ${code}`);
+const finalAmountText=document.getElementById("finalAmount").textContent
+const finalAmount = parseFloat(finalAmountText.replace('₹', '').trim());
+console.log("amount",finalAmount)
+{{!-- const amountPayable=finalAmount-Math.ceil(finalAmount*(discount/100))
+console.log(amountPayable)
+const finalAmountElement = document.getElementById("finalAmount"); --}}
+
+$.ajax({
+  url:`/apply-coupon`,
+  method:"POST",
+  data:{code},
+  success:(res)=>{
+  if (res.success) {
+        // Coupon is valid and not used before
+        const discountAmount = Math.ceil(finalAmount * (discount / 100));
+        const amountPayable = finalAmount - discountAmount;
+
+        const finalAmountElement = document.getElementById("finalAmount");
+        finalAmountElement.textContent = `₹ ${amountPayable}`;
+        const save=finalAmount-amountPayable
+
+        const applyBtn = document.getElementById("applyCouponBtn");
+         const removeBtn = document.getElementById("removeBtn");
+         const discountSave=document.getElementById("discountSave")
+
+         removeBtn.style.display="block"
+        applyBtn.textContent = "Coupon Applied";
+        applyBtn.disabled = true;
+        discountSave.style.display='block'
+        discountSave.textContent=`You saved -₹${save} with coupon`
+
+     
+        closeCouponModal();
+      } else {
+        // Coupon already used or not valid
+        Swal.fire({
+          icon: "error",
+          title: "Coupon Already Used",
+          text: "You have already used this coupon.",
+          confirmButtonText: "OK"
+        });
+      }
+    },error:()=>{
+ Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Something went wrong while applying the coupon.",
+        confirmButtonText: "OK"
+      });
+  }
+})
+
+
+  
+}
+
+
+function removeCoupon()
+{
+  console.log("ffff",originalAmount)
+   const applyBtn = document.getElementById("applyCouponBtn");
+        applyBtn.textContent = "ApplyCoupon";
+        applyBtn.disabled = false;
+        const removebtn=document.getElementById("removeBtn")
+        removebtn.style.display='none'
+    $.ajax({
+url:'/remove-coupon',
+method:'POST',
+success:(response)=>{
+  if(response.success){
+    console.log("success")
+
+     const dummy=document.getElementById("finalAmount")
+     const discountSave=document.getElementById("discountSave")
+     discountSave.style.display='none'
+   console.log("gggf",dummy)
+   dummy.textContent=originalAmount
+
+  }
+
+},error:()=>{
+ Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Something went wrong while applying the coupon.",
+        confirmButtonText: "OK"
+      });
+  }
+
+  })
+      
+}
+
+
+
+
+
+
+
+
+
+
  function createOrder() {
         const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
     const selectedAddressId = selectedAddressRadio ? selectedAddressRadio.getAttribute('data-id') : null;
@@ -294,7 +530,7 @@ id="address-{{this._id}}"
           key: response.key,
           amount: response.amount,
           currency: response.currency,
-          name: "Your Shop Name",
+          name: "quality save",
           description: "Order Payment",
           order_id: response.razorpayOrderId,
           handler: function (paymentResult) {
@@ -315,6 +551,9 @@ id="address-{{this._id}}"
           }
         };
         const rzp = new Razorpay(options);
+         rzp.on('payment.failed', function () {
+        window.location.href = `/orderFailure/${response.orderId}`;
+      });
         rzp.open();
       },
       error: function () {
@@ -328,5 +567,24 @@ id="address-{{this._id}}"
     });
   }
 }
+function verifyPayment(paymentResult, orderId) {
+  $.ajax({
+    url: '/verifyPayment',
+    method: 'POST',
+    data: {
+      razorpayOrderId: paymentResult.razorpay_order_id,
+      razorpayPaymentId: paymentResult.razorpay_payment_id,
+      razorpaySignature: paymentResult.razorpay_signature,
+      orderId: orderId
+    },
+    success: function () {
+      window.location.href = `/orderSuccess/${orderId}`;
+    },
+    error: function () {
+      window.location.href = `/orderFailure/${orderId}`;
+    }
+  });
+}
 </script>
+
 

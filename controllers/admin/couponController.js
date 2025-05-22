@@ -1,17 +1,25 @@
 
 const Coupon=require('../../models/couponSchema')
-const getCoupon=async(req,res,next)=>{
-    try {
-        const coupons=await Coupon.find().lean();
-        console.log(coupons)
-      
-        // const endDate=coupons.expireOn.toLocalDateString()
+const getCoupon = async (req, res, next) => {
+  try {
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
 
-        res.render("coupon",{coupons})
-    } catch (error) {
-        next(error)
-    }
-}
+    // Update expired coupons to inactive and not listed
+    await Coupon.updateMany(
+      { expireOn: { $lt: todayDate }, isList: true },
+      { $set: { status: "Inactive" } }
+    );
+
+    // Fetch only active & listed coupons
+    const coupons = await Coupon.find({ isList: true}).lean();
+
+    res.render("coupon", { coupons });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 const addCoupon=async(req,res,next)=>{
     try {
@@ -23,6 +31,7 @@ const data={
     offerPrice:parseInt(req.body.offerPrice),
     minPrice:parseInt(req.body.minimumPrice)
 }
+
 const newCoupon=new Coupon({
     name:data.couponName,
     createdOn:data.startDate,

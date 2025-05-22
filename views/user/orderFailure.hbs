@@ -1,0 +1,54 @@
+{{>headr}}
+
+<style>
+  .failure-page {
+    max-width: 500px;
+    margin: 60px auto;
+    text-align: center;
+    padding: 30px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .failure-page img {
+    width: 180px;
+    margin-bottom: 20px;
+  }
+
+  .failure-page h2 {
+    font-size: 24px;
+    color: #d9534f;
+    margin-bottom: 10px;
+  }
+
+  .failure-page p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+  }
+
+  .failure-page .btn {
+    margin: 8px;
+    min-width: 160px;
+    font-weight: 500;
+  }
+</style>
+
+<div class="container failure-page">
+  <img src="/images/failure-illustration.svg" alt="Payment Failed" />
+  <h2>Oops! Your payment didn’t go through.</h2>
+  <p>Please try again or view your order for more options.</p>
+  <div>
+    <button onclick="retryPayment()" class="btn btn-warning">Retry Payment</button>
+    <a href="/my-orders" class="btn btn-outline-secondary">View Order Details</a>
+  </div>
+</div>
+
+{{>foote}}
+<script>
+  function retryPayment() {
+    // Implement re-triggering payment flow or redirect to checkout
+    window.location.href = `/checkout/${orderId}`;
+  }
+</script>

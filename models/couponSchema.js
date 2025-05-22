@@ -25,7 +25,12 @@ name:{
         type:Boolean,
         default:true
     },
-    useId:[{
+    status:{
+        type:String,
+         enum: ["Active", "Inactive"],
+        default:"Active"
+    },
+    usedUsers:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
     }]

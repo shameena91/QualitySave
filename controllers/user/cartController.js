@@ -46,9 +46,6 @@ const addToCart = async (req, res) => {
     const productId = req.body.proId;
     const userId = req.session.user;
     const wishlist=await Wishlist.findOne({userId:userId})
-   
-
-
     if (!productId || !userId) {
       return res.status(400).json({ status: false, message: "Missing product or user ID" });
     }
@@ -56,8 +53,6 @@ const addToCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ status: false, message: "Product not found" });
     }
-
-
     const productExists = wishlist.products.some(p => p.productId.toString() === productId);
       if (productExists) {
        await wishlist.updateOne({
@@ -71,8 +66,6 @@ const addToCart = async (req, res) => {
         const totalPrice = quantity * price;
         const salePrice=product.salePrice
         const totalSalePrice=quantity*salePrice
-
-   
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {

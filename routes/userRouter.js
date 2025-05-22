@@ -155,4 +155,11 @@ router.get(
   invoiceController.downloadInvoice
 );
 
+router.post("/verifyPayment",userAuth,checkoutController.verifyPayment)
+router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
+
+
+router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)
+router.post("/remove-coupon",userAuth,checkoutController.removeCoupon)
+
 module.exports = router;
