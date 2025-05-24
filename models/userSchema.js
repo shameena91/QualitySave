@@ -47,7 +47,26 @@ const userSchema=new mongoose.Schema({
     wallet:{
         type:Number,
         default:0
-    }
+    },
+    walletHistory: [
+  {
+    amount: {
+         type: Number, 
+        required: true 
+    },
+    type: { 
+        type: String,
+         enum: ['credit', 'debit'],
+          required: true
+     },
+    reason: { 
+        type: String
+     },
+    date: { 
+        type: Date, 
+        default: Date.now }
+  }
+]
    
 
 

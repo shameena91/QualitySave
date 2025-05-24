@@ -17,8 +17,9 @@ const { editAddressPage } = require("./addressController");
 const applyCoupon=async(req,res)=>{
   try {
     const code=req.body.code
+    const couponId=req.body.couponId
     const userId=req.session.user
-    const coupon=await Coupon.findOne({name:code})
+    const coupon=await Coupon.findById(couponId)
    
     if (!coupon.usedUsers) {
       coupon.usedUsers = [];
@@ -26,7 +27,8 @@ const applyCoupon=async(req,res)=>{
      if (!coupon.usedUsers.includes(userId)) {
       coupon.usedUsers.push(userId);
       await coupon.save();
-       req.session.code=code
+       req.session.coupon=couponId
+      //  req.session.couponId=id
        return res.json({ success: true });
     }else
     {
@@ -44,12 +46,12 @@ const applyCoupon=async(req,res)=>{
 
 const removeCoupon=async(req,res)=>{
   try {
-    const code=req.session.code
+    const couponId=req.session.coupon
     const userId=req.session.user
 
-    const coupon=await Coupon.findOneAndUpdate({name:code},
+    const coupon=await Coupon.findByIdAndUpdate(couponId,
       {$pull:{usedUsers:userId}})
-       req.session.code = null;
+       req.session.coupon = null;
     
     await coupon.save()
      return res.json({ success: true });
@@ -59,9 +61,6 @@ const removeCoupon=async(req,res)=>{
     return res.status(500).json({ success: false, message: 'Server error.' });
   }
 }
-
-
-
 
 const getCheckout = async (req, res) => {
   try {
@@ -180,12 +179,19 @@ const checkoutAddaddress = async (req, res) => {
 const createOrder = async (req, res) => {
   try {
     const userId = req.session.user;
-
-    const { addressId, paymentMethod } = req.body;
+    const couponId=req.session.coupon
+    const { addressId, paymentMethod,amount } = req.body;
     // const userAddressDoc = await Address.findOne({ userId:userId }).lean();
 
     console.log(addressId);
     console.log(paymentMethod);
+    console.log(amount);
+    if(paymentMethod==="cod")
+      {
+paymentMethod="Cash on delivery"
+      }
+    
+    
 
     const cartItemsDoc = await Cart.findOne({ userId: userId })
       .populate("cartItems.productId")
@@ -211,15 +217,17 @@ const createOrder = async (req, res) => {
     const discount = totalAmount - finalAmount;
     console.log("amounu:", finalAmount);
     console.log(totalAmount);
+    const couponDiscount= finalAmount-amount
 
     const newOrder = new Order({
       userId: userId,
       orderItems,
       totalPrice: totalAmount,
       discount,
-      finalAmount: finalAmount,
+      couponDiscount:couponDiscount,
+      finalAmount: amount,
       address: addressId,
-
+couponUsed:couponId,
       invoiceDate: new Date(),
       paymentMethod:paymentMethod,
     });
@@ -232,7 +240,7 @@ const createOrder = async (req, res) => {
         $inc: { quantity: -item.quantity },
       });
     }
-
+req.session.coupon=null
     res
       .status(201)
       .json({
@@ -315,7 +323,8 @@ const getMyOrders = async (req, res) => {
 
     res.render("myOrders", { orederedProduct, products:paginatedProducts, user ,search,
       currentPage: page,
-      hasMore,});
+      hasMore,
+    });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).send("Internal Server Error");
@@ -376,16 +385,77 @@ const cancelOrder = async (req, res) => {
   try {
     const userId = req.session.user;
     const { orderId, productId, reason } = req.body;
-    console.log(
-      `Order ${orderId}, Product ${productId} cancelled for reason: ${reason}`
-    );
+    const user = await User.findById(userId);
 
-    const order = await Order.findOne({ userId: userId, orderId: orderId });
-    console.log("lasttt", order);
-    const specifiedProduct = order.orderItems.find((item) => {
-      return item.product._id.toString() === productId;
-    });
+    const order = await Order.findOne({ userId, orderId });
+    if (!order) {
+      return res.status(404).send("Order not found");
+    }
+
+    const specifiedProduct = order.orderItems.find(
+      (item) => item.product._id.toString() === productId
+    );
+// const returnedProduct= order.orderItems.find((item) => {
+//       return item.status === "Returned";
+//     });
+//     let sumPriceReturned=0
+
+//     sumPriceReturned=returnedProduct.reduce((acc,curr)=>{
+// return acc+(curr.quantity*current.price)
+//     },0)
+
+
+    if (!specifiedProduct) {
+      return res.status(404).send("Product not found in order");
+    }
+const couponId=order.couponUsed
+
+console.log(order.razorpayStatus)
+    if (order.razorpayStatus === "paid") {
+
+      
+      if(couponId)
+      {
+      let returnProductPrice=specifiedProduct.price*specifiedProduct.quantity
+      const remainingPrice=order.finalAmount-returnProductPrice
+      console.log(couponId, returnProductPrice,remainingPrice);
+      if(remainingPrice>=findCoupon.minimumPrice)
+        {
+      user.wallet = user.wallet + returnProductPrice;
+      user.walletHistory.push({
+      amount: returnProductPrice ,
+      type: 'credit',
+      reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId}`,
+});
+        }else{
+          const amountTransfer=order.finalAmount-remainingPrice
+            user.wallet = user.wallet + amountTransfer;
+               user.walletHistory.push({
+  amount: amountTransfer ,
+  type: 'credit',
+  reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId}`,
+});
+   
+        }             
+      }
+else{
+      const refundAmount = specifiedProduct.quantity * specifiedProduct.price;
+      user.wallet += refundAmount;
+      user.walletHistory.push({
+        amount: refundAmount,
+        type: "credit",
+        reason: `Refund for cancelled product ${specifiedProduct.product.name || specifiedProduct.product} from order ${orderId}`,
+      });
+       specifiedProduct.status = "Cancelled";
+      await user.save();
+    }
+  }
+
+
+else{
     specifiedProduct.status = "Cancelled";
+}
+
 
     await order.save();
     await Product.findByIdAndUpdate(productId, {
@@ -398,6 +468,7 @@ const cancelOrder = async (req, res) => {
     res.status(500).send("Error cancelling the order");
   }
 };
+
 
 const returnRequest = async (req, res) => {
   try {
@@ -440,7 +511,7 @@ const returnRequest = async (req, res) => {
 const createRazorpayOrder = async (req, res) => {
   try {
     const userId = req.session.user;
-    const { addressId, paymentMethod } = req.body;
+    const { addressId, paymentMethod,amount } = req.body;
 
     if (!addressId || !paymentMethod) {
       return res.status(400).json({ message: "Address and payment method required." });
@@ -459,6 +530,7 @@ const createRazorpayOrder = async (req, res) => {
       0
     );
      const discount = totalAmount - finalAmount;
+      const couponDiscount= finalAmount-amount
     // const totalPrice = userCart.cartItemsitems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
     // const discount = 0; // apply logic if needed
     // const finalAmount = totalPrice - discount;
@@ -474,7 +546,9 @@ const createRazorpayOrder = async (req, res) => {
       })),
       totalPrice:totalAmount,
       discount,
-      finalAmount,
+       couponDiscount:couponDiscount,
+      finalAmount: amount,
+    
       address: addressId,
       paymentMethod:paymentMethod,
       invoiceDate: new Date(),
@@ -584,7 +658,7 @@ module.exports = {
   createOrder,
   getOrderSuccess,
   getMyOrders,
-  getOrderDetail,
+  getOrderDetail,          
   cancelOrder,
   returnRequest,
   checkoutAddaddress,

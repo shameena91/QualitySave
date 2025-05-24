@@ -161,5 +161,7 @@ router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
 
 router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)
 router.post("/remove-coupon",userAuth,checkoutController.removeCoupon)
+router.get("/wallet-transaction",userAuth,walletController.walletTransaction)
+
 
 module.exports = router;

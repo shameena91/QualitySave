@@ -188,7 +188,7 @@ id="address-{{this._id}}"
     {{#each coupons}}
     <div class="modal-body">
       
-      <div class="coupon-item" onclick="applyCoupon('{{this.name}}', {{this.offerPrice}}, {{this.minimumPrice}})">
+      <div class="coupon-item" onclick="applyCoupon('{{this._id}}','{{this.name}}', {{this.offerPrice}}, {{this.minimumPrice}})">
         <div class="coupon-code" style="color:green">{{this.name}}</div>
         <div class="coupon-description" >{{this.offerPrice}}% off on Purchase Above {{this.minimumPrice}}</div>
         <div class="coupon-expiry text-danger">Valid until Dec 31, 2024</div>
@@ -368,19 +368,17 @@ function closeCouponModal() {
 
 
 
-function applyCoupon(code, discount, minimumPrice) {
-  console.log(`Coupon Applied: ${code}`);
+function applyCoupon(couponId,code, discount, minimumPrice) {
+  console.log(`Coupon Applied: ${couponId}`);
 const finalAmountText=document.getElementById("finalAmount").textContent
 const finalAmount = parseFloat(finalAmountText.replace('₹', '').trim());
 console.log("amount",finalAmount)
-{{!-- const amountPayable=finalAmount-Math.ceil(finalAmount*(discount/100))
-console.log(amountPayable)
-const finalAmountElement = document.getElementById("finalAmount"); --}}
+
 
 $.ajax({
   url:`/apply-coupon`,
   method:"POST",
-  data:{code},
+  data:{code,couponId},
   success:(res)=>{
   if (res.success) {
         // Coupon is valid and not used before
@@ -473,11 +471,14 @@ success:(response)=>{
 
 
  function createOrder() {
-        const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
+    const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
     const selectedAddressId = selectedAddressRadio ? selectedAddressRadio.getAttribute('data-id') : null;
 
     const selectedPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
     const paymentMethod = selectedPaymentRadio ? selectedPaymentRadio.value : null;
+  const finalAmountText=document.getElementById("finalAmount").textContent
+const payableAmount = parseFloat(finalAmountText.replace('₹', '').trim());
+   
    if (!selectedAddressId || !paymentMethod) {
      Swal.fire({
       title: 'Missing Information',
@@ -494,7 +495,8 @@ success:(response)=>{
       method: 'POST',
       data: {
         addressId: selectedAddressId,
-        paymentMethod: 'cod'
+        paymentMethod: 'cod',
+        amount:payableAmount
       },
       success: function (response) {
         Swal.fire({
@@ -523,7 +525,8 @@ success:(response)=>{
       method: 'POST',
       data: {
         addressId: selectedAddressId,
-         paymentMethod: 'razorpay'
+         paymentMethod: 'razorpay',
+         amount:payableAmount
       },
       success: function (response) {
         const options = {

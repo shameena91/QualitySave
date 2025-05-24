@@ -1,4 +1,5 @@
 const Address = require("../../models/addressSchema");
+const Coupon = require("../../models/couponSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
@@ -169,6 +170,7 @@ const orderView = async (req, res) => {
       time,
       deliveryDate,
       deliveryTime,
+      order
     });
   } catch (error) {
     console.log(error);
@@ -188,6 +190,14 @@ const updateReturnStatus = async (req, res) => {
     const orderProduct = order.orderItems.find((item) => {
       return item.product._id.toString() === productId;
     });
+    const returnedProduct= order.orderItems.find((item) => {
+      return item.status === "Returned";
+    });
+    let sumPriceReturned=0
+
+    sumPriceReturned=returnedProduct.reduce((acc,curr)=>{
+return acc+(curr.quantity*current.price)
+    },0)
     console.log("ppp", orderProduct);
     if (!orderProduct) {
       return res.status(404).json({ message: "Product not found in order" });
@@ -195,14 +205,52 @@ const updateReturnStatus = async (req, res) => {
 
     orderProduct.returnStatus = returnStatus;
     const userId = order.userId;
+     let couponId=order.couponUsed
+     const findCoupon=await Coupon.findById(couponId)
+        const user = await User.findById(userId);
 
     if (returnStatus === "Approved") {
-      await Product.findByIdAndUpdate(productId, {
+       await Product.findByIdAndUpdate(productId, {
         $inc: { quantity: orderProduct.quantity },
       });
-      const user = await User.findById(userId);
+     
 
-      user.wallet = user.wallet + orderProduct.price * orderProduct.quantity;
+
+      if(couponId)
+      {
+      let returnProductPrice=orderProduct.price*orderProduct.quantity
+      const remainingPrice=order.finalAmount-returnProductPrice-sumPriceReturned
+
+      console.log(couponId, returnProductPrice,remainingPrice);
+      if(remainingPrice>=findCoupon.minimumPrice)
+        {
+      user.wallet = user.wallet + returnProductPrice;
+      user.walletHistory.push({
+      amount: returnProductPrice ,
+      type: 'credit',
+      reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+});
+        }else{
+          const amountTransfer=order.finalAmount-remainingPrice
+            user.wallet = user.wallet + amountTransfer;
+               user.walletHistory.push({
+  amount: amountTransfer ,
+  type: 'credit',
+  reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+});
+   
+        }
+
+              
+      }else{
+         user.wallet = user.wallet +returnProductPrice;
+           user.walletHistory.push({
+  amount: returnProductPrice >= 0 ? returnProductPrice : 0,
+  type: 'credit',
+  reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+});
+      }
+  
       await user.save();
     }
 

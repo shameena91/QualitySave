@@ -29,28 +29,12 @@
 </style>
 <div class="main-container">
       {{>profilesidebar}}
-
+      
 <div class="container my-5">
   
 
-  <h2 class="mb-4 text-center">My Wallet</h2>
-
-  <!-- Wallet Balance Card -->
-
-  <div class="card text-center mb-4 shadow-sm">
-    <div class="card-body">
-      <h5 class="card-title">Wallet Balance</h5>
-      <h1 class="display-4 text-success">₹{{user.wallet}}</h1>
-    </div>
-  </div>
-
-
-  <!-- Action Buttons -->
-  <div class="d-flex justify-content-center gap-3 mb-5">
-    <button class="btn btn-primary">Add Money</button>
-    <button class="btn btn-outline-danger">Withdraw</button>
-  </div>
- {{#each walletHistory}}
+  <h2 class="mb-4 text-center">My Wallettttt</h2>
+  {{#each walletHistory}}
  <div class="transaction-card {{this.type}}">
     <div class="d-flex justify-content-between">
       <div>
@@ -65,10 +49,4 @@
     </div>
   </div>
   {{/each}}
-  <!-- Transaction 2 -->
-  
- 
-  
-
-</div>
-</div>
+  </div>

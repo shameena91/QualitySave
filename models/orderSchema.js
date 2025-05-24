@@ -54,6 +54,10 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  couponDiscount:{
+    type: Number,
+    default: 0,
+  },
   finalAmount: {
     type: Number,
     required: true,
@@ -89,6 +93,13 @@ const orderSchema = new mongoose.Schema({
 
   invoiceDate: {
     type: Date,
+  },
+
+  couponUsed:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Coupon",
+    default:null
+   
   },
   createdOn: {
     type: Date,

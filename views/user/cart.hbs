@@ -178,11 +178,11 @@
         <hr>
         <div class="d-flex justify-content-between">
           <span >Price ( {{cartProducts.length}} Items)</span>
-          <span >₹ {{sumSalePrice}}</span>
+          <span id="sumSalePrice">₹ {{sumSalePrice}}</span>
         </div>
          <div class="d-flex justify-content-between pt-2">
           <span>Discount</span>
-          <span class="text-success">- ₹{{discount}}</span>
+          <span class="text-success" id="discoutPrice">- ₹{{discount}}</span>
         </div>
         <div class="d-flex justify-content-between pt-2">
           <span>Delivery Charges</span>
@@ -220,20 +220,25 @@
     quantity++;
     qtyDisplay.textContent = quantity;
 
-    const price = parseFloat(document.getElementById(`price-${productId}`).textContent);
-    const salePriceText = document.getElementById(`salePrice-${productId}`).textContent;
-    const salePrice = parseFloat(salePriceText.replace('₹', '').trim());
+     const price = parseFloat(document.getElementById(`price-${productId}`).textContent);
 
-    let sumTotalPrice = parseFloat(document.getElementById(`sumTotalPrice`).textContent.replace('₹', '').trim());
+    const salePriceElement = document.getElementById(`salePrice-${productId}`);
+    const salePrice = salePriceElement ? parseFloat(salePriceElement.textContent.replace('₹', '').trim()) : 0;
+
+    const totalPriceElement = document.getElementById(`totalPrice-${productId}`);
+    const totalSalePriceElement = document.getElementById(`totalSalePrice-${productId}`);
+    const sumTotalPriceElement = document.getElementById('sumTotalPrice');
+
+    let sumTotalPrice = parseFloat(sumTotalPriceElement.textContent.replace('₹', '').trim());
 
     const totalPrice = price * quantity;
     const totalSalePrice = salePrice * quantity;
     const sumTotalPriceNew = sumTotalPrice + price;
 
-    document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
-    document.getElementById(`totalSalePrice-${productId}`).textContent = `₹${totalSalePrice}`;
-    document.getElementById(`sumTotalPrice`).textContent = `₹${sumTotalPriceNew}`;
-
+    if (totalPriceElement) totalPriceElement.textContent = `₹${totalPrice}`;
+    if (totalSalePriceElement) totalSalePriceElement.textContent = `₹${totalSalePrice}`;
+    if (sumTotalPriceElement) sumTotalPriceElement.textContent = `₹${sumTotalPriceNew}`;
+    
     updateCart(productId, quantity, totalPrice, totalSalePrice);
   } else {
     Swal.fire({
@@ -256,18 +261,24 @@ function decreaseQty(productId) {
     qtyDisplay.textContent = quantity;
 
     // Get the price per item
-    const price = parseFloat(document.getElementById(`price-${productId}`).textContent);
-  const salePriceText = document.getElementById(`salePrice-${productId}`).textContent;
-const salePrice = parseFloat(salePriceText.replace('₹', '').trim());
+      const price = parseFloat(document.getElementById(`price-${productId}`).textContent);
 
+    const salePriceElement = document.getElementById(`salePrice-${productId}`);
+    const salePrice = salePriceElement ? parseFloat(salePriceElement.textContent.replace('₹', '').trim()) : 0;
+
+    const totalPriceElement = document.getElementById(`totalPrice-${productId}`);
+    const totalSalePriceElement = document.getElementById(`totalSalePrice-${productId}`);
+    const sumTotalPriceElement = document.getElementById('sumTotalPrice');
+
+    let sumTotalPrice = parseFloat(sumTotalPriceElement.textContent.replace('₹', '').trim());
 
     const totalPrice = price * quantity;
-      const totalSalePrice= salePrice * quantity
+    const totalSalePrice = salePrice * quantity;
+    const sumTotalPriceNew = Math.max(0, sumTotalPrice - price);
 
-    // Update the total price on the frontend
-    document.getElementById(`totalPrice-${productId}`).textContent = `₹${totalPrice}`;
-      document.getElementById(`totalSalePrice-${productId}`).textContent = `₹${totalSalePrice}`;
-
+    if (totalPriceElement) totalPriceElement.textContent = `₹${totalPrice}`;
+    if (totalSalePriceElement) totalSalePriceElement.textContent = `₹${totalSalePrice}`;
+    if (sumTotalPriceElement) sumTotalPriceElement.textContent = `₹${sumTotalPriceNew}`;
     // Call the backend to update the cart with the new quantity and total price
     updateCart(productId, quantity, totalPrice,totalSalePrice);
   }
