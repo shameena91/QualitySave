@@ -5,6 +5,7 @@ const Brand = require("../../models/brandSchema");
 const nodeMailer = require("nodemailer");
 const env = require("dotenv").config();
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 const noDataFound = async (req, res) => {
   try {
@@ -91,9 +92,16 @@ async function sendVerificationEmail(email, otp) {
   }
 }
 
+
+
+function generateReferalCode(username) {
+  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 random characters
+  return `${username.slice(0, 4).toUpperCase()}${randomPart}`;
+}
+
 const userSignup = async (req, res) => {
   try {
-    const { name, phone, email, password, cpassword } = req.body;
+    const { name, phone, email, password, cpassword ,referalCode} = req.body;
     if (password != cpassword) {
       return res.render("signUp", { message: "password not matched" });
     }
@@ -102,6 +110,10 @@ const userSignup = async (req, res) => {
     if (findUser) {
       return res.render("signUp", { message: "User already exists" });
     }
+  const generatedReferralCode = generateReferalCode(name);
+
+
+
     const otp = generateOtp();
     const emailSent = await sendVerificationEmail(email, otp);
     if (!emailSent) {
@@ -111,7 +123,7 @@ const userSignup = async (req, res) => {
       // return res.json("email.error")
     }
     req.session.userOtp = otp;
-    req.session.userData = { email, password, name, phone };
+    req.session.userData = { email, password, name, phone ,generatedReferralCode,referalCode};
     console.log("OTP sent", otp);
     res.render("otp-varify");
   } catch (error) {
@@ -147,12 +159,35 @@ const varifyOtp = async (req, res) => {
         email: user.email,
         phone: user.phone,
         password: passwordHash,
+        referralCode:user.generatedReferralCode,
+        referredBy:user.referalCode
       });
 
       if (user.googleId) {
         userData.googleId = user.googleId;
       }
       await saveUserData.save();
+console.log(user.referalCode)
+      if(user.referalCode)
+      {
+        const findUser=await User.findOne({referralCode:user.referalCode})
+        if(findUser)
+        {
+       findUser.wallet = (findUser.wallet || 0) + 100; // Initialize if undefined
+          findUser.walletHistory = findUser.walletHistory || []; 
+     
+console.log("userrrrrrrr",findUser)
+    // Optionally, log transaction
+    findUser.walletHistory.push({
+  type: 'credit',
+  amount: 100,
+  reason: `Referral reward from ${user.email}`,
+  date: new Date()
+});
+        }
+ await findUser.save();
+      }
+      
       req.session.user = saveUserData._id;
       res.json({ success: true, redirectUrl: "/" });
     } else {

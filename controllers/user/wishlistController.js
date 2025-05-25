@@ -14,9 +14,17 @@ const getWishlist = async (req, res) => {
       return res.redirect("/pageNotFound"); 
     }
    
-    const wishlist = await Wishlist.findOne({ userId: userId })
-    .populate('products.productId')
-    .lean();
+     const wishlist = await Wishlist.findOne({ userId })
+      .populate({
+        path: 'products.productId',
+        populate: [
+          { path: 'category', model: 'Category' },
+          { path: 'brand', model: 'Brand' }
+        ]
+      })
+      .lean();
+
+     console.log("Wishlisthhhhhhhhhhhh",wishlist); 
     if (!wishlist) {
       console.log("Wishlist not found");
       return res.redirect("/pageNotFound"); 

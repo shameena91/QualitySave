@@ -136,6 +136,7 @@ const loadDashboard= async(req,res)=>{
     // Optional search filter (e.g., user name or product category)
     let orders = await Order.find(filter)
     .populate('couponUsed')
+    .sort({createdOn:-1})
     .lean();
     console.log("my",orders)
  if (search) {
@@ -155,7 +156,7 @@ const loadDashboard= async(req,res)=>{
  orders.forEach((order) => {
       totalSales += order.totalPrice || 0;
       totalDiscount += order.discount || 0;
-      totalCouponDiscount+=order.couponDiscount||0;
+      totalCouponDiscount+= Number(order.couponDiscount ?? 0);
     });
       
     const totalPages = Math.ceil(orders.length / itemsPerPage);
@@ -170,6 +171,7 @@ console.log(req.query);
                 filterData: req.query,
                 totalPages,
                  currentPage,
+               
 
             })
 

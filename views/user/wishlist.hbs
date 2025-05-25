@@ -75,15 +75,48 @@
     <div>
         
      <a href="/productDetails/{{this.productId._id}}"> <h5>{{this.productId.productName}}</h5></a>
-      {{#if this.productId.productOffer}}
-            <span class="fs-4 text-primary fw-bold">₹{{this.productId.discountedPrice}}</span>
-            <span class="text-muted text-decoration-line-through ms-1">₹{{this.productId.salePrice}}</span>
-            <span class="badge bg-success ms-2">&nbsp;{{this.productId.productOffer}}% off</span>
-          {{else}}
-            <span class="fs-4 text-primary fw-bold">₹{{this.productId.salePrice}}</span>
-          {{/if}}
+     <p>Brand: {{#if this.productId.brand}}
+        {{this.productId.brand.brandName}}
+        
+      {{else}}
+        No brand
+      {{/if}}
+    </p>
+
+
+
+
+
+
+          {{#if (gt this.productId.category.categoryoffer this.productId.productOffer )}}
+{{#if this.productId.category.categoryoffer}}
+            <p style="font-size:18px;font-weight:600">₹{{this.productId.discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{this.productId.salePrice}}</strike></span>
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{this.productId.category.categoryoffer}}% off </span>
+ {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{this.productId.salePrice}}
+
+           
+           {{!-- <p>Category: {{category.categoryoffer}}</p> --}}
+           {{/if}}
+           {{else}}
+           {{#if this.productId.productOffer}}
+
+            <p style="font-size:18px;font-weight:600">₹{{this.productId.discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{this.productId.salePrice}}</strike></span>
+            
+            
+            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{this.productId.productOffer}}% off </span>
+           {{else}}
+                        <p style="font-size:18px;font-weight:600">₹{{this.productId.salePrice}}
+
+           
+           {{!-- <p>pro: {{productOffer}}</p> --}}
+           {{/if}}
+
+{{/if}}
+
     
     </div>
+
     
     <div class="mt-auto d-flex justify-content-end gap-2">
       <button class="btn btn-primary btn-sm" onclick="addToCart('{{this.productId._id}}')" >Add to Cart</button>

@@ -12,7 +12,8 @@ const getCoupon = async (req, res, next) => {
     );
 
     // Fetch only active & listed coupons
-    const coupons = await Coupon.find({ isList: true}).lean();
+    const coupons = await Coupon.find({ isList: true}).sort({createdOn:-1})
+    .lean();
 
     res.render("coupon", { coupons });
   } catch (error) {
@@ -31,6 +32,16 @@ const data={
     offerPrice:parseInt(req.body.offerPrice),
     minPrice:parseInt(req.body.minimumPrice)
 }
+   const coupons = await Coupon.find({ isList: true}).sort({createdOn:-1})
+    .lean()
+const couponExist=await Coupon.find({name:data.couponName})
+if(couponExist)
+{
+ 
+  return res.render("coupon",{coupons:coupons, message: "Coupon Name  already exists" });
+   
+}
+
 
 const newCoupon=new Coupon({
     name:data.couponName,

@@ -66,7 +66,15 @@ const userSchema=new mongoose.Schema({
         type: Date, 
         default: Date.now }
   }
-]
+],
+ referralCode: {
+    type: String,
+    unique: true,
+  },
+  referredBy: {
+    type: String,
+    default: null,
+  }
    
 
 

@@ -61,6 +61,11 @@
         <!-- Add Coupon Form -->
         <div class="col-md-3">
           <form method="post" action="/admin/coupons" onsubmit="return validateForm()">
+                      {{#if message}}
+  <div class="alert alert-danger text-center" role="alert">
+    {{message}}
+  </div>
+{{/if}}
             <div class="mb-4">
               <label for="coupon-name" class="form-label">Coupon Name</label>
               <input type="text" id="coupon-name" name="couponName" placeholder="Type here" class="form-control" />
@@ -81,7 +86,7 @@
 
             <div>
               <label for="offer-price" class="form-label">Offer Price</label>
-              <input type="text" name="offerPrice" placeholder="Type here" class="form-control" />
+              <input type="text" name="offerPrice" placeholder="In percentage" class="form-control" />
               <div id="error-offer-price" class="error-message"></div>
             </div>
 
@@ -120,7 +125,7 @@
                   <td>{{name}}</td>
                   <td>{{formatDate createdOn}}</td>
                   <td>{{formatDate expireOn }}</td>
-                  <td>{{offerPrice}}</td>
+                  <td>{{offerPrice}}%</td>
                   <td>{{minimumPrice}}</td>
                   <td>{{status}}</td>
                   <td>
@@ -179,7 +184,7 @@
 
           <div class="mb-3">
             <label for="modalDiscount" class="form-label">Offer Price</label>
-            <input type="number" class="form-control" name="discount" id="modalDiscount"  />
+            <input type="number" class="form-control" name="discount" id="modalDiscount"/>
           </div>
            <div class="mb-3">
             <label for="modalminimumPrice" class="form-label">Minimum Price</label>

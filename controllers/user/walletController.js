@@ -20,7 +20,9 @@ const getWallet=async(req,res)=>{
 }
 const walletTransaction =async(req,res)=>{
     try {
-       
+         const page = parseInt(req.query.page) || 1;
+    const limit = 5;  // number of products per page to show
+    const skip = (page - 1) * limit;
         const userId=req.session.user
         const userData=await User.findById(userId)
        
@@ -29,8 +31,16 @@ const walletTransaction =async(req,res)=>{
 
       const walletHistory = userData.walletHistory
       ?.reverse();
+       const paginatedwalletHistory = walletHistory.slice(0, skip + limit);
+
+    const totalCount = walletHistory.length;
+
+    const hasMore = page * limit < totalCount;
         return res.render("walletTransaction",{user:userData,
-          walletHistory})
+          walletHistory:paginatedwalletHistory,
+           currentPage: page,
+      hasMore,
+        })
       
     } catch (error) {
         

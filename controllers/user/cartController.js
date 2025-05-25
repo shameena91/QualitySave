@@ -53,12 +53,17 @@ const addToCart = async (req, res) => {
     if (!product) {
       return res.status(404).json({ status: false, message: "Product not found" });
     }
-    const productExists = wishlist.products.some(p => p.productId.toString() === productId);
-      if (productExists) {
-       await wishlist.updateOne({
-      $pull: { products: {productId: productId } }
+
+
+   
+if (wishlist) {
+  const productExists = wishlist.products.some(p => p.productId.toString() === productId);
+  if (productExists) {
+    await wishlist.updateOne({
+      $pull: { products: { productId: productId } }
     });
-      }
+  }
+}
        const quantity = 1;
       let maxQuantity=5
     

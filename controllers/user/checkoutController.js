@@ -73,18 +73,8 @@ const getCheckout = async (req, res) => {
       .lean();
 
 
-    if (
-      !userAddressDoc ||
-      !userAddressDoc.address ||
-      userAddressDoc.address.length === 0
-    ) {
-      return res.render({
-        addresses: [],
-        message: "No saved addresses found.",
-      });
-    }
+    
 
-    const addresses = userAddressDoc.address;
     const cartProducts = cartItemsDoc.cartItems;
 
     const finalSalePrice = cartProducts.reduce((acc, curr) => {
@@ -99,6 +89,26 @@ const coupons = await Coupon.find({
   minimumPrice: { $lt: finalTotalPrice },
   isList: true
 }).lean();
+
+if (
+      !userAddressDoc ||
+      !userAddressDoc.address ||
+      userAddressDoc.address.length === 0
+    ) {
+      return res.render("checkout",{
+        addresses: [],
+        message: "No saved addresses found.",
+        cartProducts,
+      finalSalePrice,
+      finalTotalPrice,
+      totalDiscount,
+      coupons,
+      user
+
+      });
+    }
+    const addresses = userAddressDoc.address;
+
   console.log("coupons",coupons)
     res.render("checkout", {
       user,
@@ -111,9 +121,7 @@ const coupons = await Coupon.find({
     });
   } catch (error) {
     console.error("Error in getCheckout:", error.message);
-    res
-      .status(500)
-      .render("errorPage", {
+    res.status(500).render("page-404", {
         message: "Something went wrong during checkout.",
       });
   }
@@ -186,10 +194,10 @@ const createOrder = async (req, res) => {
     console.log(addressId);
     console.log(paymentMethod);
     console.log(amount);
-    if(paymentMethod==="cod")
-      {
-paymentMethod="Cash on delivery"
-      }
+//     if(paymentMethod==="cod")
+//       {
+// paymentMethod="Cash on delivery"
+//       }
     
     
 
@@ -374,6 +382,7 @@ const getOrderDetail = async (req, res) => {
       discount,
       orderId,
       user,
+      order
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -559,7 +568,7 @@ const createRazorpayOrder = async (req, res) => {
 
     // 4. Create Razorpay order
     const razorpayOrder = await razorpayInstance.orders.create({
-      amount: finalAmount * 100, // in paise
+      amount: amount * 100, // in paise
       currency: "INR",
       receipt: String(newOrder._id),
       payment_capture: 1,

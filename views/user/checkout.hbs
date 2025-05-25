@@ -191,7 +191,7 @@ id="address-{{this._id}}"
       <div class="coupon-item" onclick="applyCoupon('{{this._id}}','{{this.name}}', {{this.offerPrice}}, {{this.minimumPrice}})">
         <div class="coupon-code" style="color:green">{{this.name}}</div>
         <div class="coupon-description" >{{this.offerPrice}}% off on Purchase Above {{this.minimumPrice}}</div>
-        <div class="coupon-expiry text-danger">Valid until Dec 31, 2024</div>
+        <div class="coupon-expiry text-danger">Valid until {{formatDate expireOn}}</div>
       </div>
    
       <!-- Repeat other coupons similarly -->

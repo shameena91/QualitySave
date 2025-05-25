@@ -190,14 +190,14 @@ const updateReturnStatus = async (req, res) => {
     const orderProduct = order.orderItems.find((item) => {
       return item.product._id.toString() === productId;
     });
-    const returnedProduct= order.orderItems.find((item) => {
-      return item.status === "Returned";
-    });
-    let sumPriceReturned=0
-
-    sumPriceReturned=returnedProduct.reduce((acc,curr)=>{
-return acc+(curr.quantity*current.price)
-    },0)
+    const returnedProducts = order.orderItems.filter((item) => item.status === "Returned");
+    let sumPriceReturned = 0;
+if (returnedProducts.length > 0) {
+  sumPriceReturned = returnedProducts.reduce((acc, curr) => {
+    return acc + (curr.quantity * curr.price);
+  }, 0);
+}
+  
     console.log("ppp", orderProduct);
     if (!orderProduct) {
       return res.status(404).json({ message: "Product not found in order" });
@@ -213,16 +213,14 @@ return acc+(curr.quantity*current.price)
        await Product.findByIdAndUpdate(productId, {
         $inc: { quantity: orderProduct.quantity },
       });
-     
-
-
+    
       if(couponId)
       {
-      let returnProductPrice=orderProduct.price*orderProduct.quantity
-      const remainingPrice=order.finalAmount-returnProductPrice-sumPriceReturned
+      const returnProductPrice=orderProduct.price*orderProduct.quantity
+      const remainingPrice=order.finalAmount-returnProductPrice-sumPriceReturned+order.couponDiscount
 
       console.log(couponId, returnProductPrice,remainingPrice);
-      if(remainingPrice>=findCoupon.minimumPrice)
+      if(remainingPrice >= findCoupon.minimumPrice)
         {
       user.wallet = user.wallet + returnProductPrice;
       user.walletHistory.push({

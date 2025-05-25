@@ -130,9 +130,24 @@
       <a href="/change-password">
       <button class="btn btn-secondary">Change Password</button></a>
     </div>
-    
+     {{#if user.referralCode}}
+     <div class="mt-5">
+
+  
+ <h5>Refer & Earn</h5>
+
+
+   Referral Code: <strong id="refCode">{{user.referralCode}}</strong>
+  <i class="fa fa-copy" onclick="copyReferral()" style="cursor:pointer;color:#1e918b;" title="Copy"></i>
+  <p>Share this code with your friends and earn ₹100 when they sign up!</p>
+    </div>
+    {{!-- <small style="color: #888;">Referral: <strong class="mb-3">{{user.referralCode}}</strong></small> --}}
+
+  {{/if}}
   </div>
+  
 </main>
+
 </div>
 
 
@@ -181,6 +196,20 @@
 </div>
 
 <script>
+
+ function copyReferral() {
+    const code = document.getElementById("refCode").textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      Swal.fire({
+        icon: "success",
+        title: "Copied!",
+        text: "Referral code copied to clipboard",
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
 
 function removeProImage(id) {
   $.ajax({

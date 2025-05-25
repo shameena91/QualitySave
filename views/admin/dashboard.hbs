@@ -188,10 +188,16 @@
             <tr>
               <td>{{formatDate createdOn}}</td>
               <td>{{this.orderId}}</td>
-              <td>₹{{this.totalPrice}}</td>
+              <td>₹{{this.totalPrice}}
+                
+              </td>
               <td>₹{{this.finalAmount}}</td>
-              <td>{{ add this.discount this.couponDiscount}}</td>
+              <td>₹{{ add this.discount this.couponDiscount}}</td>
+              {{#if this.couponUsed}}
               <td>{{this.couponUsed.name}}</td>
+              {{else}}
+                  <td>Nill</td>
+                  {{/if}}
               <td>{{this.paymentMethod}}</td>
             </tr>
             {{/each}}
