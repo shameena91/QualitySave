@@ -8,6 +8,7 @@ const brandController = require("../controllers/admin/brandContoller");
 const orderController = require("../controllers/admin/orderController");
 const couponController=require("../controllers/admin/couponController")
 const salesReportController=require("../controllers/admin/salesReportController")
+const offrController=require("../controllers/admin/offerController")
 
 const { userAuth, adminAuth } = require("../middlewares/auth");
 const multer = require("multer");
@@ -50,16 +51,16 @@ router.get(
   adminAuth,
   categoryController.categoryunListed
 );
-router.post(
-  "/admin/addCategoryOffer",
-  adminAuth,
-  categoryController.addCategoryOffer
-);
-router.post(
-  "/admin/removeCategoryOffer",
-  adminAuth,
-  categoryController.removeCategoryOffer
-);
+// router.post(
+//   "/admin/addCategoryOffer",
+//   adminAuth,
+//   categoryController.addCategoryOffer
+// );
+// router.post(
+//   "/admin/removeCategoryOffer",
+//   adminAuth,
+//   categoryController.removeCategoryOffer
+// );
 
 // routes for product handling
 router.get("/admin/productList", adminAuth, productController.productList);
@@ -112,17 +113,17 @@ router
   .route("/admin/brand/:id/unblock")
   .patch(adminAuth, brandController.unblockBrand);
 
-router.post(
-  "/admin/addProductOffer",
-  adminAuth,
-  productController.addProductOffer
-);
+// router.post(
+//   "/admin/addProductOffer",
+//   adminAuth,
+//   productController.addProductOffer
+// );
 
-router.post(
-  "/admin/removeProductOffer",
-  adminAuth,
-  productController.removeProductOffer
-);
+// router.post(
+//   "/admin/removeProductOffer",
+//   adminAuth,
+//   productController.removeProductOffer
+// );
 
 router.get("/admin/blockProduct", adminAuth, productController.blockProduct);
 router.get(
@@ -159,6 +160,14 @@ router.patch(
 
 router.get("/admin/coupons",adminAuth,couponController.getCoupon)
 router.post("/admin/coupons",adminAuth,couponController.addCoupon)
+
+
+
+router.get("/admin/offers",adminAuth,offrController.getOffer)
+router.post("/admin/offers/product",adminAuth,offrController.productOffer)
+router.post("/admin/offers/category",adminAuth,offrController.categoryOffer)
+router.delete("/admin/deleteOffer/:offerId",adminAuth,offrController.deleteOffer)
+
 
 
 

@@ -34,15 +34,15 @@ const data={
 }
    const coupons = await Coupon.find({ isList: true}).sort({createdOn:-1})
     .lean()
-const couponExist=await Coupon.find({name:data.couponName})
+const couponExist=await Coupon.findOne({name:data.couponName})
 if(couponExist)
 {
  
-  return res.render("coupon",{coupons:coupons, message: "Coupon Name  already exists" });
+  return res.render("coupon",{coupons, message: "Coupon Name  already exists" });
    
 }
-
-
+else
+{
 const newCoupon=new Coupon({
     name:data.couponName,
     createdOn:data.startDate,
@@ -51,6 +51,8 @@ const newCoupon=new Coupon({
     minimumPrice:data.minPrice
 })
 await newCoupon.save()
+    }
+
 return res.redirect("/admin/coupons")
     } catch (error) {
        next(error ) 

@@ -16,8 +16,9 @@ const downloadInvoice = async (req, res) => {
     const order = await Order.findOne({ orderId: orderId })
       .populate("orderItems.product")
       .populate("userId")
+    
       .lean();
-
+const address = (order.address && order.address.length > 0) ? order.address[0] : {};
     if (!order) {
       return res.status(404).send("Order not found");
     }
@@ -46,6 +47,12 @@ const downloadInvoice = async (req, res) => {
       order,
       orderDate,
       products,
+    userAddress: address.houseDetails || "",
+  userCity: address.city || "",
+  userState: address.state || "",
+  userPincode: address.pincode || "",
+  userPhone: address.phone || "",
+  userFullName: address.fullName || "",
     });
 
     const browser = await puppeteer.launch({

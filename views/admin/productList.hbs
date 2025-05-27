@@ -51,12 +51,12 @@
         
         <td>
   {{#if productOffer}}
-    {{productOffer}}
+    {{productOffer}}%
   {{else}}
     0%
   {{/if}}
 </td>
-        <td>
+        {{!-- <td>
           {{#if  productOffer  }}
       
                     <button class="btn btn-info text-white" onclick="removeOffer('{{_id}}')">remove</button>
@@ -65,7 +65,7 @@
                     <button class="btn btn-info text-white" onclick="addOffer('{{_id}}')">Add Offer</button>
 
                     {{/if}}
- </td>
+ </td> --}}
         
         <td>{{quantity}}</td>
 

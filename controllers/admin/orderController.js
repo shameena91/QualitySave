@@ -213,10 +213,10 @@ if (returnedProducts.length > 0) {
        await Product.findByIdAndUpdate(productId, {
         $inc: { quantity: orderProduct.quantity },
       });
-    
+    let returnProductPrice=0
       if(couponId)
       {
-      const returnProductPrice=orderProduct.price*orderProduct.quantity
+      returnProductPrice=orderProduct.price*orderProduct.quantity
       const remainingPrice=order.finalAmount-returnProductPrice-sumPriceReturned+order.couponDiscount
 
       console.log(couponId, returnProductPrice,remainingPrice);

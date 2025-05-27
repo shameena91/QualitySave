@@ -180,9 +180,9 @@
       <!-- Payment Method -->
       <div class="card p-3">
         <h6>Payment Method</h6>
-        <p>{{order.paymentMethod}}</p>
+        <p>{{#if (eq order.paymentMethod "cod")}} Cash on delivery{{else}} Online Payment{{/if}} </p>
         <div class="text-end">
-          {{#if (eq status "Delivered")}}
+          {{#if (or (eq status "Delivered") (eq razorpayStatus "paid"))}}
                   <a href="/invoice/download/{{orderId}}/{{product._id}}" target="_blank"  class="btn btn-sm btn-outline-success">
   Download Invoice PDF
 </a>

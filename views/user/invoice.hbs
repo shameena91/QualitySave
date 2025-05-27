@@ -14,6 +14,13 @@
   <p><strong>Order ID:</strong> {{order._id}}</p>
   <p><strong>Date:</strong> {{orderDate}}</p>
   <p><strong>Customer:</strong> {{order.userId.name}}</p>
+  <h3>Billing / Shipping Address</h3>
+<p>
+  <strong>{{order.address.address.fullName}}</strong><br>
+  {{userAddress}}<br>
+  {{userCity}}, {{userState}} - {{userPincode}}<br>
+  Phone: {{userPhone}}
+</p>
 
   <table>
     <thead>

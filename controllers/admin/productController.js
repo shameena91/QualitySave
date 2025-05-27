@@ -154,109 +154,109 @@ console.log(newProduct)
  
 };
 
-const addProductOffer = async (req, res) => {
-  try {
-    const { productId, percentage } = req.body;
+// const addProductOffer = async (req, res) => {
+//   try {
+//     const { productId, percentage } = req.body;
 
-    // Validate input
-    if (!productId || percentage == null) {
-      return res.status(400).json({ status: false, message: "Product ID and percentage are required." });
-    }
+//     // Validate input
+//     if (!productId || percentage == null) {
+//       return res.status(400).json({ status: false, message: "Product ID and percentage are required." });
+//     }
 
-    // Fetch product
-    const findProduct = await Product.findOne({ _id: productId });
-    if (!findProduct) {
-      return res.status(404).json({ status: false, message: "Product not found" });
-    }
+//     // Fetch product
+//     const findProduct = await Product.findOne({ _id: productId });
+//     if (!findProduct) {
+//       return res.status(404).json({ status: false, message: "Product not found" });
+//     }
 
-    // Fetch category
-    const findCategory = await Category.findOne({ _id: findProduct.category });
-    if (!findCategory) {
-      return res.status(404).json({ status: false, message: "Category not found" });
-    }
+//     // Fetch category
+//     const findCategory = await Category.findOne({ _id: findProduct.category });
+//     if (!findCategory) {
+//       return res.status(404).json({ status: false, message: "Category not found" });
+//     }
 
-    const categoryOffer = findCategory.categoryoffer || 0;
-    const productOffer = parseInt(percentage);
+//     const categoryOffer = findCategory.categoryoffer || 0;
+//     const productOffer = parseInt(percentage);
 
-    // Update product offer and discounted price
-    findProduct.productOffer = productOffer;
+//     // Update product offer and discounted price
+//     findProduct.productOffer = productOffer;
 
-    if (productOffer > categoryOffer) {
-      // Apply product-level discount if it's greater than category offer
+//     if (productOffer > categoryOffer) {
+//       // Apply product-level discount if it's greater than category offer
               
 
-      findProduct.discountedPrice = findProduct.salePrice - Math.floor(findProduct.salePrice * (productOffer / 100));
-    } else {
-      // Do not apply the product discount to price (category offer takes precedence)
-      findProduct.discountedPrice = findProduct.salePrice;
+//       findProduct.discountedPrice = findProduct.salePrice - Math.floor(findProduct.salePrice * (productOffer / 100));
+//     } else {
+//       // Do not apply the product discount to price (category offer takes precedence)
+//       findProduct.discountedPrice = findProduct.salePrice;
 
 
-     findProduct.discountedPrice =
-        findProduct.salePrice - Math.floor(findProduct.salePrice * (categoryOffer / 100));
+//      findProduct.discountedPrice =
+//         findProduct.salePrice - Math.floor(findProduct.salePrice * (categoryOffer / 100));
 
 
 
 
-    }
+//     }
 
-    await findProduct.save();
+//     await findProduct.save();
 
-    return res.json({ status: true, message: "Product offer updated successfully." });
+//     return res.json({ status: true, message: "Product offer updated successfully." });
 
-  } catch (error) {
-    console.error("Error in addProductOffer:", error);
-    return res.status(500).json({ status: false, message: "Internal server error" });
-  }
-};
+//   } catch (error) {
+//     console.error("Error in addProductOffer:", error);
+//     return res.status(500).json({ status: false, message: "Internal server error" });
+//   }
+// };
 
   
 
-const removeProductOffer = async (req, res) => {
-  try {
-    const { productId } = req.body;
+// const removeProductOffer = async (req, res) => {
+//   try {
+//     const { productId } = req.body;
 
-    // Check if productId is provided
-    if (!productId) {
-      return res.status(400).json({ status: false, message: "Product ID is required." });
-    }
+//     // Check if productId is provided
+//     if (!productId) {
+//       return res.status(400).json({ status: false, message: "Product ID is required." });
+//     }
 
-    // Find the product by ID
-    const findProduct = await Product.findOne({ _id: productId });
-    if (!findProduct) {
-      return res.status(404).json({ status: false, message: "Product not found." });
-    }
+//     // Find the product by ID
+//     const findProduct = await Product.findOne({ _id: productId });
+//     if (!findProduct) {
+//       return res.status(404).json({ status: false, message: "Product not found." });
+//     }
 
-    // Find the category related to the product
-    const findCategory = await Category.findOne({ _id: findProduct.category });
-    if (!findCategory) {
-      return res.status(404).json({ status: false, message: "Category not found." });
-    }
+//     // Find the category related to the product
+//     const findCategory = await Category.findOne({ _id: findProduct.category });
+//     if (!findCategory) {
+//       return res.status(404).json({ status: false, message: "Category not found." });
+//     }
 
-    const productOffer = findProduct.productOffer || 0;
-    const categoryOffer = findCategory.categoryoffer || 0;
+//     const productOffer = findProduct.productOffer || 0;
+//     const categoryOffer = findCategory.categoryoffer || 0;
 
-    // Logic to remove product offer and reapply category offer if needed
-    if (productOffer > categoryOffer) {
-      findProduct.productOffer = 0;
-      findProduct.discountedPrice = findProduct.salePrice;
+//     // Logic to remove product offer and reapply category offer if needed
+//     if (productOffer > categoryOffer) {
+//       findProduct.productOffer = 0;
+//       findProduct.discountedPrice = findProduct.salePrice;
 
-      if (categoryOffer > 0) {
-        findProduct.discountedPrice =
-          findProduct.salePrice - Math.floor(findProduct.salePrice * (categoryOffer / 100));
-      }
-    } else {
-      findProduct.productOffer = 0;
-      // findProduct.discountedPrice = findProduct.salePrice;
-    }
+//       if (categoryOffer > 0) {
+//         findProduct.discountedPrice =
+//           findProduct.salePrice - Math.floor(findProduct.salePrice * (categoryOffer / 100));
+//       }
+//     } else {
+//       findProduct.productOffer = 0;
+//       // findProduct.discountedPrice = findProduct.salePrice;
+//     }
 
-    await findProduct.save();
+//     await findProduct.save();
 
-    return res.json({ status: true, message: "Product offer removed successfully." });
-  } catch (error) {
-    console.error("Error removing product offer:", error);
-    return res.status(500).redirect("/pageerrror"); // Consider res.status(500).json(...) for API
-  }
-};
+//     return res.json({ status: true, message: "Product offer removed successfully." });
+//   } catch (error) {
+//     console.error("Error removing product offer:", error);
+//     return res.status(500).redirect("/pageerrror"); // Consider res.status(500).json(...) for API
+//   }
+// };
 
 
 
@@ -420,7 +420,7 @@ const deleteProduct= async(req,res)=>{
 }
 }
 module.exports = { productList,addProduct,postProducts,
-    addProductOffer,removeProductOffer,
+   
     unblockProduct,
     blockProduct,
     geteditProduct,editProduct ,deleteSingleImage,deleteProduct};

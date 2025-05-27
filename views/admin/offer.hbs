@@ -1,0 +1,465 @@
+
+{{> admin-header}}
+<div class="container mt-5">
+  <h3 class="mb-4">Offer Management</h3>
+
+  <ul class="nav nav-tabs" id="offerTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="product-tab" data-bs-toggle="tab" data-bs-target="#productOffer" type="button" role="tab">Product Offer</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="category-tab" data-bs-toggle="tab" data-bs-target="#categoryOffer" type="button" role="tab">Category Offer</button>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-4" id="offerTabsContent">
+    
+    <!-- ✅ Product Offer Form -->
+    <div class="tab-pane fade show active" id="productOffer" role="tabpanel">
+      <form id="productOffer-form" class="border p-4 rounded">
+        <h5 class="mb-3">Create Product Offer</h5>
+
+       <div class="mb-3">
+  <label class="form-label">Select Products</label>
+  <div class="form-check" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    {{#each products}}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="products" value="{{this._id}}" id="product{{@index}}">
+        <label class="form-check-label" for="product{{@index}}">
+          {{this.productName}}
+        </label>
+      </div>
+    {{/each}}
+  </div>
+  <div class="form-text">Check one or more products to apply the offer.</div>
+</div>
+
+        <div class="mb-3">
+          <label class="form-label">Offer Name</label>
+          <input type="text" class="form-control" name="name"  />
+                <div class="text-danger small" id="error-name"></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Offer Code</label>
+          <input type="text" class="form-control" name="code"  />
+              <div class="text-danger small" id="error-code"></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Discount (%)</label>
+          <input type="number" class="form-control" name="discount" min="1" max="99"  />
+                      <div class="text-danger small" id="error-discount"></div>
+
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Valid Until</label>
+          <input type="date" class="form-control" name="validUntil" />
+                                <div class="text-danger small" id="error-validUntil"></div>
+
+
+
+        </div>
+
+        <input type="hidden" name="type" value="product" />
+
+        <button type="submit" class="btn btn-primary">Create Product Offer</button>
+      </form>
+    </div>
+
+    <!-- ✅ Category Offer Form -->
+   <div class="tab-pane fade" id="categoryOffer" role="tabpanel">
+  <form id="categoryOffer-form" class="border p-4 rounded">
+    <h5 class="mb-3">Create Category Offer</h5>
+
+    <div class="mb-3">
+      <label for="category" class="form-label">Select Category</label>
+      <select class="form-select" name="categoryId" >
+        <option value="">-- Select a Category --</option>
+        {{#each category}}
+          <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+      <div class="text-danger small" id="error-categoryId"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Offer Name</label>
+      <input type="text" class="form-control" name="name"  />
+      <div class="text-danger small" id="error-name"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Offer Code</label>
+      <input type="text" class="form-control" name="code"  />
+      <div class="text-danger small" id="error-code"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Discount (%)</label>
+      <input type="number" class="form-control" name="discount" min="1" max="99"  />
+      <div class="text-danger small" id="error-discount"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Valid Until</label>
+      <input type="date" class="form-control" name="validUntil"  />
+      <div class="text-danger small" id="error-validUntil"></div>
+    </div>
+
+    <input type="hidden" name="type" value="category" />
+
+    <button type="submit" class="btn btn-success">Create Category Offer</button>
+  </form>
+</div>
+
+
+  </div>
+</div>
+<div class="container mt-5">
+  <h4 class="mb-4">All Offers</h4>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+    
+    
+        <th>Offer Name</th>
+        <th>Type</th>
+        <th>Target</th>
+        <th>Code</th>
+        <th>Discount (%)</th>
+        <th>Valid Until</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Example rows: dynamically rendered -->
+         {{#each offer}}
+      <tr>
+    
+        <td>{{offerName}}</td>
+
+        <td>
+  {{#if (eq type "product")}}
+    <span class="badge bg-primary">Product</span>
+  {{else if (eq type "category")}}
+    <span class="badge bg-success">Category</span>
+  {{/if}}
+</td>
+
+        
+        <td> {{#if (eq type "product")}}
+            {{#each products}}
+                <div>{{add @index 1}}. {{this.productName}}</div>
+            {{/each}}
+          {{else if (eq type "category")}}
+           {{category.name}}
+          {{else}}
+            <span class="text-muted">Not Assigned</span>
+          {{/if}}
+
+
+        </td>
+        <td>{{code}}</td>
+        <td>{{discount}}</td>
+        <td>{{formatDate validUntil}}</td>
+        <td>
+        <button class="btn btn-warning btn-sm edit-offer-btn" 
+        data-bs-toggle="modal" 
+        data-bs-target="#editOfferModal"
+        data-id="{{_id}}"
+        data-name="{{offerName}}"
+        data-code="{{code}}"
+        data-discount="{{discount}}"
+        data-valid="{{validUntil}}"
+        data-type="{{type}}"
+        data-category="{{category}}"
+     
+>
+  Edit
+</button>
+
+          {{!-- <a href="/admin/offers/edit/OFFER_ID" class="btn btn-sm btn-warning">Edit</a> --}}
+        
+          <button type="submit" class="btn btn-sm btn-danger" onclick="deleteOffer('{{_id}}')">Delete</button>
+        </td>
+      </tr>
+      {{/each}}
+     
+    </tbody>
+  </table>
+</div>
+
+
+
+
+<!-- Edit Offer Modal -->
+<div class="modal fade" id="editOfferModal" tabindex="-1" aria-labelledby="editOfferModalLabel{{offer._id}}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="editOfferForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editOfferModalLabel">Edit Offer</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label>Offer Name</label>
+            <input type="text" class="form-control" name="offerName" id="offerName" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Code</label>
+            <input type="text" class="form-control" id="code" name="code"required>
+          </div>
+
+          <div class="mb-3">
+            <label>Discount (%)</label>
+            <input type="number" class="form-control"  id="discount" name="discount"  required>
+          </div>
+
+          <div class="mb-3">
+            <label>Valid Until</label>
+            <input type="date" class="form-control" id="validUntil" name="validUntil"  required>
+          </div>
+
+          <div class="mb-3">
+            <label>Offer Type</label>
+            <select class="form-control" name="type">
+              <option value="product" {{#if (eq offer.type "product")}}selected{{/if}}>Product</option>
+              <option value="category" {{#if (eq offer.type "category")}}selected{{/if}}>Category</option>
+            </select>
+          </div>
+
+          {{#if (eq offer.type "product")}}
+            <div class="mb-3">
+              <label>Products</label>
+              <select class="form-control" name="products" multiple>
+                {{#each products}}
+                  <option value="{{this._id}}" {{#if (includes ../offer.products this._id)}}selected{{/if}}>{{this.productName}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{else}}
+            <div class="mb-3">
+              <label>Category</label>
+              <select class="form-control" name="categoryId">
+                {{#each categories}}
+                  <option value="{{this._id}}" {{#if (eq ../offer.category this._id)}}selected{{/if}}>{{this.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          {{/if}}
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Offer</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+
+ document.querySelectorAll('.edit-offer-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      document.getElementById('offerName').value=this.dataset.name
+       document.getElementById('code').value=this.dataset.code
+    })
+    })
+     
+
+  document.getElementById("productOffer-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    document.querySelectorAll(".text-danger").forEach(div => div.innerText = "");
+
+    const form = e.target;
+
+    // Gather checked products into an array
+    const selectedProducts = Array.from(form.querySelectorAll('input[name="products"]:checked'))
+                                  .map(checkbox => checkbox.value);
+
+    // Create data object to send
+    const data = {
+      products: selectedProducts,
+      name: form.name.value,
+      code: form.code.value,
+      discount: form.discount.value,
+      validUntil: form.validUntil.value,
+      type: form.type.value
+    };
+console.log(data)
+    $.ajax({
+      url: "/admin/offers/product",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(data),
+
+      success: function(res) {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Offer Created",
+            text: "Product offer created successfully!",
+          }).then(() => {
+            window.location.href = "/admin/offers";
+          });
+        }
+      },
+
+      error: function(xhr) {
+        if (xhr.status === 400) {
+          const res = xhr.responseJSON;
+          if (res && res.errors) {
+            for (const [field, message] of Object.entries(res.errors)) {
+              // Special handling for 'products' error (checkbox group)
+              if (field === 'products') {
+                let container = form.querySelector('.form-check').parentElement;
+                if (!container.querySelector('.text-danger-products')) {
+                  const errorDiv = document.createElement('div');
+                  errorDiv.classList.add('text-danger', 'small', 'text-danger-products');
+                  container.appendChild(errorDiv);
+                }
+                container.querySelector('.text-danger-products').innerText = message;
+              } else {
+                const errorDiv = document.getElementById(`error-${field}`);
+                 errorDiv.innerText = message;
+              }
+            }
+          }
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: "Please try again later.",
+          });
+        }
+      }
+    });
+  });
+
+
+
+
+
+
+
+
+
+
+  document.getElementById("categoryOffer-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Clear previous error messages
+    document.querySelectorAll(".text-danger").forEach((div) => (div.innerText = ""));
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const data = {
+      name: formData.get("name"),
+      code: formData.get("code"),
+      discount: formData.get("discount"),
+      validUntil: formData.get("validUntil"), // Match backend field name
+      type: formData.get("type"),
+      categoryId: formData.get("categoryId")
+    };
+
+    console.log("Sending Data:", data);
+
+    $.ajax({
+      url: "/admin/offers/category",
+      method: "POST",
+       contentType: "application/json",
+  data: JSON.stringify(data),
+      success: (res) => {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Offer Created",
+            text: "Category offer created successfully!",
+          }).then(() => {
+            window.location.href = "/admin/offers";
+          });
+        }  else {
+          Swal.fire({
+            icon: "error",
+            title: "Failed",
+            text: res.message || "Something went wrong.",
+          });
+        }
+      },
+      error: function (xhr) {
+  if (xhr.status === 400) {
+    // Parse the JSON response from the server
+    const res = xhr.responseJSON;
+    if (res && res.errors) {
+      for (const [field, message] of Object.entries(res.errors)) {
+        const errorDiv = document.getElementById(`error-${field}`);
+        if (errorDiv) errorDiv.innerText = message;
+      }
+    }
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Server Error',
+      text: 'Please try again later.',
+    });
+  }
+},
+    });
+  });
+
+
+
+  function deleteOffer(offerId)
+  {
+     Swal.fire({
+    title: 'Are you sure?',
+    text: "This action cannot be undone!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result)=>{
+    if(result.isConfirmed)
+    {
+$.ajax({
+      url:`/admin/deleteOffer/${offerId}`,
+      method:"DELETE",
+     
+      success:(result)=>{
+        if(result.success)
+        {
+           Swal.fire('Deleted!', 'Offer has been deleted.', 'success').then(() => {
+              location.reload(); // Reload page to reflect changes
+            });
+        }else {
+            Swal.fire('Error', res.message || 'Something went wrong.', 'error');
+          }
+
+      },error: () => {
+          Swal.fire('Error', 'Server error occurred.', 'error');
+        }
+    })
+    }
+  })
+    
+  }
+</script>
+
+
+{{> admin-foote}}

@@ -152,93 +152,93 @@ const deleteCategory=async(req,res)=>{
     }
 }
 
-const addCategoryOffer = async (req, res, next) => {
-  try {
-    const { categoryId, percentage } = req.body;
+// const addCategoryOffer = async (req, res, next) => {
+//   try {
+//     const { categoryId, percentage } = req.body;
 
-    // Validate input
-    if (!categoryId || percentage == null) {
-      return res.status(400).json({ status: false, message: "Category ID and percentage are required." });
-    }
+//     // Validate input
+//     if (!categoryId || percentage == null) {
+//       return res.status(400).json({ status: false, message: "Category ID and percentage are required." });
+//     }
 
-    // Find the category
-    const findCategory = await Category.findById(categoryId);
-    if (!findCategory) {
-      return res.status(404).json({ status: false, message: "Category not found" });
-    }
+//     // Find the category
+//     const findCategory = await Category.findById(categoryId);
+//     if (!findCategory) {
+//       return res.status(404).json({ status: false, message: "Category not found" });
+//     }
 
-    // Update category offer
-    findCategory.categoryoffer = parseInt(percentage);
-    await findCategory.save();
+//     // Update category offer
+//     findCategory.categoryoffer = parseInt(percentage);
+//     await findCategory.save();
 
-    // Fetch and update all products under this category
-    const products = await Product.find({ category: categoryId });
+//     // Fetch and update all products under this category
+//     const products = await Product.find({ category: categoryId });
 
-    for (let product of products) {
-      const productOffer = product.productOffer || 0;
-      const categoryOffer = parseInt(percentage);
+//     for (let product of products) {
+//       const productOffer = product.productOffer || 0;
+//       const categoryOffer = parseInt(percentage);
 
-      // Apply category offer only if it's greater than or equal to product offer
-      if (productOffer < categoryOffer) {
-        product.discountedPrice =
-          product.salePrice - Math.floor(product.salePrice * (categoryOffer / 100));
-      } else {
-        // Keep the existing product offer discount if it's higher
-        product.discountedPrice =
-          product.salePrice - Math.floor(product.salePrice * (productOffer / 100));
-      }
+//       // Apply category offer only if it's greater than or equal to product offer
+//       if (productOffer < categoryOffer) {
+//         product.discountedPrice =
+//           product.salePrice - Math.floor(product.salePrice * (categoryOffer / 100));
+//       } else {
+//         // Keep the existing product offer discount if it's higher
+//         product.discountedPrice =
+//           product.salePrice - Math.floor(product.salePrice * (productOffer / 100));
+//       }
 
-      await product.save();
-    }
+//       await product.save();
+//     }
 
-    return res.json({ status: true, message: "Category offer updated and products adjusted." });
+//     return res.json({ status: true, message: "Category offer updated and products adjusted." });
 
-  } catch (error) {
-    console.error("Error in addCategoryOffer:", error);
-    next(error); // Pass to error handler middleware
-  }
-};
+//   } catch (error) {
+//     console.error("Error in addCategoryOffer:", error);
+//     next(error); // Pass to error handler middleware
+//   }
+// };
 
-const removeCategoryOffer = async (req, res) => {
-  try {
-    const { categoryId } = req.body;
+// const removeCategoryOffer = async (req, res) => {
+//   try {
+//     const { categoryId } = req.body;
 
-    if (!categoryId) {
-      return res.status(400).json({ status: false, message: "Category ID is required." });
-    }
+//     if (!categoryId) {
+//       return res.status(400).json({ status: false, message: "Category ID is required." });
+//     }
 
-    const findCategory = await Category.findOne({ _id: categoryId });
-    if (!findCategory) {
-      return res.status(404).json({ status: false, message: "Category not found" });
-    }
+//     const findCategory = await Category.findOne({ _id: categoryId });
+//     if (!findCategory) {
+//       return res.status(404).json({ status: false, message: "Category not found" });
+//     }
 
-    // Reset category offer
-    findCategory.categoryoffer = 0;
-    await findCategory.save();
+//     // Reset category offer
+//     findCategory.categoryoffer = 0;
+//     await findCategory.save();
 
-    // Fetch all products in the category
-    const products = await Product.find({ category: categoryId });
+//     // Fetch all products in the category
+//     const products = await Product.find({ category: categoryId });
 
-    for (let product of products) {
-      const productOffer = product.productOffer || 0;
+//     for (let product of products) {
+//       const productOffer = product.productOffer || 0;
 
-      if (productOffer > 0) {
-        product.discountedPrice =
-          product.salePrice - Math.floor(product.salePrice * (productOffer / 100));
-      } else {
-        product.discountedPrice = product.salePrice;
-      }
+//       if (productOffer > 0) {
+//         product.discountedPrice =
+//           product.salePrice - Math.floor(product.salePrice * (productOffer / 100));
+//       } else {
+//         product.discountedPrice = product.salePrice;
+//       }
 
-      await product.save();
-    }
+//       await product.save();
+//     }
 
-    return res.json({ status: true, message: "Category offer removed and products updated." });
+//     return res.json({ status: true, message: "Category offer removed and products updated." });
 
-  } catch (error) {
-    console.error("Error in removeCategoryOffer:", error);
-    return res.status(500).json({ status: false, message: "Internal server error" });
-  }
-};
+//   } catch (error) {
+//     console.error("Error in removeCategoryOffer:", error);
+//     return res.status(500).json({ status: false, message: "Internal server error" });
+//   }
+// };
 
 
 
@@ -248,6 +248,5 @@ module.exports={loadCategory,
     categoryunListed,
     editCategory,
     updateCategory,deleteCategory,
-addCategoryOffer,
-removeCategoryOffer
+
 }

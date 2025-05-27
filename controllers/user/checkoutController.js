@@ -269,20 +269,17 @@ const getMyOrders = async (req, res) => {
   try {
     const search = req.query.search || "";
     const userId = req.session.user;
-      const page = parseInt(req.query.page) || 1;
-    const limit = 5;  // number of products per page to show
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
     const skip = (page - 1) * limit;
 
     const user = await User.findById(userId).lean();
     const searchExpn = new RegExp(search.trim(), "i");
-    const productIds = await Product.find({ productName: searchExpn })
-      .distinct("_id")
-   
-    console.log("kkkkkkkkkkkk", productIds);
-    console.log(searchExpn)
 
-    const query = {userId,
-     
+    const productIds = await Product.find({ productName: searchExpn }).distinct("_id");
+
+    const query = {
+      userId,
       $or: [
         { orderId: { $regex: searchExpn } },
         { "orderItems.product": { $in: productIds } },
@@ -293,46 +290,42 @@ const getMyOrders = async (req, res) => {
       .sort({ createdOn: -1 })
       .populate("orderItems.product")
       .lean();
- console.log("Orderssssssssssss:", orederedProduct);
-    const products =
-     orederedProduct.flatMap((order) =>
 
-       order.orderItems
-    .filter((item) => {
-      if (!search) return true;
-      return (
-        item.product?.productName?.match(searchExpn) ||
-        order.orderId.match(searchExpn)
-      );
-    })
-    
+    const groupedOrders = orederedProduct.map(order => {
+      const filteredItems = order.orderItems.filter(item => {
+        if (!search) return true;
+        return (
+          item.product?.productName?.match(searchExpn) ||
+          order.orderId.match(searchExpn)
+        );
+      });
 
-   .map((item) => ({
+      return {
         orderId: order.orderId,
         orderDate: order.createdOn.toLocaleDateString(),
-        orderTime: order.createdOn.toLocaleDateString(),
-        productName: item.product?.productName || "deletedProduct",
-        productImage: item.product?.productImage[0],
-        quantity: item.quantity,
-        price: item.price * item.quantity,
-        productId: item.product?._id,
-
-        status: item.status,
-        productId: item.product._id,
-      }))
-    );
-    const paginatedProducts = products.slice(0, skip + limit);
-
-    const totalProductsCount = products.length;
-
-    const hasMore = page * limit < totalProductsCount;
-   
-    console.log("All Ordered Products:", products);
-
-    res.render("myOrders", { orederedProduct, products:paginatedProducts, user ,search,
-      currentPage: page,
-      hasMore,
+        orderTime: order.createdOn.toLocaleTimeString(),
+        products: filteredItems.map(item => ({
+          productName: item.product?.productName || "Deleted Product",
+          productImage: item.product?.productImage[0],
+          quantity: item.quantity,
+          price: item.price * item.quantity,
+          productId: item.product?._id,
+          status: item.status,
+        }))
+      };
     });
+
+    const paginatedOrders = groupedOrders.slice(skip, skip + limit);
+    const hasMore = page * limit < groupedOrders.length;
+
+    res.render("myOrders", {
+      orders: paginatedOrders,
+      user,
+      search,
+      currentPage: page,
+      hasMore
+    });
+
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).send("Internal Server Error");
