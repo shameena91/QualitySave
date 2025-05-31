@@ -66,6 +66,9 @@ app.engine('hbs', engine({
       range: (start, end) => {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     },
+    json:(context)=>{
+      return JSON.stringify(context);
+    },
     formatDate:(date)=>{
       return new Date(date).toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -79,6 +82,7 @@ app.engine('hbs', engine({
     }
     }
   }));
+
 
 //   hbs.registerPartials(path.join(__dirname, 'views/partials/user'));
 app.set('view engine','hbs')

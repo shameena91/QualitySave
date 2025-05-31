@@ -166,7 +166,7 @@
         <td>{{discount}}</td>
         <td>{{formatDate validUntil}}</td>
         <td>
-        <button class="btn btn-warning btn-sm edit-offer-btn" 
+        {{!-- <button class="btn btn-warning btn-sm edit-offer-btn" 
         data-bs-toggle="modal" 
         data-bs-target="#editOfferModal"
         data-id="{{_id}}"
@@ -179,7 +179,7 @@
      
 >
   Edit
-</button>
+</button> --}}
 
           {{!-- <a href="/admin/offers/edit/OFFER_ID" class="btn btn-sm btn-warning">Edit</a> --}}
         
@@ -196,7 +196,7 @@
 
 
 <!-- Edit Offer Modal -->
-<div class="modal fade" id="editOfferModal" tabindex="-1" aria-labelledby="editOfferModalLabel{{offer._id}}" aria-hidden="true">
+{{!-- <div class="modal fade" id="editOfferModal" tabindex="-1" aria-labelledby="editOfferModalLabel{{offer._id}}" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <form id="editOfferForm">
@@ -265,19 +265,13 @@
       </form>
     </div>
   </div>
-</div>
+</div> --}}
 
 
 <script>
 
 
- document.querySelectorAll('.edit-offer-btn').forEach(button => {
-    button.addEventListener('click', function () {
-      document.getElementById('offerName').value=this.dataset.name
-       document.getElementById('code').value=this.dataset.code
-    })
-    })
-     
+ 
 
   document.getElementById("productOffer-form").addEventListener("submit", function(e) {
     e.preventDefault();

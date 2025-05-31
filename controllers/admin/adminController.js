@@ -68,38 +68,31 @@ const adminlogout=async(req,res)=>{
 
 
 
-const loadDashboard= async(req,res)=>{      
-    try{
-
-
-         const {
+const loadDashboard = async (req, res) => {
+  try {
+    const {
       reportType,
       fromDate,
       toDate,
       paymentMethod,
       status,
       search,
+ 
+      page,
     } = req.query;
 
-    
-    const currentPage = parseInt(req.query.page) || 1;
+    const currentPage = parseInt(page) || 1;
     const itemsPerPage = 10;
     const skip = (currentPage - 1) * itemsPerPage;
     const filter = {};
-
-    // // Filter by status
-    // if (status && status !== 'all') {
-    //   filter.status = status;
-    // }
 
     // Filter by payment method
     if (paymentMethod && paymentMethod !== 'all') {
       filter.paymentMethod = paymentMethod;
     }
 
-    // Date filter
-    let startDate, endDate;
 
+    let startDate, endDate;
     const now = new Date();
 
     switch (reportType) {
@@ -123,7 +116,7 @@ const loadDashboard= async(req,res)=>{
         if (fromDate && toDate) {
           startDate = new Date(fromDate);
           endDate = new Date(toDate);
-           endDate.setHours(23, 59, 59, 999); 
+          endDate.setHours(23, 59, 59, 999);
         }
         break;
     }
@@ -132,59 +125,193 @@ const loadDashboard= async(req,res)=>{
       filter.createdOn = { $gte: startDate, $lte: endDate };
     }
 
-
-    // Optional search filter (e.g., user name or product category)
     let orders = await Order.find(filter)
-    .populate('couponUsed')
-    .sort({createdOn:-1})
-    .lean();
-    console.log("my",orders)
- if (search) {
-     
-      if (search) {
-  orders = orders.filter((order) =>
-    order.orderId.toLowerCase().includes(search.toLowerCase())
-  );
-}
+      .populate('couponUsed')
+      .sort({ createdOn: -1 })
+      .lean();
+
+    if (search) {
+      orders = orders.filter((order) =>
+        order.orderId.toLowerCase().includes(search.toLowerCase())
+      );
     }
- let totalOrders = orders.length;
-    let totalSales = 0;
-    let totalDiscount = 0;
-    let totalCouponDiscount = 0;
 
+    const totalOrders = orders.length;
+    let totalSales = 0,
+      totalDiscount = 0,
+      totalCouponDiscount = 0;
 
- orders.forEach((order) => {
+    orders.forEach((order) => {
       totalSales += order.totalPrice || 0;
       totalDiscount += order.discount || 0;
-      totalCouponDiscount+= Number(order.couponDiscount ?? 0);
+      totalCouponDiscount += Number(order.couponDiscount ?? 0);
     });
-      
+
     const totalPages = Math.ceil(orders.length / itemsPerPage);
     const paginatedOrders = orders.slice(skip, skip + itemsPerPage);
-console.log(req.query);
 
-    return res.render("dashboard",{totalOrders,
-                totalSale:totalSales.toLocaleString(),
-                totalDiscount:totalDiscount.toLocaleString(),
-                totalCouponDiscount:totalCouponDiscount.toLocaleString(),
-                orders:paginatedOrders,
-                filterData: req.query,
-                totalPages,
-                 currentPage,
-               
+    return res.render("dashboard", {
+      totalOrders,
+      totalSale: totalSales.toLocaleString(),
+      totalDiscount: totalDiscount.toLocaleString(),
+      totalCouponDiscount: totalCouponDiscount.toLocaleString(),
+      orders: paginatedOrders,
+      filterData: req.query,
+      totalPages,
+      currentPage,
+   
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect("/pageerror");
+  }
+};
 
-            })
+function getGroupAndDateFormat(chartReportType) {
+  let groupId;
+  let dateFormat;
 
-        }catch(error)
-        {
-            console.log(error)
-            res.redirect("/pageerror")
-        }
-           
-        
+  switch (chartReportType) {
+    case 'daily':
+      groupId = {
+        year: { $year: '$createdOn' },
+        month: { $month: '$createdOn' },
+        day: { $dayOfMonth: '$createdOn' },
+      };
+      dateFormat = { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } };
+      break;
 
+    case 'monthly':
+      groupId = {
+        year: { $year: '$createdOn' },
+        month: { $month: '$createdOn' },
+      };
+      dateFormat = { $dateToString: { format: '%Y-%m', date: '$createdOn' } };
+      break;
+        case 'weekly':
+    groupId = {
+  year: { $isoWeekYear: '$createdOn' },
+  week: { $isoWeek: '$createdOn' },
+};
+dateFormat = {
+  $concat: [
+    { $toString: { $isoWeekYear: '$createdOn' } },
+    '-W',
+    {
+      $cond: {
+        if: { $lte: [{ $isoWeek: '$createdOn' }, 9] },
+        then: { $concat: ['0', { $toString: { $isoWeek: '$createdOn' } }] },
+        else: { $toString: { $isoWeek: '$createdOn' } },
+      },
+    },
+  ],
+};
+break;
 
+    case 'yearly':
+      groupId = {
+        year: { $year: '$createdOn' },
+      };
+      dateFormat = { $dateToString: { format: '%Y', date: '$createdOn' } };
+      break;
+
+    default:
+      groupId = {
+        year: { $year: '$createdOn' },
+        month: { $month: '$createdOn' },
+        day: { $dayOfMonth: '$createdOn' },
+      };
+      dateFormat = { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } };
+  }
+
+  return { groupId, dateFormat };
 }
+
+const loadchartData=async(req,res)=>{
+  try {
+    const {
+      chartReportType = 'daily', 
+      fromDate,
+      toDate,
+      paymentMethod,
+    } = req.query;
+
+
+    const filter = {};
+
+    if (paymentMethod && paymentMethod !== 'all') {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    if (fromDate && toDate) {
+      filter.createdOn = {
+        $gte: new Date(fromDate),
+        $lte: new Date(new Date(toDate).setHours(23, 59, 59, 999)),
+      };
+    }
+
+    const { groupId, dateFormat } = getGroupAndDateFormat(chartReportType);
+
+    const chartAggregation = await Order.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: groupId,
+          totalSales: { $sum: '$totalPrice' },
+          count: { $sum: 1 },
+          date: { $first: dateFormat },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 ,'_id.week':1} },
+    ]);
+
+    let chartLabels = [];
+let chartData = [];
+
+if (chartReportType === 'monthly') {
+  const year = new Date().getFullYear(); 
+
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Ju", "Aug", "Sept", "Oct", "Nov", "Dec"
+  ];
+
+  chartLabels = monthNames.map(m => `${m}`);
+
+  const salesMap = new Map(
+    chartAggregation.map(item => [item._id.month, item.totalSales])
+  );
+
+  chartData = [];
+  for (let m = 1; m <= 12; m++) {
+    chartData.push(salesMap.get(m) || 0);
+  }
+}
+ else if (chartReportType === 'yearly') {
+  const startYear = 2021;
+  const endYear = new Date().getFullYear();
+
+  chartLabels = [];
+  for (let y = startYear; y <= endYear; y++) {
+    chartLabels.push(`${y}`);
+  }
+
+  const salesMap = new Map(
+    chartAggregation.map(item => [item.date, item.totalSales])
+  );
+
+  chartData = chartLabels.map(label => salesMap.get(label) || 0);
+} else {
+  chartLabels = chartAggregation.map(item => item.date);
+  chartData = chartAggregation.map(item => item.totalSales);
+}
+    res.json({ labels: chartLabels, data: chartData });
+  } catch (error) {
+    console.error('Error fetching chart data:', error);
+    res.status(500).json({ error: 'Failed to load chart data' });
+  }
+}
+
 
 
 
@@ -192,4 +319,7 @@ module.exports={loadLogin,
     login,
     loadDashboard,
     pageError,
-    adminlogout}
+    adminlogout,
+    loadchartData
+   
+  }

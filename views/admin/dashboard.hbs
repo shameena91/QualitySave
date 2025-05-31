@@ -125,6 +125,7 @@
 
 
   <!-- Summary Section -->
+  
   <div class="row g-4 mb-5">
   <div class="col-md-3">
     <div class="card text-center shadow-sm rounded-3" style="background-color: #cfe2ff;">
@@ -164,6 +165,30 @@
     </div>
   </div>
 </div>
+<div class="row">
+<div class="col-md-6">
+
+
+
+<div class="card shadow-sm p-4 mb-5">
+  <div class="mb-4 d-flex gap-3 justify-content-center">
+  <button type="button" class="btn btn-outline-primary btn-chart" data-range="daily">Daily</button>
+  <button type="button" class="btn btn-outline-primary btn-chart" data-range="monthly">Monthly</button>
+  <button type="button" class="btn btn-outline-primary btn-chart" data-range="yearly">Yearly</button>
+  {{!-- <button type="button" class="btn btn-outline-primary btn-chart" data-range="weekly">Weekly</button> --}}
+
+</div>
+
+  <canvas id="salesChart" height="350"></canvas>
+</div>
+</div>
+<div class="col-md-6">
+ 
+
+  
+</div>
+</div>
+
 
   <!-- Table Section -->
   <div class="card shadow">
@@ -208,7 +233,7 @@
       </div>
     </div>
   </div>
-  <div class="d-flex justify-content-between align-items-center mt-4">
+  <div class="d-flex justify-content-between text-center align-items-center mt-4">
     <nav aria-label="PreviousNext">
       <ul class="pagination mb-0">
         <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
@@ -225,10 +250,85 @@
       </ul>
     </nav>
   </div>
+  <div >
+
+</div>
+<div style="margin-left: 360px;">
+  
+
 </div>
 
 
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById('salesChart').getContext('2d');
 
-  
+  const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Sales',
+        data: [],
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: '#2575fc',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // Fetch and load chart data by chartReportType
+  async function loadChartData(chartReportType) {
+    try {
+      // If you want to include other filters like paymentMethod or reportType,
+      // you can append them here as query params.
+      const response = await fetch(`/admin/dashboard/chart-data?chartReportType=${chartReportType}`);
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const data = await response.json();
+
+      salesChart.data.labels = data.labels;
+      salesChart.data.datasets[0].data = data.data;
+      salesChart.update();
+    } catch (err) {
+      console.error('Error loading chart data:', err);
+    }
+  }
+
+  // Setup buttons to update chart only
+  const buttons = document.querySelectorAll('.btn-chart');
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Remove active class from all buttons, add to clicked one
+      buttons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+
+      const range = button.getAttribute('data-range');
+      loadChartData(range);
+    });
+  });
+
+  // Load initial chart data with 'daily' range and highlight button
+  document.querySelector('.btn-chart[data-range="daily"]').classList.add('active');
+  loadChartData('daily');
+});
+</script>
+
+
+
+
+
+
 
    {{> admin-foote }}

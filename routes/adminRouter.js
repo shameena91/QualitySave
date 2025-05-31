@@ -19,6 +19,13 @@ router.get("/pageerror", adminController.pageError);
 router.get("/admin/login", adminController.loadLogin);
 router.post("/admin/login", adminController.login);
 router.get("/admin/dashboard", adminAuth, adminController.loadDashboard);
+
+
+
+
+router.get("/admin/dashboard/chart-data",adminAuth, adminController.loadchartData)
+
+
 router.get("/admin/logout", adminController.adminlogout);
 router.get("/admin/users", adminAuth, customerController.customerInfo);
 router.get("/admin/blockUser", adminAuth, customerController.customerBlocked);
@@ -177,6 +184,7 @@ router.delete("/admin/deleteCoupon/:couponId",adminAuth,couponController.deleteC
 
 router.get("/admin/salesReport",adminAuth,salesReportController.downloadExcel)
 router.get("/admin/salesReportpdf",adminAuth,salesReportController.downloadPDF)
+
 
 
 module.exports = router;

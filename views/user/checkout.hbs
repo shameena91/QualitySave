@@ -230,17 +230,21 @@ id="address-{{this._id}}"
       </div>
       <div class="form-check">
         <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod">
-        <label class="form-check-label" for="cod">
+        <label class="form-check-label" for="cod" id="codLabel">
           <i class="bi bi-cash" style="font-size: 20px;"></i> Cash on Delivery
         </label>
       </div>
-      <div class="form-check">
-  <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
-  <label class="form-check-label" for="razorpay">
-    <img src="https://cdn.razorpay.com/logo.svg" alt="Razorpay" height="20">
-  
-  </label>
+       <div class="form-check">
+    <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
+    <label class="form-check-label" for="razorpay">
+      <img src="https://cdn.razorpay.com/logo.svg" alt="Razorpay" height="20" class="me-1">
+      Online (Razorpay)
+      <br>
+      <small class="text-muted">Pay securely with Razorpay</small>
+    </label>
+  </div>
 </div>
+
 
     </div>
 
@@ -353,6 +357,23 @@ id="address-{{this._id}}"
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+
+window.onload = function () {
+  const originalAmountText = document.getElementById("finalAmount").textContent;
+  const numericAmount = parseFloat(originalAmountText.replace(/[^0-9.]/g, ''));
+
+  const codInput = document.getElementById("cod");
+  const codLabel = document.getElementById("codLabel");
+
+  if (numericAmount > 1000) {
+    codInput.disabled = true;
+    codLabel.innerHTML += ` <span class="text-danger">(Not available for orders above ₹1000)</span>`;
+  }else{
+    codInput.disabled = false;
+  }
+};
+
+
 const originalAmount=document.getElementById("finalAmount").textContent
 
 
@@ -388,6 +409,11 @@ $.ajax({
         const finalAmountElement = document.getElementById("finalAmount");
         finalAmountElement.textContent = `₹ ${amountPayable}`;
         const save=finalAmount-amountPayable
+         const codInput = document.getElementById("cod");
+        if(amountPayable < 1000)
+        {
+   codInput.disabled = false;
+        }
 
         const applyBtn = document.getElementById("applyCouponBtn");
          const removeBtn = document.getElementById("removeBtn");
@@ -424,42 +450,53 @@ $.ajax({
   
 }
 
+function removeCoupon() {
+  const applyBtn = document.getElementById("applyCouponBtn");
+  const removeBtn = document.getElementById("removeBtn");
+  const finalAmountElem = document.getElementById("finalAmount");
+  const discountSave = document.getElementById("discountSave");
+  const codInput = document.getElementById("cod");
 
-function removeCoupon()
-{
-  console.log("ffff",originalAmount)
-   const applyBtn = document.getElementById("applyCouponBtn");
-        applyBtn.textContent = "ApplyCoupon";
-        applyBtn.disabled = false;
-        const removebtn=document.getElementById("removeBtn")
-        removebtn.style.display='none'
-    $.ajax({
-url:'/remove-coupon',
-method:'POST',
-success:(response)=>{
-  if(response.success){
-    console.log("success")
+  applyBtn.textContent = "Apply Coupon";
+  applyBtn.disabled = false;
+  removeBtn.style.display = 'none';
 
-     const dummy=document.getElementById("finalAmount")
-     const discountSave=document.getElementById("discountSave")
-     discountSave.style.display='none'
-   console.log("gggf",dummy)
-   dummy.textContent=originalAmount
+  $.ajax({
+    url: '/remove-coupon',
+    method: 'POST',
+    success: (response) => {
+      if (response.success) {
+        console.log("Coupon removed successfully");
 
-  }
+        // Hide discount saved section
+        discountSave.style.display = 'none';
 
-},error:()=>{
- Swal.fire({
+        // Restore original amount
+        finalAmountElem.textContent = originalAmount;
+
+        // Check if COD should be disabled again
+        const originalPrice = parseFloat(originalAmount.toString().replace(/[₹,]/g, '').trim());
+        console.log("oriiiii",originalAmount)
+        if (parseFloat(originalPrice) > 1000) {
+          console.log("oriiiii",originalPrice)
+          codInput.disabled = true;
+        } else {
+          codInput.disabled = false;
+        }
+      }
+      
+    },
+    error: () => {
+      Swal.fire({
         icon: "error",
         title: "Server Error",
-        text: "Something went wrong while applying the coupon.",
+        text: "Something went wrong while removing the coupon.",
         confirmButtonText: "OK"
       });
-  }
-
-  })
-      
+    }
+  });
 }
+
 
 
 
