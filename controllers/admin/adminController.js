@@ -1,4 +1,4 @@
-
+const { ObjectId } = require('mongodb');
 const User=require('../../models/userSchema');
 const mongoose=require('mongoose')
 const bcrypt=require('bcrypt');
@@ -65,8 +65,160 @@ const adminlogout=async(req,res)=>{
 
 
 
+const getTopproducts = async () => {
+  return await Order.aggregate([
+    { $unwind: '$orderItems' },
+    { $match: { 'orderItems.status': { $ne: 'Cancelled' } } },
+
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'orderItems.product',
+        foreignField: '_id',
+        as: 'productDetails'
+      }
+    },
+    { $unwind: '$productDetails' },
+
+    // Convert productDetails.category (string) to ObjectId for matching
+    {
+      $addFields: {
+        'productDetails.categoryObjId': {
+          $toObjectId: '$productDetails.category'
+        }
+      }
+    },
+
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'productDetails.categoryObjId', // use converted ObjectId
+        foreignField: '_id',
+        as: 'categoryDetails'
+      }
+    },
+    { $unwind: '$categoryDetails' },
+
+    {
+      $group: {
+        _id: '$productDetails._id',
+        name: { $first: '$productDetails.productName' },
+        category: { $first: '$categoryDetails.name' },  // category name from joined doc
+        price: { $first: '$orderItems.price' },
+        totalSales: { $sum: '$orderItems.price' },
+        sold: { $sum: '$orderItems.quantity' }
+      }
+    },
+    { $sort: { totalSales: -1 } },
+    { $limit: 10 }
+  ]);
+};
 
 
+const getCategories=async()=>{
+  return await Order.aggregate([
+    { $unwind: '$orderItems' },
+    { $match: { 'orderItems.status': { $ne: 'Cancelled' } } },
+
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'orderItems.product',
+        foreignField: '_id',
+        as: 'productDetails'
+      }
+    },
+    { $unwind: '$productDetails' },
+
+    // Convert productDetails.category (string) to ObjectId for matching
+    {
+      $addFields: {
+        'productDetails.categoryObjId': {
+          $toObjectId: '$productDetails.category'
+        }
+      }
+    },
+
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'productDetails.categoryObjId', // use converted ObjectId
+        foreignField: '_id',
+        as: 'categoryDetails'
+      }
+    },
+    { $unwind: '$categoryDetails' },
+
+    {
+      $group: {
+        _id: '$categoryDetails._id',
+        name: { $first: '$categoryDetails.name' },
+        productsSold: { $sum: '$orderItems.quantity' },  // category name from joined doc
+       
+         totalSalesAmount: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
+         productIds: { $addToSet: '$productDetails._id' }
+      }
+    },
+{
+      $addFields: {
+        numberOfProducts: { $size: '$productIds' }
+      }
+    },
+
+    { $sort: { totalSalesAmount: -1 } },
+    { $limit: 10 }
+  ]);
+
+}
+const getTopBrands=async()=>{
+   return await Order.aggregate([
+     { $unwind: '$orderItems' },
+    { $match: { 'orderItems.status': { $ne: 'Cancelled' } } },
+
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'orderItems.product',
+        foreignField: '_id',
+        as: 'productDetails'
+      }
+    },
+    { $unwind: '$productDetails' },
+     {
+      $addFields: {
+        'productDetails.brandObjId': {
+          $toObjectId: '$productDetails.brand'
+        }
+      }
+    },
+
+    {
+      $lookup:{
+        from:"brands",
+        localField:'productDetails.brandObjId',
+        foreignField:'_id',
+        as:'brandDetails'
+      }
+    },
+    {$unwind:"$brandDetails"},
+ {
+      $group: {
+        _id: '$brandDetails._id',
+        name: { $first: '$brandDetails.brandName' },
+        productsSold: { $sum: '$orderItems.quantity' },  // category name from joined doc
+       
+         totalSalesAmount: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
+         productIds: { $addToSet: '$productDetails._id' }
+      }
+    },{
+      $addFields: {
+        numberOfProducts: { $size: '$productIds' }
+      }
+    },
+
+
+   ])
+}
 
 const loadDashboard = async (req, res) => {
   try {
@@ -150,6 +302,11 @@ const loadDashboard = async (req, res) => {
     const totalPages = Math.ceil(orders.length / itemsPerPage);
     const paginatedOrders = orders.slice(skip, skip + itemsPerPage);
 
+    const topProducts=await getTopproducts()
+    const topCategories=await getCategories()
+    const topBrands=await getTopBrands()
+    console.log("hhhhh",topProducts)
+
     return res.render("dashboard", {
       totalOrders,
       totalSale: totalSales.toLocaleString(),
@@ -159,6 +316,9 @@ const loadDashboard = async (req, res) => {
       filterData: req.query,
       totalPages,
       currentPage,
+      topProducts,
+      topCategories,
+      topBrands
    
     });
   } catch (error) {

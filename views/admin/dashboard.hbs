@@ -165,33 +165,11 @@
     </div>
   </div>
 </div>
-<div class="row">
-<div class="col-md-6">
 
-
-
-<div class="card shadow-sm p-4 mb-5">
-  <div class="mb-4 d-flex gap-3 justify-content-center">
-  <button type="button" class="btn btn-outline-primary btn-chart" data-range="daily">Daily</button>
-  <button type="button" class="btn btn-outline-primary btn-chart" data-range="monthly">Monthly</button>
-  <button type="button" class="btn btn-outline-primary btn-chart" data-range="yearly">Yearly</button>
-  {{!-- <button type="button" class="btn btn-outline-primary btn-chart" data-range="weekly">Weekly</button> --}}
-
-</div>
-
-  <canvas id="salesChart" height="350"></canvas>
-</div>
-</div>
-<div class="col-md-6">
- 
-
-  
-</div>
-</div>
 
 
   <!-- Table Section -->
-  <div class="card shadow">
+  <div class="card shadow-sm">
     <div class="card-body">
       <h5 class="card-title mb-4 fw-semibold">Detailed Report</h5>
       <div class="table-responsive">
@@ -232,8 +210,8 @@
         </table>
       </div>
     </div>
-  </div>
-  <div class="d-flex justify-content-between text-center align-items-center mt-4">
+
+     <div class="d-flex justify-content-between  align-items-center mb-3 me-3 ms-auto">
     <nav aria-label="PreviousNext">
       <ul class="pagination mb-0">
         <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
@@ -250,17 +228,142 @@
       </ul>
     </nav>
   </div>
-  <div >
+  </div>
+ 
+  <div class="row mt-4">
+<div class="col-md-6">
+
+
+
+<div class="card shadow-sm p-4 mb-5 mt-4">
+  <div class="mb-4 d-flex gap-3 justify-content-center">
+  <button type="button" class="btn btn-outline-primary btn-chart" data-range="daily">Daily</button>
+  <button type="button" class="btn btn-outline-primary btn-chart" data-range="monthly">Monthly</button>
+  <button type="button" class="btn btn-outline-primary btn-chart" data-range="yearly">Yearly</button>
+  {{!-- <button type="button" class="btn btn-outline-primary btn-chart" data-range="weekly">Weekly</button> --}}
 
 </div>
-<div style="margin-left: 360px;">
+
+  <canvas id="salesChart" height="350"></canvas>
+</div>
+<div class="card shadow-sm p-4 mb-4 position-relative">
+  <h5 class="mb-3 d-flex justify-content-between align-items-center">
+    Top Selling Categories
+    <button id="toggleCategoriesBtn" class="btn btn-sm btn-outline-success">+</button>
+  </h5>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Category Name</th>
+          <th>Products</th>
+          <th>Total Price</th>
+          <th>Items Sold</th>
+        </tr>
+      </thead>
+      <tbody id="top-categories-body">
+        {{#each topCategories}}
+        <tr class="category-row d-none">
+          <td>{{name}}</td>
+          <td>{{numberOfProducts}}</td>
+          <td>{{totalSalesAmount}}</td>
+          <td>{{productsSold}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<div class="card shadow-sm p-4 mb-4 position-relative">
+  <h5 class="mb-3 d-flex justify-content-between align-items-center">
+    Top Selling Brands
+    <button id="toggleBrandsBtn" class="btn btn-sm btn-outline-success">+</button>
+  </h5>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Brand Name</th>
+          <th>Products</th>
+          <th>Total Amount</th>
+          <th>Units Sold</th>
+        </tr>
+      </thead>
+      <tbody id="top-brands-body">
+        {{#each topBrands}}
+        <tr class="brand-row d-none">
+          <td>{{name}}</td>
+          <td>{{numberOfProducts}}</td>
+          <td>{{totalSalesAmount}}</td>
+          <td>{{productsSold}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+ 
+</div>
+
+
+
+
+
+{{!-- <div class="row"> --}}
+  <div class="col-md-6 mt-4">
+
+<div class="card shadow-sm p-4 mb-4">
+  <h5 class="mb-3">Top Selling Products</h5>
+  <div class="table-responsive">
+    <table class="table  table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Price (₹)</th>
+          <th>Units Sold</th>
+        </tr>
+      </thead>
+      <tbody id="top-products-body">
+        <!-- Sample first 5 rows (visible initially) -->
+        {{#each topProducts}}
+<tr class="{{#if (gt @index 4)}}extra-row d-none{{/if}}">      
+    <td>{{this.name}}</td>
+          <td>{{category}}</td>
+          <td>{{this.price}}</td>
+          <td>{{this.sold}}</td>
+        </tr>
+        {{/each}}
+       
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-center mt-2">
+    <button id="toggleProducts" class="btn btn-sm btn-outline-primary">Show More </button>
+  </div>
+</div>
+
+  </div>
   
-
 </div>
+</div>
+
 
 
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+
+ 
+
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
   const ctx = document.getElementById('salesChart').getContext('2d');
 
@@ -323,6 +426,51 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelector('.btn-chart[data-range="daily"]').classList.add('active');
   loadChartData('daily');
 });
+
+// Categories toggle
+const toggleCategoriesBtn = document.getElementById('toggleCategoriesBtn');
+const categoryRows = document.querySelectorAll('.category-row');
+
+toggleCategoriesBtn.addEventListener('click', () => {
+  const isHidden = categoryRows.length > 0 && categoryRows[0].classList.contains('d-none');
+
+  if (isHidden) {
+    for (let i = 0; i < 10 && i < categoryRows.length; i++) {
+      categoryRows[i].classList.remove('d-none');
+    }
+    toggleCategoriesBtn.textContent = '−';  // minus sign when visible
+  } else {
+    categoryRows.forEach(row => row.classList.add('d-none'));
+    toggleCategoriesBtn.textContent = '+';  // plus sign when hidden
+  }
+});
+
+// Products toggle
+document.getElementById("toggleProducts").addEventListener("click", function () {
+  const extraRows = document.querySelectorAll(".extra-row");
+  extraRows.forEach(row => row.classList.toggle("d-none"));
+
+  this.textContent = this.textContent.includes("More") ? "Show Less " : "Show More ";
+});
+
+// Brands toggle
+const toggleBrandsBtn = document.getElementById('toggleBrandsBtn');
+const brandRows = document.querySelectorAll('.brand-row');
+
+toggleBrandsBtn.addEventListener('click', () => {
+  const isHidden = brandRows.length > 0 && brandRows[0].classList.contains('d-none');
+
+  if (isHidden) {
+    for (let i = 0; i < 10 && i < brandRows.length; i++) {
+      brandRows[i].classList.remove('d-none');
+    }
+    toggleBrandsBtn.textContent = '−';  // minus sign when visible
+  } else {
+    brandRows.forEach(row => row.classList.add('d-none'));
+    toggleBrandsBtn.textContent = '+';  // plus sign when hidden
+  }
+});
+
 </script>
 
 
