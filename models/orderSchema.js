@@ -44,6 +44,10 @@ const orderSchema = new mongoose.Schema({
     },
     deliveredAt: {
       type: Date,
+    },
+    refundPrice:{
+      type:Number,
+      default:0,
     }
   }],
   totalPrice: {
@@ -100,6 +104,10 @@ const orderSchema = new mongoose.Schema({
     ref:"Coupon",
     default:null
    
+  },
+  shipping:{
+    type:Number,
+    default:0
   },
   createdOn: {
     type: Date,

@@ -147,7 +147,7 @@ id="address-{{this._id}}"
       </li>
       <li class="list-group-item d-flex justify-content-between border-0">
         <span>Shipping</span>
-        <span class="text-success text-bold">Free</span>
+        <span class="text-success text-bold" id="shipping">₹{{shippingCharge}}</span>
       </li>
        <li class="list-group-item d-flex justify-content-between border-0" >
         <span id="discountSave" class= "text-success" style="display:none;font-weight:600">ddd</span>
@@ -515,6 +515,8 @@ function removeCoupon() {
     const paymentMethod = selectedPaymentRadio ? selectedPaymentRadio.value : null;
   const finalAmountText=document.getElementById("finalAmount").textContent
 const payableAmount = parseFloat(finalAmountText.replace('₹', '').trim());
+  const shippingText=document.getElementById("shipping").textContent
+const shipping = parseFloat(shippingText.replace('₹', '').trim());
    
    if (!selectedAddressId || !paymentMethod) {
      Swal.fire({
@@ -533,7 +535,8 @@ const payableAmount = parseFloat(finalAmountText.replace('₹', '').trim());
       data: {
         addressId: selectedAddressId,
         paymentMethod: 'cod',
-        amount:payableAmount
+        amount:payableAmount,
+        shippingCharge:shipping
       },
       success: function (response) {
         Swal.fire({

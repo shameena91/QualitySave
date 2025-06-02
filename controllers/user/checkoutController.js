@@ -81,14 +81,25 @@ const getCheckout = async (req, res) => {
       return acc + curr.totalSalePrice;
     }, 0);
 
-    const finalTotalPrice = cartProducts.reduce((acc, curr) => {
+    const finalTotalAmount= cartProducts.reduce((acc, curr) => {
       return acc + curr.totalPrice;
     }, 0);
-    const totalDiscount = finalSalePrice - finalTotalPrice;
+    const totalDiscount = finalSalePrice - finalTotalAmount;
 const coupons = await Coupon.find({
-  minimumPrice: { $lt: finalTotalPrice },
+  minimumPrice: { $lt: finalTotalAmount },
   isList: true
 }).lean();
+
+
+
+let shippingCharge = 0;
+
+if (finalTotalAmount < 850) {
+  shippingCharge = 40;
+}
+
+const finalTotalPrice = finalTotalAmount + shippingCharge;
+console.log( shippingCharge )
 
 if (
       !userAddressDoc ||
@@ -103,7 +114,7 @@ if (
       finalTotalPrice,
       totalDiscount,
       coupons,
-      user
+      user,shippingCharge
 
       });
     }
@@ -117,7 +128,8 @@ if (
       finalSalePrice,
       finalTotalPrice,
       totalDiscount,
-      coupons
+      coupons,shippingCharge
+   
     });
   } catch (error) {
     console.error("Error in getCheckout:", error.message);
@@ -188,12 +200,13 @@ const createOrder = async (req, res) => {
   try {
     const userId = req.session.user;
     const couponId=req.session.coupon
-    const { addressId, paymentMethod,amount } = req.body;
+    const { addressId, paymentMethod,amount,shippingCharge } = req.body;
     // const userAddressDoc = await Address.findOne({ userId:userId }).lean();
 
     console.log(addressId);
     console.log(paymentMethod);
-    console.log(amount);
+    console.log("ggggggggg",amount);
+    const amountPay=amount-shippingCharge
 //     if(paymentMethod==="cod")
 //       {
 // paymentMethod="Cash on delivery"
@@ -222,11 +235,18 @@ const createOrder = async (req, res) => {
       (sum, item) => sum + item.totalSalePrice,
       0
     );
+
     const discount = totalAmount - finalAmount;
     console.log("amounu:", finalAmount);
     console.log(totalAmount);
-    const couponDiscount= finalAmount-amount
+   
 
+    let shippin=0
+    if(finalAmount<850){
+      shippin=40
+    }
+
+ const couponDiscount= finalAmount-amountPay
     const newOrder = new Order({
       userId: userId,
       orderItems,
@@ -238,6 +258,7 @@ const createOrder = async (req, res) => {
 couponUsed:couponId,
       invoiceDate: new Date(),
       paymentMethod:paymentMethod,
+      shipping:shippin
     });
     console.log("nnnn", newOrder);
     await newOrder.save();
@@ -390,6 +411,8 @@ const cancelOrder = async (req, res) => {
     const user = await User.findById(userId);
 
     const order = await Order.findOne({ userId, orderId });
+    const returnProduct=await Product.findById(productId)
+    console.log("rrrrrrr",returnProduct)
     if (!order) {
       return res.status(404).send("Order not found");
     }
@@ -397,20 +420,16 @@ const cancelOrder = async (req, res) => {
     const specifiedProduct = order.orderItems.find(
       (item) => item.product._id.toString() === productId
     );
-// const returnedProduct= order.orderItems.find((item) => {
-//       return item.status === "Returned";
-//     });
-//     let sumPriceReturned=0
 
-//     sumPriceReturned=returnedProduct.reduce((acc,curr)=>{
-// return acc+(curr.quantity*current.price)
-//     },0)
 
 
     if (!specifiedProduct) {
       return res.status(404).send("Product not found in order");
     }
 const couponId=order.couponUsed
+
+
+
 
 console.log(order.razorpayStatus)
     if (order.razorpayStatus === "paid") {
@@ -420,6 +439,7 @@ console.log(order.razorpayStatus)
       {
       let returnProductPrice=specifiedProduct.price*specifiedProduct.quantity
       const remainingPrice=order.finalAmount-returnProductPrice
+
       console.log(couponId, returnProductPrice,remainingPrice);
       if(remainingPrice>=findCoupon.minimumPrice)
         {
@@ -429,7 +449,14 @@ console.log(order.razorpayStatus)
       type: 'credit',
       reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId}`,
 });
-        }else{
+       
+specifiedProduct.refundPrice=returnProductPrice
+order.finalAmount=order.finalAmount-returnProductPrice
+order.totalPrice=order.totalPrice-returnProduct.salePrice
+order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
+
+
+}else{
           const amountTransfer=order.finalAmount-remainingPrice
             user.wallet = user.wallet + amountTransfer;
                user.walletHistory.push({
@@ -438,7 +465,14 @@ console.log(order.razorpayStatus)
   reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId}`,
 });
    
-        }             
+  specifiedProduct.refundPrice=amountTransfer
+order.finalAmount=order.finalAmount-amountTransfer
+order.totalPrice=order.totalPrice-returnProduct.salePrice
+order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
+      
+
+
+}             
       }
 else{
       const refundAmount = specifiedProduct.quantity * specifiedProduct.price;
@@ -449,6 +483,12 @@ else{
         reason: `Refund for cancelled product ${specifiedProduct.product.name || specifiedProduct.product} from order ${orderId}`,
       });
        specifiedProduct.status = "Cancelled";
+
+specifiedProduct.refundPrice=refundAmount
+order.finalAmount=order.finalAmount-refundAmount
+order.totalPrice=order.totalPrice-returnProduct.salePrice
+order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
+
       await user.save();
     }
   }

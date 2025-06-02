@@ -208,6 +208,8 @@ if (returnedProducts.length > 0) {
      let couponId=order.couponUsed
      const findCoupon=await Coupon.findById(couponId)
         const user = await User.findById(userId);
+        const returnProduct=await Product.findById(productId)
+        console.log("ttttt",order.orderItems.length)
 
     if (returnStatus === "Approved") {
        await Product.findByIdAndUpdate(productId, {
@@ -227,7 +229,17 @@ if (returnedProducts.length > 0) {
       amount: returnProductPrice ,
       type: 'credit',
       reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
-});
+
+    }
+    
+);
+
+orderProduct.refundPrice=returnProductPrice
+order.finalAmount=order.finalAmount-returnProductPrice
+order.totalPrice=order.totalPrice-returnProduct.salePrice
+order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
+
+
         }else{
           const amountTransfer=order.finalAmount-remainingPrice
             user.wallet = user.wallet + amountTransfer;
@@ -236,7 +248,10 @@ if (returnedProducts.length > 0) {
   type: 'credit',
   reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
 });
-   
+   orderProduct.refundPrice=amountTransfer
+   order.finalAmount=order.finalAmount-amountTransfer
+   order.totalPrice=order.totalPrice-returnProduct.salePrice
+   order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
         }
 
               
@@ -247,9 +262,15 @@ if (returnedProducts.length > 0) {
   type: 'credit',
   reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
 });
-      }
+   orderProduct.refundPrice=returnProductPrice  
+     order.finalAmount=order.finalAmount-returnProductPrice
+     order.totalPrice=order.totalPrice-returnProduct.salePrice
+        order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
+
+}
   
       await user.save();
+      
     }
 
     await order.save();

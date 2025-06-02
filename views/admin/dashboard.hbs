@@ -69,7 +69,7 @@
     <div class="card-body">
       <div class="row g-3">
         <div class="col-md-4">
-          <select class="form-select" name="reportType" aria-label="Report Type">
+          <select class="form-select" name="reportType"   aria-label="Report Type">
            <option value="custom">Custom Range</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
@@ -107,16 +107,16 @@
             name="search"
             placeholder="Search by orderId"
             aria-label="Search"
+            value="{{search}}"
           />
         </div>
         <div class="col-md-3 d-flex gap-3">
-          <button class="btn btn-warning  fw-semibold" type="submit">
-            <i class="bi bi-search me-2 "></i> Search
+          <button class="btn btn-warning  fw-semibold" type="submit" >
+            <i class="bi bi-search me-2"></i> Search
           </button>
-          <a href="/admin/dashboard">
-          <button class="btn btn-secondary w-100 fw-semibold " type="submit" >
-             Clear
-          </button></a>
+         <a href="/admin/dashboard" class="btn btn-secondary  fw-semibold">
+  Clear
+</a>
         </div>
       </div>
     </div>
@@ -194,7 +194,7 @@
               <td>₹{{this.totalPrice}}
                 
               </td>
-              <td>₹{{this.finalAmount}}</td>
+              <td>{{#if this.shipping}}₹{{sub this.finalAmount this.shipping }}{{else}}₹{{this.finalAmount}}{{/if}}</td>
               <td>₹{{ add this.discount this.couponDiscount}}</td>
               {{#if this.couponUsed}}
               <td>{{this.couponUsed.name}}</td>
@@ -246,14 +246,14 @@
 
   <canvas id="salesChart" height="350"></canvas>
 </div>
-<div class="card shadow-sm p-4 mb-4 position-relative">
-  <h5 class="mb-3 d-flex justify-content-between align-items-center">
-    Top Selling Categories
-    <button id="toggleCategoriesBtn" class="btn btn-sm btn-outline-success">+</button>
-  </h5>
+<div class="card shadow-sm  mb-4 position-relative">
+  <div class="d-flex justify-content-between align-items-center  text-white p-2 rounded-top" style="background-color:rgb(252, 152, 58)">
+    <h5 class="mb-0">Top Selling Categories</h5>
+    <span id="toggleCategoriesBtn" class="fs-4 fw-bold" style="cursor: pointer;">+</span>
+  </div>
 
   <div class="table-responsive">
-    <table class="table table-hover align-middle">
+    <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
           <th>Category Name</th>
@@ -278,13 +278,14 @@
 
 
 
-<div class="card shadow-sm p-4 mb-4 position-relative">
-  <h5 class="mb-3 d-flex justify-content-between align-items-center">
-    Top Selling Brands
-    <button id="toggleBrandsBtn" class="btn btn-sm btn-outline-success">+</button>
-  </h5>
+<div class="card shadow-sm mb-4">
+  <div class="bg-success text-white d-flex justify-content-between align-items-center p-2 rounded-top">
+    <h5 class="mb-0">Top Selling Brands</h5>
+    <span id="toggleBrandsBtn" class="fs-4 fw-bold cursor-pointer" style="cursor: pointer;">+</span>
+  </div>
+  
   <div class="table-responsive">
-    <table class="table table-hover align-middle">
+    <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
           <th>Brand Name</th>
@@ -307,6 +308,7 @@
   </div>
 </div>
 
+
  
 </div>
 
@@ -317,8 +319,11 @@
 {{!-- <div class="row"> --}}
   <div class="col-md-6 mt-4">
 
-<div class="card shadow-sm p-4 mb-4">
-  <h5 class="mb-3">Top Selling Products</h5>
+<div class="card shadow-sm mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-0  text-white p-2 rounded-top"  style="background-color:rgb(49, 193, 250)">
+
+  <h5 >Top Selling Products</h5>
+  </div>
   <div class="table-responsive">
     <table class="table  table-hover align-middle">
       <thead class="table-light">

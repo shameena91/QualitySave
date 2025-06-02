@@ -306,6 +306,7 @@ const loadDashboard = async (req, res) => {
     const topCategories=await getCategories()
     const topBrands=await getTopBrands()
     console.log("hhhhh",topProducts)
+    const shipcharge=orders.shipping
 
     return res.render("dashboard", {
       totalOrders,
@@ -318,7 +319,9 @@ const loadDashboard = async (req, res) => {
       currentPage,
       topProducts,
       topCategories,
-      topBrands
+      topBrands,
+      shipcharge,
+      search
    
     });
   } catch (error) {
