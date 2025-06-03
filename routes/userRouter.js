@@ -10,6 +10,7 @@ const cartController = require("../controllers/user/cartController");
 const checkoutController = require("../controllers/user/checkoutController");
 const walletController = require("../controllers/user/walletController");
 const invoiceController = require("../controllers/user/invoiceContoller");
+const aboutController=require("../controllers/user/aboutController")
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({ storage: storage });
@@ -162,6 +163,9 @@ router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
 router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)
 router.post("/remove-coupon",userAuth,checkoutController.removeCoupon)
 router.get("/wallet-transaction",userAuth,walletController.walletTransaction)
+router.get("/privacy-polycy",userAuth,aboutController.getPrivacy)
+router.get("/terms-conditions",userAuth,aboutController.getTermsConditions)
+router.get("/about-us",userAuth,aboutController.getAboutUs)
 
 
 module.exports = router;

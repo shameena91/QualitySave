@@ -11,7 +11,8 @@ const getOffer=async(req,res)=>{
         const category=await Category.find().lean()
         const offer=await Offer.find() 
         .populate('products', 'productName')   // only show productName
-      .populate('category', 'name')  // only show categoryName
+      .populate('category', 'name') 
+      .sort({createdAt:-1}) // only show categoryName
       .lean();
         res.render("offer",{products,category,offer})
     } catch (error) {

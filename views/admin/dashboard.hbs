@@ -69,28 +69,27 @@
     <div class="card-body">
       <div class="row g-3">
         <div class="col-md-4">
-          <select class="form-select" name="reportType"   aria-label="Report Type">
-           <option value="custom">Custom Range</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-            
-          </select>
+          <select class="form-select" name="reportType" aria-label="Report Type">
+  <option value="custom" {{#if (eq filterData.reportType 'custom')}}selected{{/if}}>Custom Range</option>
+  <option value="daily" {{#if (eq filterData.reportType 'daily')}}selected{{/if}}>Daily</option>
+  <option value="weekly" {{#if (eq filterData.reportType 'weekly')}}selected{{/if}}>Weekly</option>
+  <option value="monthly" {{#if (eq filterData.reportType 'monthly')}}selected{{/if}}>Monthly</option>
+  <option value="yearly" {{#if (eq filterData.reportType 'yearly')}}selected{{/if}}>Yearly</option>
+</select>
         </div>
         <div class="col-md-4">
-          <input type="date" class="form-control" name="fromDate" aria-label="From Date" />
+          <input type="date" class="form-control" value="{{filterData.fromDate}}" name="fromDate" aria-label="From Date" />
         </div>
         <div class="col-md-4">
-          <input type="date" class="form-control" name="toDate" aria-label="To Date" />
+          <input type="date" class="form-control" value="{{filterData.toDate}}" name="toDate" aria-label="To Date" />
         </div>
         <div class="col-md-3">
           <select class="form-select" name="paymentMethod" aria-label="Payment Method">
-            <option value="" selected>Payment Method</option>
-            <option value="razorpay">Razorpay</option>
-            <option value="paypal">PayPal</option>
-            <option value="cod">Cash on Delivery</option>
-          </select>
+  <option value="" {{#unless filterData.paymentMethod}}selected{{/unless}}>Payment Method</option>
+  <option value="razorpay" {{#if (eq filterData.paymentMethod 'razorpay')}}selected{{/if}}>Razorpay</option>
+  <option value="paypal" {{#if (eq filterData.paymentMethod 'paypal')}}selected{{/if}}>PayPal</option>
+  <option value="cod" {{#if (eq filterData.paymentMethod 'cod')}}selected{{/if}}>Cash on Delivery</option>
+</select>
         </div>
         {{!-- <div class="col-md-3">
           <select class="form-select" name="status" aria-label="Order Status">

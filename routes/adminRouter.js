@@ -8,6 +8,7 @@ const brandController = require("../controllers/admin/brandContoller");
 const orderController = require("../controllers/admin/orderController");
 const couponController=require("../controllers/admin/couponController")
 const salesReportController=require("../controllers/admin/salesReportController")
+const ledgerController=require("../controllers/admin/ledgerController")
 const offrController=require("../controllers/admin/offerController")
 
 const { userAuth, adminAuth } = require("../middlewares/auth");
@@ -114,7 +115,7 @@ router.patch(
 
 router
   .route("/admin/brand/:id/block")
-  .patch(adminAuth, brandController.blockBrand);
+  .post(adminAuth, brandController.blockBrand);
 
 router
   .route("/admin/brand/:id/unblock")
@@ -184,6 +185,7 @@ router.delete("/admin/deleteCoupon/:couponId",adminAuth,couponController.deleteC
 
 router.get("/admin/salesReport",adminAuth,salesReportController.downloadExcel)
 router.get("/admin/salesReportpdf",adminAuth,salesReportController.downloadPDF)
+router.get("/admin/ledger",adminAuth,ledgerController.getLedger)
 
 
 

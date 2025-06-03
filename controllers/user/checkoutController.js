@@ -11,6 +11,7 @@ const env=require('dotenv').config();
 const crypto = require("crypto");
 
 const { editAddressPage } = require("./addressController");
+const Ledger = require("../../models/ledgerSchema");
 
 
 
@@ -454,7 +455,14 @@ specifiedProduct.refundPrice=returnProductPrice
 order.finalAmount=order.finalAmount-returnProductPrice
 order.totalPrice=order.totalPrice-returnProduct.salePrice
 order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-
+await Ledger.create({
+  user: order.userId,
+  orderId: order._id,
+  type: 'debit',
+  amount: returnProductPrice,
+  paymentMethod: 'wallet',
+  description: `Refund for cancelled product${productId}`
+});
 
 }else{
           const amountTransfer=order.finalAmount-remainingPrice
@@ -469,7 +477,14 @@ order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.
 order.finalAmount=order.finalAmount-amountTransfer
 order.totalPrice=order.totalPrice-returnProduct.salePrice
 order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-      
+ await Ledger.create({
+  user: order.userId,
+  orderId: order._id,
+  type: 'debit',
+  amount: amountTransfer,
+  paymentMethod: 'wallet',
+  description: `Refund for cancelled product${productId}`
+});     
 
 
 }             
@@ -488,7 +503,14 @@ specifiedProduct.refundPrice=refundAmount
 order.finalAmount=order.finalAmount-refundAmount
 order.totalPrice=order.totalPrice-returnProduct.salePrice
 order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-
+await Ledger.create({
+  user: order.userId,
+  orderId: order._id,
+  type: 'debit',
+  amount: refundAmount,
+  paymentMethod: 'wallet',
+  description: `Refund for cancelled product${productId}`
+});
       await user.save();
     }
   }
@@ -599,6 +621,7 @@ const createRazorpayOrder = async (req, res) => {
 
     await newOrder.save();
 
+
     // 4. Create Razorpay order
     const razorpayOrder = await razorpayInstance.orders.create({
       amount: amount * 100, // in paise
@@ -606,6 +629,7 @@ const createRazorpayOrder = async (req, res) => {
       receipt: String(newOrder._id),
       payment_capture: 1,
     });
+    
 
     // 5. Return data to client
     res.status(200).json({
@@ -651,8 +675,18 @@ const order= await Order.findById(orderId)
   razorpayStatus: 'paid',
  
 });
+   const updatedOrder = await Order.findById(orderId);
 
-
+if (updatedOrder && updatedOrder.razorpayStatus === "paid") {
+  await Ledger.create({
+    user: updatedOrder.userId,
+    orderId: updatedOrder._id,
+    type: "credit",
+    amount: updatedOrder.finalAmount,
+    paymentMethod: updatedOrder.paymentMethod,
+    description: `Order payment received for Order ${updatedOrder.orderId}`
+  });
+}
     for (let item of order.orderItems) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { quantity: -item.quantity }

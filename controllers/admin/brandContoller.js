@@ -96,27 +96,31 @@ const deleteBrand = async (req, res) => {
     }
   };
 
-  const blockBrand=async(req,res)=>{
-    try {
-        const brandId=req.params.id
-       
+const blockBrand = async (req, res) => {
+  try {
+    const brandId = req.params.id;
+    console.log("Brand ID to block:", brandId);
 
-        const findBrand = await Brand.findByIdAndUpdate(
-            brandId,
-            { isBlocked: true },
-            { new: true }
-          );
+    const updatedBrand = await Brand.findByIdAndUpdate(
+      brandId,
+      { isBlocked: true },
+      { new: true }
+    );
 
-          if(!findBrand)
-          {
-            return res.status(404).json({ message: "Brand not found." });
-          }
-          res.status(200).json({ message: "Brand has been blocked." });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error blocking brand.", error });
+    if (!updatedBrand) {
+      return res.status(404).json({ message: "Brand not found." });
     }
+
+    res.status(200).json({ message: "Brand has been blocked." });
+  } catch (error) {
+    console.error("Error blocking brand:", error.message);
+    res.status(500).json({
+      message: "Failed to block the brand.",
+      error: error.message || "Unknown server error.",
+    });
   }
+};
+
 
 
   

@@ -1,5 +1,6 @@
 const Address = require("../../models/addressSchema");
 const Coupon = require("../../models/couponSchema");
+const Ledger = require("../../models/ledgerSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
@@ -45,20 +46,23 @@ const getOrderDetails = async (req, res) => {
     }
 
     const products = orderdata.flatMap((order) =>
-      order.orderItems.map((item) => ({
-        orderId: order.orderId,
-        orderDate: order.createdOn.toLocaleDateString(),
-        orderTime: order.createdOn.toLocaleTimeString(),
-        productName: item.product?.productName || "deletedProduct",
-        productImage: item.product?.productImage[0],
-        quantity: item.quantity,
-        price: item.price * item.quantity,
-        user: order.userId?.name,
-        status: item.status,
-        productId: item.product._id,
-        returnStatus: item.returnStatus,
-      }))
-    );
+  order.orderItems
+    .filter((item) => item.product) // Exclude deleted products
+    .map((item) => ({
+      orderId: order.orderId,
+      orderDate: order.createdOn.toLocaleDateString(),
+      orderTime: order.createdOn.toLocaleTimeString(),
+      productName: item.product.productName,
+      productImage: item.product.productImage?.[0] || "no-image.jpg",
+      quantity: item.quantity,
+      price: item.price * item.quantity,
+      user: order.userId?.name || "Unknown User",
+      status: item.status,
+      productId: item.product._id,
+      returnStatus: item.returnStatus,
+    }))
+);
+
     console.log(products);
     console.log("length:", products.length);
     const requestProduct = products.filter((item) => {
@@ -116,6 +120,28 @@ const updateStatus = async (req, res) => {
         $inc: { quantity: -orderProduct.quantity },
       });
     }
+
+
+  if (order.paymentMethod === 'cod' && orderProduct.status === 'Delivered') {
+  const existingLedger = await Ledger.findOne({
+    user: order.userId,
+    orderId: order._id,
+    description: `COD payment received for product ${productId}`
+  });
+
+  if (!existingLedger) {
+    await Ledger.create({
+      user: order.userId,
+      orderId: order._id,
+      type: 'credit',
+      amount: orderProduct.price * orderProduct.quantity,
+      paymentMethod: 'cod',
+      description: `COD payment received for product ${productId}`
+    });
+  }
+}
+
+
     res.json({ message: "Status updated successfully." });
   } catch (err) {
     console.error(err);
@@ -238,7 +264,14 @@ orderProduct.refundPrice=returnProductPrice
 order.finalAmount=order.finalAmount-returnProductPrice
 order.totalPrice=order.totalPrice-returnProduct.salePrice
 order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-
+await Ledger.create({
+  user: order.userId,
+  orderId: order._id,
+  type: 'debit',
+  amount: returnProductPrice,
+  paymentMethod: 'wallet',
+  description: `Refund issued for product${productId}`
+});
 
         }else{
           const amountTransfer=order.finalAmount-remainingPrice
@@ -252,10 +285,20 @@ order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.
    order.finalAmount=order.finalAmount-amountTransfer
    order.totalPrice=order.totalPrice-returnProduct.salePrice
    order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-        }
+    await Ledger.create({
+  user: order.userId,
+  orderId: order._id,
+  type: 'debit',
+  amount: amountTransfer,
+  paymentMethod: 'wallet',
+  description: `Refund issued for product${productId}`
+});    
+  
+  }
 
               
       }else{
+        returnProductPrice=orderProduct.price*orderProduct.quantity
          user.wallet = user.wallet +returnProductPrice;
            user.walletHistory.push({
   amount: returnProductPrice >= 0 ? returnProductPrice : 0,
@@ -266,8 +309,16 @@ order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.
      order.finalAmount=order.finalAmount-returnProductPrice
      order.totalPrice=order.totalPrice-returnProduct.salePrice
         order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
+await Ledger.create({
+  user: order.userId,
+  orderId: order._id,
+  type: 'debit',
+  amount: returnProductPrice,
+  paymentMethod: 'wallet',
+  description: `Refund issued for product${productId}`
+});
 
-}
+      }
   
       await user.save();
       
