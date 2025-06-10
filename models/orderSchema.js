@@ -30,6 +30,10 @@ const orderSchema = new mongoose.Schema({
       type: Number,
       required: true,
     },
+    discountedAmount:{
+    type: Number,
+      default:0,
+    },
     status: {
       type: String,
       required: true,

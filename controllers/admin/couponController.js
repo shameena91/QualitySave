@@ -5,13 +5,16 @@ const getCoupon = async (req, res, next) => {
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
 
-    // Update expired coupons to inactive and not listed
+ 
     await Coupon.updateMany(
       { expireOn: { $lt: todayDate }, isList: true },
       { $set: { status: "Inactive" } }
     );
 
-    // Fetch only active & listed coupons
+  await Coupon.updateMany(
+      { expireOn: { $gte: todayDate }, isList: true },
+      { $set: { status: "Active" } }
+    );
     const coupons = await Coupon.find({ isList: true}).sort({createdOn:-1})
     .lean();
 
@@ -65,6 +68,11 @@ const updateCoupon = async (req, res) => {
     const { couponId } = req.params;
     const { code, discount, minimumPrice, startDate, endDate } = req.body;
     console.log(couponId)
+    //   await Coupon.updateMany(
+    //   { expireOn: { $lt: todayDate }, isList: true },
+    //   { $set: { status: "Inactive" } }
+    // );
+
 
     await Coupon.findByIdAndUpdate(couponId, {
       name: code,

@@ -40,7 +40,7 @@ const downloadExcel=async(req,res)=>{
       case 'custom':
           if (fromDate && toDate) {
     startDate = new Date(fromDate);
-    startDate.setHours(0, 0, 0, 0);  // Start of fromDate day
+    startDate.setHours(0, 0, 0, 0);  
     endDate = new Date(toDate);
     endDate.setHours(23, 59, 59, 999); 
         }
@@ -125,7 +125,6 @@ const downloadPDF = async (req, res) => {
     const now = new Date();
     let startDate, endDate;
 
-    // Date range filtering (similar to Excel example)
     switch (reportType) {
       case 'daily':
         startDate = new Date(now.setHours(0, 0, 0, 0));
@@ -216,7 +215,6 @@ const downloadPDF = async (req, res) => {
     doc.text('Discount', columnPositions.discount, tableTop);
     doc.text('Coupon', columnPositions.coupon, tableTop);
 
-    // Line below headers
     doc.moveTo(50, tableTop + 15).lineTo(570, tableTop + 15).stroke();
 
     // --- Table Rows ---
@@ -224,7 +222,7 @@ const downloadPDF = async (req, res) => {
     let y = tableTop + 25;
 
     for (let order of orders) {
-      if (y > 750) { // Page break
+      if (y > 750) { 
         doc.addPage();
         y = 50;
       }

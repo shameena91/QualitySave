@@ -245,7 +245,7 @@
 
 
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{this.productImage.[0]}}" alt="{{productName}}" /></a>
-            <h4>{{this.productName}}</h4>
+            <h4 class="text-truncate d-block" style="max-width: 100%;">{{this.productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
           {{#if (gt category.categoryoffer productOffer )}}
 {{#if category.categoryoffer}}

@@ -80,7 +80,7 @@ const getTopproducts = async () => {
     },
     { $unwind: '$productDetails' },
 
-    // Convert productDetails.category (string) to ObjectId for matching
+  
     {
       $addFields: {
         'productDetails.categoryObjId': {
@@ -92,7 +92,7 @@ const getTopproducts = async () => {
     {
       $lookup: {
         from: 'categories',
-        localField: 'productDetails.categoryObjId', // use converted ObjectId
+        localField: 'productDetails.categoryObjId', 
         foreignField: '_id',
         as: 'categoryDetails'
       }
@@ -103,7 +103,7 @@ const getTopproducts = async () => {
       $group: {
         _id: '$productDetails._id',
         name: { $first: '$productDetails.productName' },
-        category: { $first: '$categoryDetails.name' },  // category name from joined doc
+        category: { $first: '$categoryDetails.name' },  
         price: { $first: '$orderItems.price' },
         totalSales: { $sum: '$orderItems.price' },
         sold: { $sum: '$orderItems.quantity' }
@@ -130,7 +130,7 @@ const getCategories=async()=>{
     },
     { $unwind: '$productDetails' },
 
-    // Convert productDetails.category (string) to ObjectId for matching
+   
     {
       $addFields: {
         'productDetails.categoryObjId': {
@@ -153,7 +153,7 @@ const getCategories=async()=>{
       $group: {
         _id: '$categoryDetails._id',
         name: { $first: '$categoryDetails.name' },
-        productsSold: { $sum: '$orderItems.quantity' },  // category name from joined doc
+        productsSold: { $sum: '$orderItems.quantity' },  
        
          totalSalesAmount: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
          productIds: { $addToSet: '$productDetails._id' }
@@ -205,7 +205,7 @@ const getTopBrands=async()=>{
       $group: {
         _id: '$brandDetails._id',
         name: { $first: '$brandDetails.brandName' },
-        productsSold: { $sum: '$orderItems.quantity' },  // category name from joined doc
+        productsSold: { $sum: '$orderItems.quantity' }, 
        
          totalSalesAmount: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
          productIds: { $addToSet: '$productDetails._id' }
@@ -238,7 +238,7 @@ const loadDashboard = async (req, res) => {
     const skip = (currentPage - 1) * itemsPerPage;
     const filter = {};
 
-    // Filter by payment method
+ 
     if (paymentMethod && paymentMethod !== 'all') {
       filter.paymentMethod = paymentMethod;
     }

@@ -64,10 +64,63 @@
   {{/if}}
 {{/if}}
 
+  {{#if (eq order.paymentMethod "razorpay")}}
+  {{#if (eq order.razorpayStatus "failed")}}
+    <div class="card p-4 shadow-sm" style="background: #f8d7da; border-left: 5px solid #dc3545;">
+      <h5 class="mb-2 text-danger">Order Not Placed</h5>
+      <p class="mb-1">Due to an error with the payment, this order could not be placed.</p>
+      <p class="mb-3">If money was deducted, please contact your bank.</p>
+      <a href="/checkout" class="btn btn-danger w-25">Place Order Again</a>
+    </div>
+  {{/if}}
+{{/if}}
+
+
+
+
+  {{#if (eq order.razorpayStatus "failed")}}
+  <div class="card p-3 mb-4 shadow-sm">
+     <div style="color:#c0bebe">Order ID :{{order.orderId}}</div>
+
+        <div class="d-flex justify-content-between mt-4 py-3">
+          
+  
+          
+          <div class="ms-4">
+            <h6 class="mb-1">{{product.productName}}</h6>
+            <p class="mb-1">Qty: {{quantity}}</p>
+            <p class="mb-2">Price: {{price}}
+              </p>
+
+         
+          </div>
+          <div class="text-end">
+            <img src="/uploads/re-image/{{product.productImage.[0]}}" class="me-3" style="height: 100px;" />
+
+          </div>
+
+        </div>
+
+
+
+
+ <div class="d-flex align-items-center mt-2 p-2" role="alert">
+        <i class="fas fa-check-circle me-2" style="color:red"></i>
+        <div>Order Not Placed ,{{formatDate order.createdOn}}</div>
+      </div>
+
+
+      </div>
+         
+
+  {{else}}
+
+
+
 
       <div class="card p-3 mb-4 shadow-sm">
      
-
+<div style="color:#c0bebe">Order ID :{{order.orderId}}</div>
         <div class="d-flex justify-content-between mt-4 py-3">
   
           
@@ -94,6 +147,9 @@
           </div>
 
         </div>
+
+
+
            <div class="text-end">
             {{#if (eq status "Pending") }}
             <button class="btn btn-sm btn-danger " data-bs-toggle="modal" data-bs-target="#cancelModal">
@@ -102,6 +158,10 @@
 
 {{/if}}  
        </div>
+
+
+
+
        <div class="text-end mt-3">
 
   {{#if (eq status "Delivered")}}
@@ -139,10 +199,8 @@
   {{/if}}
 
 </div>
-
-    
       </div>
-         
+    {{/if}}     
     </div>
 
    

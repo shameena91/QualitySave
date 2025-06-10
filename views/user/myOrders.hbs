@@ -56,6 +56,12 @@
       <div>
         <div><strong>Order ID:</strong> {{this.orderId}}</div>
         <div><strong>Placed on:</strong> {{this.orderDate}} at {{this.orderTime}}</div>
+
+    {{#if (eq this.paymentMethod "razorpay")}}
+  {{#if (eq this.RazorPay "failed")}}
+    <h5 class="mt-2" style="color:orange">Order not placed</h5>
+  {{/if}}
+{{/if}}
       </div>
     </div>
 
@@ -63,10 +69,12 @@
 
     {{#each this.products}}
       <div class="row align-items-center mb-4">
+
         <div class="col-md-2">
           <img src="/uploads/re-image/{{this.productImage}}" alt="Product" class="product-img" style="width: 100px; height: auto;">
         </div>
         <div class="col-md-6">
+         
           <h6>{{this.productName}}</h6>
           <div>Quantity: {{this.quantity}}</div>
           <div>Price: ₹{{this.price}}</div>
@@ -84,6 +92,17 @@
             <a href="/view-orderDetails/{{../orderId}}/{{this.productId}}" class="btn btn-sm btn-outline-primary">View Details</a>
           </div>
         </div>
+
+            {{#if (eq ../paymentMethod "razorpay")}}
+  {{#if (eq ../RazorPay "failed")}}
+  <div>
+
+  
+        <p class="mt-2  p-2" style="border:1px solid rgb(168, 168, 250);background-color:rgb(231, 231, 250)">
+        <i class="fa-solid fa-circle-info"></i>  Payment not successful. Please contyact your bank for any money deduct</p>
+  </div>
+  {{/if}}
+{{/if}}
       </div>
     {{/each}}
 

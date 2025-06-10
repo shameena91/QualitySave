@@ -11,6 +11,7 @@ const checkoutController = require("../controllers/user/checkoutController");
 const walletController = require("../controllers/user/walletController");
 const invoiceController = require("../controllers/user/invoiceContoller");
 const aboutController=require("../controllers/user/aboutController")
+const razorpayController=require("../controllers/user/razorpayCOntroller")
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({ storage: storage });
@@ -128,7 +129,7 @@ router.get(
 
 
 
-router.post("/createRazorpayOrder",userAuth, checkoutController.createRazorpayOrder)
+
 
 
 router.post(
@@ -156,8 +157,13 @@ router.get(
   invoiceController.downloadInvoice
 );
 
-router.post("/verifyPayment",userAuth,checkoutController.verifyPayment)
-router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
+router.post("/verifyPayment",userAuth,razorpayController.verifyPayment)
+router.post("/createRazorpayOrder",userAuth, razorpayController.createRazorpayOrder)
+router.post("/retry-payment/:orderId",userAuth, razorpayController.retryRazorpayPayment)
+
+
+
+router.get("/orderFailure",userAuth,checkoutController.getOrderFailure)
 
 
 router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)

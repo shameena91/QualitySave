@@ -10,7 +10,7 @@ const getWallet=async(req,res)=>{
         .lean()
 
       const walletHistory = userData.walletHistory
-      ?.slice(-3) // gets last 3 entries
+      ?.slice(-3) 
       .reverse();
         return res.render("wallet",{user:userData,
           walletHistory})
@@ -21,7 +21,7 @@ const getWallet=async(req,res)=>{
 const walletTransaction =async(req,res)=>{
     try {
          const page = parseInt(req.query.page) || 1;
-    const limit = 5;  // number of products per page to show
+    const limit = 5;  
     const skip = (page - 1) * limit;
         const userId=req.session.user
         const userData=await User.findById(userId)

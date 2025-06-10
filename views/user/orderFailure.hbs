@@ -1,54 +1,74 @@
 {{>headr}}
 
-<style>
-  .failure-page {
-    max-width: 500px;
-    margin: 60px auto;
-    text-align: center;
-    padding: 30px;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-
-  .failure-page img {
-    width: 180px;
-    margin-bottom: 20px;
-  }
-
-  .failure-page h2 {
-    font-size: 24px;
-    color: #d9534f;
-    margin-bottom: 10px;
-  }
-
-  .failure-page p {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 20px;
-  }
-
-  .failure-page .btn {
-    margin: 8px;
-    min-width: 160px;
-    font-weight: 500;
-  }
-</style>
-
-<div class="container failure-page">
-  <img src="/images/failure-illustration.svg" alt="Payment Failed" />
-  <h2>Oops! Your payment didn’t go through.</h2>
-  <p>Please try again or view your order for more options.</p>
+<div class="container failure-page text-center mt-5">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cross_red_circle.svg/2048px-Cross_red_circle.svg.png" alt="Payment Failed" style="max-width: 100px;" />
+  <h2 class="mt-4">Oops! Your payment didn’t go through.</h2>
+  <p class="mb-4">Please try again or view your order for more options.</p>
   <div>
-    <button onclick="retryPayment()" class="btn btn-warning">Retry Payment</button>
+    <button id="retryButton" class="btn btn-warning">Retry Payment</button>
     <a href="/my-orders" class="btn btn-outline-secondary">View Order Details</a>
   </div>
 </div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-{{>foote}}
+
+
 <script>
-  function retryPayment() {
-    // Implement re-triggering payment flow or redirect to checkout
-    window.location.href = `/checkout/${orderId}`;
-  }
+  document.getElementById("retryButton").addEventListener("click", function(event) {
+    event.preventDefault();
+    history.back(); 
+  });
 </script>
+{{!-- <script>
+ 
+
+
+ function retryPayment(orderId) {
+  fetch(`/retry-payment/${orderId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.razorpayOrderId) {
+        const options = {
+          key: data.key,
+          amount: data.amount,
+
+          currency: data.currency,
+            name: "quality save",
+                 description: "Order Payment",
+          order_id: data.razorpayOrderId,
+          handler: function (response) {
+            // Handle payment success (send to backend if needed)
+            verifyPayment(response, data.orderId);
+          },
+        };
+        var rzp = new Razorpay(options);
+        rzp.open();
+      }
+    })
+    .catch(err => {
+      console.error("Retry failed:", err);
+    });
+}
+function verifyPayment(paymentResult, orderId) {
+  $.ajax({
+    url: '/verifyPayment',
+    method: 'POST',
+    data: {
+      razorpayOrderId: paymentResult.razorpay_order_id,
+      razorpayPaymentId: paymentResult.razorpay_payment_id,
+      razorpaySignature: paymentResult.razorpay_signature,
+      orderId: orderId
+    },
+    success: function () {
+      window.location.href = `/orderSuccess/${orderId}`;
+    },
+    error: function () {
+      window.location.href = `/orderFailure/${orderId}`;
+    }
+  });
+}
+</script> --}}
+{{> foote}}

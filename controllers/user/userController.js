@@ -32,7 +32,9 @@ const loadHomePage = async (req, res) => {
     let productDetails = await Product.find({
       isBlocked: false,
       category: { $in: categories.map((category) => category._id) }
-    }).lean();
+    }).populate("brand")
+    .populate("category")
+    .lean();
     productDetails.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
@@ -173,11 +175,11 @@ console.log(user.referalCode)
         const findUser=await User.findOne({referralCode:user.referalCode})
         if(findUser)
         {
-       findUser.wallet = (findUser.wallet || 0) + 100; // Initialize if undefined
+       findUser.wallet = (findUser.wallet || 0) + 100; 
           findUser.walletHistory = findUser.walletHistory || []; 
      
 console.log("userrrrrrrr",findUser)
-    // Optionally, log transaction
+   
     findUser.walletHistory.push({
   type: 'credit',
   amount: 100,

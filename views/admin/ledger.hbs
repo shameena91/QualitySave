@@ -127,5 +127,29 @@
     </div>
     
   </div>
+
+  <div class="d-flex justify-content-end mt-4">
+
+
+<nav aria-label="page-navigation">
+  <ul class="pagination">
+    <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+    </li>
+
+    
+      {{#each (range 1 totalPages)}}
+      <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+        <a class="page-link" href="?page={{this}}">{{this}}</a>
+      </li>
+    {{/each}}
+
+
+    <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{add currentPage 1}}">next</a></li>
+    
+  </ul>
+</nav>
+</div>
 </div>
 {{> admin-foote}}

@@ -10,9 +10,9 @@ const getOffer=async(req,res)=>{
         .lean()
         const category=await Category.find().lean()
         const offer=await Offer.find() 
-        .populate('products', 'productName')   // only show productName
+        .populate('products', 'productName')   
       .populate('category', 'name') 
-      .sort({createdAt:-1}) // only show categoryName
+      .sort({createdAt:-1}) 
       .lean();
         res.render("offer",{products,category,offer})
     } catch (error) {
@@ -25,46 +25,39 @@ const productOffer=async(req,res)=>{
     console.log("name",req.body)
     const errors = {};
 
-    // Validate products (should be an array with at least one product ID)
     if (!Array.isArray(products) || products.length === 0) {
       errors.products = 'Please select at least one product.';
     }
 
-    // Validate name
+ 
     if (!name ) {
       errors.name = 'Offer name is required.';
     }
 
-    // Validate code
     if (!code || code.trim() === '') {
       errors.code = 'Offer code is required.';
     }
 
-    // Validate discount
     if (!discount) {
       errors.discount = 'Discount is required.';
     } else if (discount <= 0 || discount >= 100) {
       errors.discount = 'Discount must be between 1 and 99.';
     }
 
-    // Validate validUntil date
     if (!validUntil) {
       errors.validUntil = 'Valid until date is required.';
     } else if (new Date(validUntil) <= new Date()) {
       errors.validUntil = 'Valid until date must be in the future.';
     }
 
-    // Validate type
     if (!type || type !== 'product') {
       errors.type = 'Invalid offer type.';
     }
 console.log(errors)
-    // If any validation errors, return 400 with errors object
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    // Check for duplicate offer code
     const existingOffer = await Offer.findOne({ code });
     if (existingOffer) {
       return res.status(400).json({
@@ -75,14 +68,13 @@ console.log(errors)
       });
     }
 
-    // Create new offer
     const newOffer = new Offer({
       offerName: name,
       code,
       discount,
       validUntil,
       type,
-      products, // array of product IDs
+      products, 
     });
 
     await newOffer.save();
@@ -104,13 +96,12 @@ console.log(errors)
   const bestOffer = Math.max(categoryOffer, productOffer);
   const discountedPrice = product.salePrice - Math.floor(product.salePrice * (bestOffer / 100));
 
-  // Update each product in DB by ID
   await Product.findByIdAndUpdate(product._id, { discountedPrice ,productOffer:discount});
 }
 
 
-    // Optional: you can update the individual products if needed
-    // e.g. add this offer's discount to each product, or flag the offer
+   
+
 
     return res.json({ success: true });
   } catch (error) {
@@ -124,7 +115,7 @@ const categoryOffer = async (req, res) => {
     const { name, code, discount, validUntil, type, categoryId } = req.body;
     const errors = {};
 
-    // === VALIDATIONS ===
+  
     if (!name) errors.name = 'Offer name is required.';
     if (!code) errors.code = 'Offer code is required.';
     if (!discount) {
@@ -144,12 +135,11 @@ const categoryOffer = async (req, res) => {
       errors.categoryId = 'Category must be selected.';
     }
 
-    // Return validation errors
+
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    // === CHECK FOR EXISTING OFFER CODE ===
     const existingOffer = await Offer.findOne({ code });
     if (existingOffer) {
       return res.status(400).json({
@@ -160,7 +150,7 @@ const categoryOffer = async (req, res) => {
       });
     }
 
-    // === SAVE OFFER ===
+
     const newOffer = new Offer({
       offerName: name,
       code,
@@ -172,14 +162,14 @@ const categoryOffer = async (req, res) => {
 
     await newOffer.save();
 
-    // === UPDATE CATEGORY OFFER FIELD ===
+
     const findCategory = await Category.findById(categoryId);
     if (findCategory) {
       findCategory.categoryoffer = discount;
       await findCategory.save();
     }
 
-    // === APPLY TO PRODUCTS ===
+   
     const products = await Product.find({ category: categoryId }).populate('category').lean();
 
     if (!products.length) {
@@ -215,16 +205,16 @@ const deleteOffer = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Offer not found.' });
     }
 
-    // Destructure for clarity
+ 
     const { type, products, category, discount } = offer;
 
     if (type === 'product') {
-      // Reset discountedPrice for all products in the offer
+     
       for (const productId of products) {
         const product = await Product.findById(productId);
         if (!product) continue;
 
-        // Recalculate best discount (only category remains if any)
+   
         const categoryOffer = product.category?.categoryoffer || 0;
         const discountedPrice = categoryOffer
           ? product.salePrice - Math.floor(product.salePrice * (categoryOffer / 100))
@@ -238,14 +228,14 @@ const deleteOffer = async (req, res) => {
     }
 
     if (type === 'category') {
-      // Clear offer in the category
+     
       const findCategory = await Category.findById(category);
       if (findCategory) {
         findCategory.categoryoffer = 0;
         await findCategory.save();
       }
 
-      // Reset all products in the category
+   
       const categoryProducts = await Product.find({ category });
 
       for (const product of categoryProducts) {
@@ -261,9 +251,7 @@ const deleteOffer = async (req, res) => {
       }
     }
 
-    // You can add similar logic for referral offers if needed
-
-    // Finally, delete the offer
+   
     await Offer.findByIdAndDelete(offerId);
 
     res.json({ success: true, message: 'Offer deleted and related updates completed.' });

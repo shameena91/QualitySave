@@ -76,10 +76,12 @@
     border-radius: 10px;
     width: 250px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+         height: fit-content;
   }
 
   .filter-section {
     margin-bottom: 30px;
+   
   }
 
   .filter-title {
@@ -145,7 +147,9 @@
     transition: 0.3s ease;
     position: relative;
     text-align: center;
-    height: auto;
+    height: fit-content;
+  
+   
   }
 
   .product-card:hover {
@@ -165,7 +169,10 @@
     font-size: 18px;
     color: #333;
     margin: 10px 0 5px;
+    
   }
+
+
 
   .product-card p {
     margin: 4px 0;
@@ -174,16 +181,17 @@
 
   .wishlist-btn {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #ff4d4f;
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+ top:5px;
+  right: 15px;
+  z-index: 2;
+  font-size: 1.2rem;
+  background-color: #ffffffcc;
+  padding: 5px 8px 3px 8px;
+  
+  
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
 
   .add-to-cart-btn {
     background-color: #1e918b;
@@ -286,11 +294,11 @@
       <main class="product-grid">
         
         {{#each products}}
-          <div class="product-card">
+          <div class="product-card ">
         
-            <span class="wishlist-btn" onclick="addToWishlist('{{_id}}')">❤️</span>
+            <span class="wishlist-btn text-danger" onclick="addToWishlist(this,'{{_id}}')"><i class="bi bi-heart-fill"></i></span>
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{productImage.[0]}}" alt="{{productName}}" /></a>
-            <h4>{{productName}}</h4>
+            <h4 class="text-truncate d-block" style="max-width: 100%;">{{productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
          
 
@@ -322,8 +330,12 @@
 
            
              {{#if quantity}}
-            <button class="add-to-cart-btn" onclick="addToCart('{{_id}}')">Add to Cart</button>
-            {{else}}
+ <div class="card-footer bg-white border-0">
+      <a href="/addtoCart?id={{_id}}"
+         class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+        Add to Cart
+      </a>
+    </div>            {{else}}
              <h5 style="color:red">Currently unavailable</h5>
              {{/if}}
           </div>
@@ -358,13 +370,14 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script>
-  function addToWishlist(proId)
+  function addToWishlist(element,proId)
   {
     $.ajax({
       url:'/addToWishlist',
       method:"POST",
       data:{proId:proId},
       success:(response)=>{
+          $(element).find('i').removeClass('text-danger').addClass('text-secondary');
         if(response.status){
           Swal.fire({
             title:"added to wishlist",

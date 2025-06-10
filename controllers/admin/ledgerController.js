@@ -10,27 +10,23 @@ const getLedger = async (req, res) => {
 
     const filter = {};
 
-    // Filter by type if provided and not 'all'
     if (type && type !== 'all') {
       filter.type = type;
     }
 
-    // Filter by date range if both fromDate and toDate are provided
     if (fromDate && toDate) {
-      // Convert strings to Date objects
       const startDate = new Date(fromDate);
       const endDate = new Date(toDate);
 
-      // Adjust endDate to include the whole day (optional)
+    
       endDate.setHours(23, 59, 59, 999);
 
-      filter.createdOn = { $gte: startDate, $lte: endDate };
+      filter.date = { $gte: startDate, $lte: endDate };
     }
 
-    // Fetch ledger entries with pagination and filter
     const ledgerEntries = await Ledger.find(filter)
     .populate("user")
-      .sort({ createdOn: -1 })  // latest first
+      .sort({ date: -1 })  
       .skip(skip)
 
       .limit(itemsPerPage)
@@ -38,7 +34,6 @@ const getLedger = async (req, res) => {
 
 
 
-    // Count total filtered documents for pagination
     const totalCount = await Ledger.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / itemsPerPage);
 
@@ -59,7 +54,6 @@ const getLedger = async (req, res) => {
 
     const totalRevenue = totalSales - totalRefunds;
 console.log(ledgerEntries)
-    // Render ledger page with data
     res.render('ledger', {
       ledgerEntries,
       currentPage,

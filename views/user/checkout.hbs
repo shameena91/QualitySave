@@ -507,36 +507,39 @@ function removeCoupon() {
 
 
 
- function createOrder() {
-    const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
-    const selectedAddressId = selectedAddressRadio ? selectedAddressRadio.getAttribute('data-id') : null;
+function createOrder() {
+  const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
+  const selectedAddressId = selectedAddressRadio ? selectedAddressRadio.getAttribute('data-id') : null;
 
-    const selectedPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
-    const paymentMethod = selectedPaymentRadio ? selectedPaymentRadio.value : null;
-  const finalAmountText=document.getElementById("finalAmount").textContent
-const payableAmount = parseFloat(finalAmountText.replace('₹', '').trim());
-  const shippingText=document.getElementById("shipping").textContent
-const shipping = parseFloat(shippingText.replace('₹', '').trim());
-   
-   if (!selectedAddressId || !paymentMethod) {
-     Swal.fire({
+  const selectedPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
+  const paymentMethod = selectedPaymentRadio ? selectedPaymentRadio.value : null;
+
+  const finalAmountText = document.getElementById("finalAmount").textContent;
+  const payableAmount = parseFloat(finalAmountText.replace('₹', '').trim());
+
+  const shippingText = document.getElementById("shipping").textContent;
+  const shippingCharge = parseFloat(shippingText.replace('₹', '').trim());
+
+  if (!selectedAddressId || !paymentMethod) {
+    Swal.fire({
       title: 'Missing Information',
       text: 'Please select both an address and a payment method.',
       icon: 'warning',
       confirmButtonText: 'OK'
     });
     return;
-    }
- if (paymentMethod === 'cod') {
-    // COD route
+  }
+
+  if (paymentMethod === 'cod') {
+    // COD: Direct order creation
     $.ajax({
       url: '/createOrder',
       method: 'POST',
       data: {
         addressId: selectedAddressId,
         paymentMethod: 'cod',
-        amount:payableAmount,
-        shippingCharge:shipping
+        amount: payableAmount,
+        shippingCharge: shippingCharge
       },
       success: function (response) {
         Swal.fire({
@@ -557,27 +560,32 @@ const shipping = parseFloat(shippingText.replace('₹', '').trim());
         });
       }
     });
-  } 
-  else if (paymentMethod === 'razorpay') {
-    // Razorpay route
+
+  } else if (paymentMethod === 'razorpay') {
+    // Razorpay: Get Razorpay order first
     $.ajax({
       url: '/createRazorpayOrder',
       method: 'POST',
       data: {
-        addressId: selectedAddressId,
-         paymentMethod: 'razorpay',
-         amount:payableAmount
+        amount: payableAmount
       },
       success: function (response) {
         const options = {
           key: response.key,
           amount: response.amount,
           currency: response.currency,
-          name: "quality save",
+          name: "Quality Save",
           description: "Order Payment",
           order_id: response.razorpayOrderId,
           handler: function (paymentResult) {
-            verifyPayment(paymentResult, response.orderId);
+            verifyPayment(paymentResult, {
+              addressId: selectedAddressId,
+              paymentMethod: paymentMethod,
+              amount: payableAmount,
+              shippingCharge: shippingCharge,
+             
+              
+            });
           },
           modal: {
             ondismiss: function () {
@@ -588,21 +596,20 @@ const shipping = parseFloat(shippingText.replace('₹', '').trim());
                 confirmButtonText: 'OK'
               });
             }
-          },
-          theme: {
-            color: "#3399cc"
           }
         };
+
         const rzp = new Razorpay(options);
-         rzp.on('payment.failed', function () {
-        window.location.href = `/orderFailure/${response.orderId}`;
-      });
+        rzp.on('payment.failed', function (response) {
+          // Redirect to failure page with orderId if needed (can pass orderData or response.error)
+          window.location.href = `/orderFailure`;
+        });
         rzp.open();
       },
       error: function () {
         Swal.fire({
-          title: 'Order Failed',
-          text: 'Something went wrong while initiating Razorpay payment.',
+          title: 'Error',
+          text: 'Could not initiate payment. Please try again.',
           icon: 'error',
           confirmButtonText: 'OK'
         });
@@ -610,24 +617,29 @@ const shipping = parseFloat(shippingText.replace('₹', '').trim());
     });
   }
 }
-function verifyPayment(paymentResult, orderId) {
+
+function verifyPayment(paymentResult, orderData) {
   $.ajax({
     url: '/verifyPayment',
     method: 'POST',
+   
     data: {
       razorpayOrderId: paymentResult.razorpay_order_id,
       razorpayPaymentId: paymentResult.razorpay_payment_id,
       razorpaySignature: paymentResult.razorpay_signature,
-      orderId: orderId
+      ...orderData
     },
-    success: function () {
-      window.location.href = `/orderSuccess/${orderId}`;
+
+    success: function (res) {
+      window.location.href = `/orderSuccess/${res.orderId}`;
     },
-    error: function () {
-      window.location.href = `/orderFailure/${orderId}`;
+    error: function (xhr) {
+      const orderId=orderData.orderId
+      window.location.href = `/orderFailure`;
     }
   });
 }
+
 </script>
 
 

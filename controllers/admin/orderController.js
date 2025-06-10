@@ -27,6 +27,7 @@ const getOrderDetails = async (req, res) => {
     if (statusFilter) {
       query["orderItems.status"] = statusFilter;
     }
+  //  query["orderItems.status"] = { $ne: "Cancelled" };
 
     const orderdata = await Order.find(query)
       .populate("orderItems.product")
@@ -37,7 +38,7 @@ const getOrderDetails = async (req, res) => {
     const allOrders = await Order.find();
 
     const requestItem = allOrders.flatMap((order) =>
-      order.orderItems.filter((item) => item.returnStatus === "Requested")
+      order.orderItems.filter((item) => item.returnStatus === "Requested" )
     );
     console.log("lllllllll", requestItem.length);
 
@@ -263,6 +264,7 @@ if (returnedProducts.length > 0) {
 orderProduct.refundPrice=returnProductPrice
 order.finalAmount=order.finalAmount-returnProductPrice
 order.totalPrice=order.totalPrice-returnProduct.salePrice
+order.discount=order.discount-orderProduct.discountedAmount
 order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
 await Ledger.create({
   user: order.userId,
@@ -284,6 +286,7 @@ await Ledger.create({
    orderProduct.refundPrice=amountTransfer
    order.finalAmount=order.finalAmount-amountTransfer
    order.totalPrice=order.totalPrice-returnProduct.salePrice
+  order.discount=order.discount-orderProduct.discountedAmount
    order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
     await Ledger.create({
   user: order.userId,
@@ -308,6 +311,7 @@ await Ledger.create({
    orderProduct.refundPrice=returnProductPrice  
      order.finalAmount=order.finalAmount-returnProductPrice
      order.totalPrice=order.totalPrice-returnProduct.salePrice
+      order.discount=order.discount-orderProduct.discountedAmount
         order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
 await Ledger.create({
   user: order.userId,

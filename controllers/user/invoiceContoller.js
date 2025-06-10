@@ -1,34 +1,54 @@
-const Address = require("../../models/addressSchema");
+
 const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
+const Address=require("../../models/addressSchema")
 
 const fs = require("fs").promises;
 const path = require("path");
 const hbs = require("express-handlebars").create();
 const puppeteer = require("puppeteer");
+const Handlebars = require("handlebars");
+
+// Register needed helpers manually
+Handlebars.registerHelper("eq", (a, b) => a === b);
+Handlebars.registerHelper("add", (a, b) => a + b);
+Handlebars.registerHelper("sub", (a, b) => a - b);
+Handlebars.registerHelper("formatDate", (date) =>
+  new Date(date).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+);
 
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const productId = req.params.productId;
+    const userId=req.session.user
     const order = await Order.findOne({ orderId: orderId })
       .populate("orderItems.product")
       .populate("userId")
+   
     
       .lean();
-const address = (order.address && order.address.length > 0) ? order.address[0] : {};
-    if (!order) {
+    const address=await Address.findOne({userId:userId})
+  
+    .lean()
+
+console.log("sssss",address)
+if (!order) {
       return res.status(404).send("Order not found");
     }
-    console.log(order);
+    console.log("ddddddddddddddddddddd",order);
 
     const templatePath = path.join(__dirname, "../../views/user/invoice.hbs");
     console.log(templatePath);
     const templateContent = await fs.readFile(templatePath, "utf-8");
 
-    const template = hbs.handlebars.compile(templateContent);
+    const template = Handlebars.compile(templateContent);
     const orderDate = order.createdOn.toLocaleDateString();
 
     const orderProduct = order.orderItems.filter(
@@ -42,18 +62,21 @@ const address = (order.address && order.address.length > 0) ? order.address[0] :
       price: item.price,
       total: item.quantity * item.price,
     }));
+const deliveryAddress = address?.address?.[0] || {};
+   const html = template({
+  discount: order.totalPrice -order.finalAmount, 
+  order,
+  orderDate,
+  products,
+  userAddress: deliveryAddress.houseDetails || "",
+  userCity: deliveryAddress.city || "",
+  userState: deliveryAddress.state || "",
+  userPincode: deliveryAddress.pincode || "",
+  userPhone: deliveryAddress.phone || "",
+  userFullName: deliveryAddress.fullName || "",
+});
+  
 
-    const html = template({
-      order,
-      orderDate,
-      products,
-    userAddress: address.houseDetails || "",
-  userCity: address.city || "",
-  userState: address.state || "",
-  userPincode: address.pincode || "",
-  userPhone: address.phone || "",
-  userFullName: address.fullName || "",
-    });
 
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
