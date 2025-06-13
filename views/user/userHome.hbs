@@ -19,115 +19,93 @@
   border-radius: 50%;
   transition: background-color 0.3s ease;
 }
+  header {
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+}
+body, html {
+  margin: 0;
+  padding: 0;
+}
 </style>
 
 
-  <header>
-      <div class="container-fluid">
-        <div class="row py-3 border-bottom">
-          
-          <div class="col-sm-4 col-lg-2 text-center text-sm-start d-flex gap-3 justify-content-center justify-content-md-start">
-            <div class="d-flex align-items-center my-3 my-sm-0">
-              <a href="/">
-     <div class="mt-0 img-container  d-flex justify-content-center align-items-center" style="width: 200px; height: 50px; overflow: hidden;">
-  <img src="images/qslogo.png" alt="logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-</div>
-                
+<header class="bg-white shadow-sm">
+  <nav class="navbar navbar-expand-md bg-white py-2">
+    <div class="container-fluid">
+
+      <!-- Logo -->
+      <a class="navbar-brand" href="/">
+        <img src="images/qslogo-1.png" alt="Logo" style="height: 50px; width: auto;">
+      </a>
+
+      <!-- Toggler (visible only on md and below) -->
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Offcanvas Menu -->
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title">Menu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav ms-auto gap-3">
+
+            <li class="nav-item">
+              <a class="nav-link fw-semibold" href="/">Home</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link fw-semibold" href="/shop">Shopping</a>
+            </li>
+
+            {{#if user}}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle fw-semibold" style="text-transform:capitalize;" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                {{user.name}}
               </a>
-            </div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-              aria-controls="offcanvasNavbar">
-              <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#menu"></use></svg>
-            </button>
-          </div>
-          
-          <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-4">
-            <div class="search-bar row  p-2 rounded-4">
-              <div class="col-md-4 d-none d-md-block">
-              
-              </div>
-              <div class="col-11 col-md-7">
-                <form id="search-form" class="text-center" action="index.html" method="post">
-                  <input type="text" class="form-control border-0 bg-transparent " placeholder="Search for more than 20,000 products">
-                </form>
-              </div>
-              <div class="col-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/></svg>
-              </div>
-            </div>
-          </div>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/user-profile">Profile</a></li>
+                 <li><a class="dropdown-item" href="/my-orders">My Orders</a></li>
+                  <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
+                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+              </ul>
+            </li>
+            {{else}}
+            <li class="nav-item">
+              <a class="nav-link" href="/login"><i class="fa-regular fa-user me-1"></i>Login</a>
+            </li>
+            {{/if}}
 
-          <div class="col-lg-6 ">
-            <ul class="navbar-nav list-unstyled d-flex flex-row gap-3 gap-lg-5 justify-content-end flex-wrap align-items-center mb-0   text-dark">
-              <li class="nav-item active">
-                <a href="/" class="nav-link"><h5>Home</h5></a>
-              </li>
-               <li class="nav-item active" >
-                <a href="/shop" class="nav-link"><h5>Shopping</h5></a>
+            <li class="nav-item">
+              <a class="nav-link" href="/wishlist"><i class="fa-regular fa-heart me-1"></i>Wishlist</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cart"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a>
+            </li>
 
-              </li>
-
-   
-
-
-
-              {{#if user}}
-              <li class="dropdown">
-   <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    {{user.name}}
-  </a>
-   <ul class="dropdown-menu border-0 shadow-lg rounded-0 text-end" aria-labelledby="userDropdown">
-    <li><a class="dropdown-item" href="/user-profile">Profile</a></li>
-  
-    <li><a class="dropdown-item" href="/logout">Logout</a></li>
-  </ul>
-</li>
-{{else}}
-               <li class="nav-item active">
-                <a href="/login" class="nav-link"><i class="fa-regular fa-user"></i>Login</a>               
-              </li>
-              {{/if}}
-            <li class="nav-item ">
-  <a class="nav-link" href="/wishlist"><i class="fa-regular fa-heart"></i></a>
-</li>
-         <li class="nav-item ">
-  <a class="nav-link" href="/cart"><i class="fa-solid fa-cart-shopping"></i></a>
-</li>
-
-          
-          <div class="col-sm-8 col-lg-2 d-flex gap-5 align-items-center justify-content-center justify-content-sm-end">
-            <ul class="d-flex justify-content-end list-unstyled m-0">
-              <li>
-                <a href="#" class="p-2 mx-1">
-                  <svg width="24" height="24"><use xlink:href="#user"></use></svg>
-                </a>
-              </li>
-              <li>
-                <a href="#" class="p-2 mx-1">
-                  <svg width="24" height="24"><use xlink:href="#wishlist"></use></svg>
-                </a>
-              </li>
-              <li>
-                <a href="#" class="p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                  <svg width="24" height="24"><use xlink:href="#shopping-bag"></use></svg>
-                </a>
-              </li>
-            </ul>
-          </div>
-
+          </ul>
         </div>
       </div>
-    </header>
+
+    </div>
+  </nav>
+</header>
+
+
     
-    <section style="background-image: url('images/banner-1.jpg');background-repeat: no-repeat;background-size: cover;">
+    <section style="background-image: url('images/banner-4.webp');background-repeat: no-repeat;background-size: cover;">
       <div class="container-lg">
         <div class="row">
           <div class="col-lg-6 pt-5 mt-5">
-            <h2 class="display-1 ls-1"><span class="fw-bold text-primary">Quality</span> products at your <span class="fw-bold">Doorsteps</span></h2>
-            <p class="fs-4">Dignissim massa diam elementum.</p>
+            <h2 class="display-1 ls-1"><span class="fw-bold text-success">Quality</span> products at your <span class="fw-bold">Doorsteps</span></h2>
+          
             <div class="d-flex gap-3">
-              <a href="#" class="btn btn-primary text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Start Shopping</a>
-              <a href="#" class="btn btn-dark text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Join Now</a>
+              <a href="/shop" class="btn btn-success text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Start Shopping</a>
+              <a href="/sign-up" class="btn btn-warning text-uppercase fs-6 rounded-pill px-4 py-3 mt-3">Join Now</a>
             </div>
             <div class="row my-5">
               <div class="col">
@@ -182,18 +160,26 @@
             <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5">
 
 
-  {{#each products}}    
+  {{#each products}}  
+    
 <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
   <div class="card h-100 shadow border-0 rounded-4 p-3 overflow-hidden position-relative">
-
     <!-- Wishlist Icon -->
+    {{#if @root.user}}
+  
     <span class="wishlist-btn text-danger d-flex align-items-center justify-content-center"
           onclick="addToWishlist(this,'{{_id}}')">
       <i class="bi bi-heart-fill"></i>
     </span>
-
+    {{else}}
+  
+<span class="wishlist-btn text-danger d-flex align-items-center justify-content-center"
+          onclick="notLogin()">
+      <i class="bi bi-heart-fill"></i>
+    </span>
+    {{/if}}
     <!-- Product Image -->
-    <a href="/productDetails?id={{_id}}">
+    <a  href="/productDetails/{{_id}}">
       <img src="/uploads/re-image/{{productImage.[0]}}"
            class="card-img-top img-fluid"
            alt="{{productName}}"
@@ -237,10 +223,17 @@
 
     <!-- Add to Cart Button -->
     <div class="card-footer bg-white border-0">
-      <a href="/addtoCart?id={{_id}}"
-         class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
-        Add to Cart
-      </a>
+       {{#if @root.user}}
+     <button onclick="addToCart('{{_id}}')"
+         class="btn add-to-cart-btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-cart-plus me-2"></i> Add to Cart
+    </button>
+    {{else}}
+     <button onclick="notLogin()"
+         class="btn add-to-cart-btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-cart-plus me-2"></i> Add to Cart
+    </button>
+    {{/if}}
     </div>
   </div>
 </div>
@@ -262,5 +255,104 @@
         </div>
       </div>
     </section>
+    <script>
+
+function notLogin()
+{
+  
+
+     
+          Swal.fire({
+            icon: 'warning',
+            title: 'Please log in',
+            text: 'You must be logged in to add products to your cart.',
+            showCancelButton: true,
+            confirmButtonText: 'Login Now',
+            cancelButtonText: 'Cancel'
+          }).then(result => {
+            if (result.isConfirmed) {
+              window.location.href = "/login";
+            }
+          });
+}  
+   
+
+
+
+
+
+
+
+      
+     function addToCart(proId) {
+  $.ajax({
+    url: '/addToCart',
+    method: "POST",
+    data: { proId: proId },
+    success: (response) => {
+      if (response.status) {
+        Swal.fire({
+          title: "Added to Cart",
+          text: response.message,
+          icon: 'success',
+          timer: 2000
+        });
+      }else{
+           Swal.fire({
+            title:" Exceed",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
+    },
+    error: (error) => {
+      Swal.fire({
+        title: 'Error',
+        text: "There was an error",
+        icon: 'error',
+        timer: 2000
+      });
+    }
+  });
+}
+  function addToWishlist(element,proId)
+  {
+    $.ajax({
+      url:'/addToWishlist',
+      method:"POST",
+      data:{proId:proId},
+      success:(response)=>{
+          $(element).find('i').removeClass('text-danger').addClass('text-secondary');
+        if(response.status){
+          Swal.fire({
+            title:"added to wishlist",
+            text:"the product hasbeenn added to wish list",
+            icon:'success',
+            timer:2000
+          })
+        }else{
+           Swal.fire({
+            title:" already in wishlist",
+            text:response.message,
+            icon:'info',
+            timer:2000
+          })
+        }
+
+      },
+      error:(error)=>{
+        Swal.fire({
+          title:'Error',
+          text:"There was an error",
+          icon:'error',
+          timer:2000
+        })
+      }
+
+    })
+  }
+    </script>
+    {{> foote}}
 
   

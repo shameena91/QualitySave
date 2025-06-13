@@ -110,21 +110,17 @@ id="address-{{this._id}}"
       <div class="card mb-3">
         <div class="row g-0 p-3">
           <div class="col-md-2">
-            <img src="/uploads/re-image/{{#if @root.retry}}{{this.product.productImage.[0]}}{{else}}{{this.productId.productImage.[0]}}{{/if}}" 
+            <img src="/uploads/re-image/{{this.productId.productImage.[0]}}" 
             class="img-fluid rounded"
              alt="{{this.productId.productName}}" 
              style="height:120px;width:120px;padding:15px" />
           </div>
           <div class="col-md-10">
             <div class="card-body p-0">
-              <h6 class="card-title">{{#if @root.retry}}{{this.product.productName}}{{else}}{{this.productId.productName}}{{/if}}</h6>
+              <h6 class="card-title">{{this.productId.productName}}</h6>
               <p class="mb-1">Qty: {{this.quantity}}</p>
               <p class="mb-1">Price: ₹{{this.price}}</p>
-              <p class="mb-0 fw-bold">Item Total:
-                {{#if @root.retry}}
-                {{mul this.quantity this.price}}
-                {{else}}
-                 ₹{{this.totalPrice}}{{/if}}</p>
+              <p class="mb-0 fw-bold">Item Total: ₹{{this.totalPrice}}</p>
             </div>
           </div>
         </div>
@@ -251,14 +247,8 @@ id="address-{{this._id}}"
 
 
     </div>
-{{#if retry}}
-<button class="btn btn-primary w-100 mt-3"
-     onclick="updateOrder('{{orderId}}')">Proceed to Payment</button>
-{{else}}
-<button class="btn btn-primary w-100 mt-3"
-     onclick="createOrder()">Proceed to Payment</button>
-{{/if}}
-    
+
+    <button class="btn btn-primary w-100 mt-3" onclick="createOrder()">Proceed to Payment</button>
   </div>
 </div>
 
@@ -508,133 +498,145 @@ function removeCoupon() {
 }
 
 
-function getSelectedValues() {
-  const selectedAddress = document.querySelector('input[name="address"]:checked');
-  const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
-  const finalAmount = parseFloat(document.getElementById("finalAmount").textContent.replace('₹', '').trim());
-  const shippingCharge = parseFloat(document.getElementById("shipping").textContent.replace('₹', '').trim());
 
-  return {
-    addressId: selectedAddress ? selectedAddress.getAttribute('data-id') : null,
-    paymentMethod: selectedPayment ? selectedPayment.value : null,
-    amount: finalAmount,
-    shippingCharge: shippingCharge
-  };
-}
+
+
+
+
+
 
 function createOrder() {
-  const { addressId, paymentMethod, amount, shippingCharge } = getSelectedValues();
+  const selectedAddressRadio = document.querySelector('input[name="address"]:checked');
+  const selectedAddressId = selectedAddressRadio ? selectedAddressRadio.getAttribute('data-id') : null;
 
-  if (!addressId || !paymentMethod) {
-    return Swal.fire({
-       title: 'Missing Info', 
-       text: 'Please select address and payment method.', 
-       icon: 'warning' });
+  const selectedPaymentRadio = document.querySelector('input[name="paymentMethod"]:checked');
+  const paymentMethod = selectedPaymentRadio ? selectedPaymentRadio.value : null;
+
+  const finalAmountText = document.getElementById("finalAmount").textContent;
+  const payableAmount = parseFloat(finalAmountText.replace('₹', '').trim());
+
+  const shippingText = document.getElementById("shipping").textContent;
+  const shippingCharge = parseFloat(shippingText.replace('₹', '').trim());
+
+  if (!selectedAddressId || !paymentMethod) {
+    Swal.fire({
+      title: 'Missing Information',
+      text: 'Please select both an address and a payment method.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
   }
 
   if (paymentMethod === 'cod') {
-    $.post('/createOrder', { addressId, paymentMethod, amount, shippingCharge }, (response) => {
-      Swal.fire({ 
-        title: 'Order Placed!',
-         icon: 'success' })
-         .then(() => {
-        window.location.href = `/orderSuccess/${response.orderId}`;
-      });
-    }).fail(() => {
-      Swal.fire({
-         title: 'Failed',
-          text: 'Try again.',
-           icon: 'error' });
-    });
-  } else if (paymentMethod === 'razorpay') {
-    $.post('/createRazorpayOrder',
-     { addressId, paymentMethod, amount, shippingCharge }, 
-     (response) => {
-      launchRazorpay(response);
-    }).fail(() => {
-      Swal.fire({ title: 'Failed', 
-      text: 'Razorpay order creation failed.',
-       icon: 'error' });
-    });
-  }
-}
-
-function updateOrder(orderId) {
-  const { addressId, paymentMethod, amount, shippingCharge } = getSelectedValues();
-console.log(orderId,paymentMethod)
-  if (!addressId || !paymentMethod) {
-    return Swal.fire({ title: 'Missing Info', text: 'Please select address and payment method.', icon: 'warning' });
-  }
-
-  if (paymentMethod === 'cod') {
+    // COD: Direct order creation
     $.ajax({
-      url: `/retry-order-cod/${orderId}`,
-      method: 'PUT',
-      data: { addressId, paymentMethod, amount, shippingCharge },
-      success: (response) => {
-        Swal.fire({ title: 'Order Updated!', icon: 'success' }).then(() => {
+      url: '/createOrder',
+      method: 'POST',
+      data: {
+        addressId: selectedAddressId,
+        paymentMethod: 'cod',
+        amount: payableAmount,
+        shippingCharge: shippingCharge
+      },
+      success: function (response) {
+        Swal.fire({
+          title: 'Order Placed!',
+          text: 'Your COD order has been successfully created.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
           window.location.href = `/orderSuccess/${response.orderId}`;
         });
       },
-      error: () => {
-        Swal.fire({ title: 'Failed', text: 'Retry COD failed.', icon: 'error' });
+      error: function () {
+        Swal.fire({
+          title: 'Order Failed',
+          text: 'Something went wrong. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     });
+
   } else if (paymentMethod === 'razorpay') {
+    // Razorpay: Get Razorpay order first
     $.ajax({
-      url: `/retry-razorpay-order/${orderId}`,
-      method: 'PUT',
-      success: (response) => {
-        launchRazorpay(response);
+      url: '/createRazorpayOrder',
+      method: 'POST',
+      data: {
+        amount: payableAmount
       },
-      error: () => {
-        Swal.fire({ title: 'Failed', text: 'Retry Razorpay failed.', icon: 'error' });
+      success: function (response) {
+        const options = {
+          key: response.key,
+          amount: response.amount,
+          currency: response.currency,
+          name: "Quality Save",
+          description: "Order Payment",
+          order_id: response.razorpayOrderId,
+          handler: function (paymentResult) {
+            verifyPayment(paymentResult, {
+              addressId: selectedAddressId,
+              paymentMethod: paymentMethod,
+              amount: payableAmount,
+              shippingCharge: shippingCharge,
+             
+              
+            });
+          },
+          modal: {
+            ondismiss: function () {
+              Swal.fire({
+                title: 'Payment Cancelled',
+                text: 'You cancelled the payment. Please try again.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+              });
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          // Redirect to failure page with orderId if needed (can pass orderData or response.error)
+          window.location.href = `/orderFailure`;
+        });
+        rzp.open();
+      },
+      error: function () {
+        Swal.fire({
+          title: 'Error',
+          text: 'Could not initiate payment. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     });
   }
 }
 
-function launchRazorpay(response) {
-  const options = {
-    key: response.key,
-    amount: response.amount,
-    currency: response.currency,
-    name: "Quality Save",
-    description: "Order Payment",
-    order_id: response.razorpayOrderId,
-    handler: function (paymentResult) {
-      verifyPayment(paymentResult, response.orderId);
+function verifyPayment(paymentResult, orderData) {
+  $.ajax({
+    url: '/verifyPayment',
+    method: 'POST',
+   
+    data: {
+      razorpayOrderId: paymentResult.razorpay_order_id,
+      razorpayPaymentId: paymentResult.razorpay_payment_id,
+      razorpaySignature: paymentResult.razorpay_signature,
+      ...orderData
     },
-    modal: {
-      ondismiss: function () {
-        Swal.fire({ title: 'Cancelled',
-         text: 'Payment cancelled.',
-          icon: 'info' });
-      }
+
+    success: function (res) {
+      window.location.href = `/orderSuccess/${res.orderId}`;
+    },
+    error: function (xhr) {
+      const orderId=orderData.orderId
+      window.location.href = `/orderFailure`;
     }
-  };
-
-  const rzp = new Razorpay(options);
-  rzp.on('payment.failed', function () {
-    window.location.href = `/orderFailure/${response.orderId}`;
-  });
-  rzp.open();
-}
-
-function verifyPayment(paymentResult, orderId) {
-  $.post('/verifyPayment', {
-    razorpayOrderId: paymentResult.razorpay_order_id,
-    razorpayPaymentId: paymentResult.razorpay_payment_id,
-    razorpaySignature: paymentResult.razorpay_signature,
-    orderId: orderId
-  }, () => {
-    window.location.href = `/orderSuccess/${orderId}`;
-  }).fail(() => {
-    window.location.href = `/orderFailure/${orderId}`;
   });
 }
-
-
 
 </script>
 

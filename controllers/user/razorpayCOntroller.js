@@ -15,58 +15,42 @@ const Ledger = require("../../models/ledgerSchema");
 
 const createRazorpayOrder = async (req, res) => {
   try {
-    const { amount } = req.body;
-
-    const razorpayOrder = await razorpayInstance.orders.create({
-      amount: Math.round(amount * 100), 
-      currency: "INR",
-      receipt: String(new mongoose.Types.ObjectId()),
-      payment_capture: 1,
-    });
-
-    res.status(200).json({
-      key: process.env.RAZORPAY_KEY_ID,
-      razorpayOrderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency,
-    });
-  } catch (err) {
-    console.error("Razorpay order error:", err);
-    res.status(500).json({ message: "Error creating Razorpay order" });
-  }
-};
-
-
-
-
-
-const verifyPayment = async (req, res) => {
-  try {
-    const { razorpayOrderId, razorpayPaymentId, razorpaySignature, addressId, paymentMethod, 
-      shippingCharge } = req.body;
     const userId = req.session.user;
-
-    const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
-      .digest("hex");
-
-    if (generatedSignature !== razorpaySignature) {
-      return res.status(400).json({ message: "Invalid signature" });
+    const { addressId, paymentMethod,amount ,shippingCharge,orderId} = req.body;
+console.log("nnnn",shippingCharge)
+    if (!addressId || !paymentMethod) {
+      return res.status(400).json({ message: "Address and payment method required." });
     }
 
-    const userCart = await Cart.findOne({ userId }).populate("cartItems.productId").lean();
-    if (!userCart || userCart.cartItems.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
-console.log(shippingCharge)
-    const finalAmount = userCart.cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-    const totalAmount = userCart.cartItems.reduce((sum, item) => sum + item.totalSalePrice, 0);
-    const discount = totalAmount - finalAmount;
-    const amountToPay = finalAmount + parseInt(shippingCharge);
-    console.log("3333333333333",amountToPay)
-    const couponDiscount = finalAmount - (amountToPay - shippingCharge);
+    const amountPay=amount-shippingCharge
+    // 1. Get user's cart
+    const userCart = await Cart.findOne({ userId }).populate('cartItems.productId').lean();
+    console.log("111111111",amount)
+    // 2. Calculate totals
+ const finalAmount = userCart.cartItems.reduce(
+      (sum, item) => sum + item.totalPrice,
+      0
+    ); // Sum of all item totals
+    const totalAmount = userCart.cartItems.reduce(
+      (sum, item) => sum + item.totalSalePrice,
+      0
+    );
+     const discount = totalAmount - finalAmount;
+         const amountToPay = finalAmount + parseInt(shippingCharge);
 
+      const couponDiscount= finalAmount- (amountToPay - shippingCharge)
+console.log("jjjjjjjjjjjjjjjjjjjjjj");
+
+      console.log(totalAmount)
+      console.log(finalAmount)
+      console.log(discount)
+
+      console.log(couponDiscount)
+    // const totalPrice = userCart.cartItemsitems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    // const discount = 0; // apply logic if needed
+    // const finalAmount = totalPrice - discount;
+
+    // 3. Create the Order (not marking as paid yet)
     const newOrder = new Order({
       userId,
       orderItems: userCart.cartItems.map(item => ({
@@ -77,47 +61,109 @@ console.log(shippingCharge)
         discountedAmount:(item.totalSalePrice-item.totalPrice)*item.quantity
 
       })),
-      totalPrice: totalAmount,
+      totalPrice:totalAmount,
       discount,
-      couponDiscount,
+       couponDiscount:couponDiscount,
       finalAmount: amountToPay,
+    
       address: addressId,
-      paymentMethod,
+      paymentMethod:paymentMethod,
       invoiceDate: new Date(),
-      razorpayStatus: "paid",
-      razorpayOrderId,
-      razorpayPaymentId,
-      razorpaySignature,
+      razorpayStatus:"created",
+      shipping:shippingCharge
     });
 
-    await newOrder.save();
-
   
-    for (let item of newOrder.orderItems) {
+//     console.log(newOrder)
+// console.log("Creating Razorpay order with:", {
+//   amount: amount * 100,
+//   currency: "INR",
+//   receipt: String(newOrder._id),
+//   payment_capture: 1,
+// });
+    
+
+    // 4. Create Razorpay order
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: amount * 100, // in paise
+      currency: "INR",
+      receipt: String(newOrder._id),
+      payment_capture: 1,
+    });
+    
+  await newOrder.save();
+    // 5. Return data to client
+    res.status(200).json({
+      key: process.env.RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      orderId: newOrder._id,
+      razorpayOrderId: razorpayOrder.id,
+      orderDetails: {
+        totalAmount,
+        discount,
+        finalAmount,
+      
+      }
+    });
+
+  } catch (error) {
+    console.log(error)
+    console.error("Razorpay Order Creation Error:", error);
+    res.status(500).json({ message: "Server error while creating Razorpay order." });
+  }
+};
+
+
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature, orderId } = req.body;
+console.log("ttttttt",razorpayOrderId, razorpayPaymentId, razorpaySignature,orderId)
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .digest("hex");
+console.log("gggggg",generatedSignature)
+    if (generatedSignature !== razorpaySignature) {
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+const order= await Order.findById(orderId)
+console.log("kkkk", order)
+   await Order.findByIdAndUpdate(orderId, {
+  razorpayOrderId,
+  razorpayPaymentId,
+  razorpaySignature,
+  razorpayStatus: 'paid',
+ 
+});
+   const updatedOrder = await Order.findById(orderId);
+
+if (updatedOrder && updatedOrder.razorpayStatus === "paid") {
+  await Ledger.create({
+    user: updatedOrder.userId,
+    orderId: updatedOrder._id,
+    type: "credit",
+    amount: updatedOrder.finalAmount,
+    paymentMethod: updatedOrder.paymentMethod,
+    description: `Order payment received for Order ${updatedOrder.orderId}`
+  });
+}
+    for (let item of order.orderItems) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { quantity: -item.quantity }
       });
     }
 
+    await Cart.findOneAndDelete({ userId: order.userId });
 
-    await Ledger.create({
-      user: newOrder.userId,
-      orderId: newOrder._id,
-      type: "credit",
-      amount: newOrder.finalAmount,
-      paymentMethod: newOrder.paymentMethod,
-      description: `Order payment received for Order ${newOrder._id}`,
-    });
-
-    await Cart.findOneAndDelete({ userId });
-
-    res.status(200).json({ message: "Payment verified and order placed", orderId: newOrder._id });
-
+    res.status(200).json({ message: "Payment verified" });
   } catch (err) {
-    console.error("verifyPayment error:", err);
-    res.status(500).json({ message: "Server error verifying payment" });
+    console.error("Payment verification failed:", err);
+    res.status(500).json({ message: "Error verifying payment" });
   }
 };
+
 
 
 const retryRazorpayPayment = async (req, res) => {
@@ -154,10 +200,121 @@ const retryRazorpayPayment = async (req, res) => {
   }
 };
 
+const retryOrder=async(req,res)=>{
+  try {
+    const orderId=req.params.orderId
+    console.log(orderId)
+    const user=req.session.user
+    const userData=await User.findById(user).lean()
+    const order=await Order.findOne({orderId:orderId})
+   
+   
+     .populate('orderItems.product')
+    .lean()
+    console.log("ddddd",order.address)
+    const orderProducts=order.orderItems
+    const addressId=order.address
+    const address=await Address.findOne({ userId: user }).lean();
+ const coupons = await Coupon.find({
+      minimumPrice: { $lt: order.finalAmount },
+      isList: true,
+    }).lean();
+
+ if (
+      !address ||
+      !address.address ||
+      address.address.length === 0
+    ) {
+      return res.render("checkout", {
+        addresses: [],
+        message: "No saved addresses found.",
+        cartProducts:orderProducts ,// if you show all saved addresses
+      finalSalePrice: order.totalPrice,
+     finalTotalPrice: order.finalAmount,
+      shippingCharge: order.shipping || 0,
+      coupons,
+        totalDiscount:order.discount,
+
+   user:userData ,// needed to reuse same order
+      retry: true
+      });
+    }
+    const addresses = address.address;
+  res.render('checkout', {
+    
+ addresses,
+      cartProducts:orderProducts ,// if you show all saved addresses
+      finalSalePrice: order.totalPrice,
+     finalTotalPrice: order.finalAmount,
+      shippingCharge: order.shipping || 0,
+      coupons,
+        totalDiscount:order.discount,
+
+   user:userData ,// needed to reuse same order
+      retry: true,
+      orderId:orderId||null
+    });
+  
+  } catch (error) {
+    console.log(error)
+  }
+
+
+}
+const retryRazorpayOrder = async (req, res) => {
+  console.log(req.params)
+  try {
+    const { orderId } = req.params;
+      console.log("hhhh",orderId)
+
+    const existingOrder = await Order.findOne({ orderId: orderId });
+
+    console.log("hhhh",existingOrder)
+
+    const totalAmount = existingOrder.finalAmount* 100; // amount in paise
+
+    if (!totalAmount || isNaN(totalAmount)) {
+      return res.status(400).json({ error: 'Amount is invalid or missing' });
+    }
+
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: totalAmount,
+      currency: 'INR',
+      receipt:  `${String(existingOrder._id)}-retry`,
+      payment_capture: 1,
+    });
+console.log("yyyyyyyy",razorpayOrder)
+    // Update the razorpayOrderId and status in DB
+    await Order.updateOne(
+      { orderId: orderId },
+      {
+        $set: {
+          razorpayOrderId: razorpayOrder.id,
+          status: 'payment_pending',
+          paymentStatus: 'pending'
+        }
+      }
+    );
+
+    res.json({
+      key: process.env.RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      orderId: existingOrder._id,
+      razorpayOrderId: razorpayOrder.id,
+    });
+  } catch (error) {
+    console.error('Razorpay retry failed:', error);
+    res.status(500).json({ error: 'Retry failed' });
+  }
+};
+
 
 
 module.exports={
 createRazorpayOrder,
 verifyPayment,
-retryRazorpayPayment
+retryRazorpayPayment,
+retryOrder,
+retryRazorpayOrder
 }

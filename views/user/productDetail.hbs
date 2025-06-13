@@ -203,11 +203,22 @@
               <input type="text" class="form-control text-center" value="1">
               <button class="btn btn-outline-secondary btn-sm" type="button">+</button>
             </div> --}}
-           <button class="btn btn-lg" type="button" style="background-color:#1e918b"
+{{#if user}}
+           <button class="btn btn-lg btn-success" type="button" 
   onclick="addToCart('{{product._id}}')">
   <i class="bi bi-cart-plus me-2"></i> Add to Cart
 </button>
+
             <a href="#" class="btn btn-outline-danger btn-lg" onclick="addToWishlist('{{product._id}}')"><i class="bi bi-heart-fill"></i></a>
+         {{else}}
+                   <button class="btn btn-lg btn-success" type="button" 
+  onclick="notLogin()">
+  <i class="bi bi-cart-plus me-2"></i> Add to Cart
+</button>
+          <a href="#" class="btn btn-outline-danger btn-lg" onclick="notLogin()"><i class="bi bi-heart-fill"></i></a>
+
+         {{/if}} 
+          
           </div>
         {{else}}
           <h4 style="color:red">Currently unavailable</h4>
@@ -240,8 +251,12 @@
       <div class="card flex-shrink-0 border-0" style="width: 250px;height:auto ">
 
         <div class="product-card">
+          {{#if user}}
 
             <span class="wishlist-btn"   onclick="addToWishlist('{{this._id}}')">❤️</span>
+            {{else}}
+            <span class="wishlist-btn"   onclick="notLogin()">❤️</span>
+            {{/if}}
 
 
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{this.productImage.[0]}}" alt="{{productName}}" /></a>
@@ -277,12 +292,18 @@
 
              {{#if quantity}}
              <div>
-              
+              {{#if user}}
              
                       <button class="btn w-100" type="button" style="background-color:#1e918b; color:white"
   onclick="addToCart('{{product._id}}')">
   Add to Cart
 </button>
+{{else}}
+              <button class="btn w-100" type="button" style="background-color:#1e918b; color:white"
+  onclick="notLogin()">
+  Add to Cart
+</button>
+{{/if}}
 </div>
             {{else}}
              <h5 style="color:red">Currently unavailable</h5>
@@ -309,6 +330,26 @@
 
 
 <script>
+  function notLogin()
+{
+  
+
+     
+          Swal.fire({
+            icon: 'warning',
+            title: 'Please log in',
+            text: 'You must be logged in to add products to your cart.',
+            showCancelButton: true,
+            confirmButtonText: 'Login Now',
+            cancelButtonText: 'Cancel'
+          }).then(result => {
+            if (result.isConfirmed) {
+              window.location.href = "/login";
+            }
+          });
+}  
+
+
  function addToWishlist(proId)
   {
     $.ajax({

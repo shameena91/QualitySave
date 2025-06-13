@@ -18,63 +18,55 @@
     <!-- ✅ Product Offer Form -->
     <div class="tab-pane fade show active" id="productOffer" role="tabpanel">
       <form id="productOffer-form" class="border p-4 rounded">
-  <h5 class="mb-3">Create Product Offer</h5>
+        <h5 class="mb-3">Create Product Offer</h5>
 
-  <!-- Custom searchable multi-select -->
-  <div class="mb-3">
-    <label class="form-label fw-semibold">Select Products</label>
-    <div class="dropdown">
-      <button class="btn btn-outline-secondary w-100 text-start" type="button" id="dropdownBtn">
-        Search and select products
-      </button>
-      <div id="dropdownMenu" class="border p-2 mt-1 bg-white" style="display: none; max-height: 250px; overflow-y: auto;">
-        <input type="text" id="productSearch" class="form-control mb-2" placeholder="Search products..." />
-
-        <div id="productOptions">
-          {{#each products}}
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="product{{@index}}" value="{{this._id}}">
-            <label class="form-check-label" for="product{{@index}}">{{this.productName}}</label>
-          </div>
-          {{/each}}
-        </div>
+       <div class="mb-3">
+  <label class="form-label">Select Products</label>
+  <div class="form-check" style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    {{#each products}}
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="products" value="{{this._id}}" id="product{{@index}}">
+        <label class="form-check-label" for="product{{@index}}">
+          {{this.productName}}
+        </label>
       </div>
-    </div>
-    <input type="hidden" name="products" id="selectedProducts" />
-    <div class="form-text">Search and select one or more products.</div>
-    <div id="error-products" class="text-danger small"></div>
+    {{/each}}
   </div>
+  <div class="form-text">Check one or more products to apply the offer.</div>
+</div>
 
-  <!-- Offer Fields -->
-  <div class="mb-3">
-    <label class="form-label">Offer Name</label>
-    <input type="text" class="form-control" name="name" />
-    <div id="error-name" class="text-danger small"></div>
-  </div>
+        <div class="mb-3">
+          <label class="form-label">Offer Name</label>
+          <input type="text" class="form-control" name="name"  />
+                <div class="text-danger small" id="error-name"></div>
+        </div>
 
-  <div class="mb-3">
-    <label class="form-label">Offer Code</label>
-    <input type="text" class="form-control" name="code" />
-    <div id="error-code" class="text-danger small"></div>
-  </div>
+        <div class="mb-3">
+          <label class="form-label">Offer Code</label>
+          <input type="text" class="form-control" name="code"  />
+              <div class="text-danger small" id="error-code"></div>
+        </div>
 
-  <div class="mb-3">
-    <label class="form-label">Discount (%)</label>
-    <input type="number" class="form-control" name="discount" min="1" max="99" />
-    <div id="error-discount" class="text-danger small"></div>
-  </div>
+        <div class="mb-3">
+          <label class="form-label">Discount (%)</label>
+          <input type="number" class="form-control" name="discount" min="1" max="99"  />
+                      <div class="text-danger small" id="error-discount"></div>
 
-  <div class="mb-3">
-    <label class="form-label">Valid Until</label>
-    <input type="date" class="form-control" name="validUntil" />
-    <div id="error-validUntil" class="text-danger small"></div>
-  </div>
+        </div>
 
-  <input type="hidden" name="type" value="product" />
+        <div class="mb-3">
+          <label class="form-label">Valid Until</label>
+          <input type="date" class="form-control" name="validUntil" />
+                                <div class="text-danger small" id="error-validUntil"></div>
 
-  <button type="submit" class="btn btn-primary">Create Product Offer</button>
-</form>
 
+
+        </div>
+
+        <input type="hidden" name="type" value="product" />
+
+        <button type="submit" class="btn btn-primary">Create Product Offer</button>
+      </form>
     </div>
 
     <!-- ✅ Category Offer Form -->
@@ -95,25 +87,25 @@
 
     <div class="mb-3">
       <label class="form-label">Offer Name</label>
-      <input type="text" class="form-control" name="name" id="name" />
+      <input type="text" class="form-control" name="name"  />
       <div class="text-danger small" id="error-name"></div>
     </div>
 
     <div class="mb-3">
       <label class="form-label">Offer Code</label>
-      <input type="text" class="form-control" name="code" id="code" />
+      <input type="text" class="form-control" name="code"  />
       <div class="text-danger small" id="error-code"></div>
     </div>
 
     <div class="mb-3">
       <label class="form-label">Discount (%)</label>
-      <input type="number" class="form-control" name="discount" min="1" max="99" id="discount" />
+      <input type="number" class="form-control" name="discount" min="1" max="99"  />
       <div class="text-danger small" id="error-discount"></div>
     </div>
 
     <div class="mb-3">
       <label class="form-label">Valid Until</label>
-      <input type="date" class="form-control" name="validUntil" id="validUntil" />
+      <input type="date" class="form-control" name="validUntil"  />
       <div class="text-danger small" id="error-validUntil"></div>
     </div>
 
@@ -175,7 +167,23 @@
         <td>{{discount}}</td>
         <td>{{formatDate validUntil}}</td>
         <td>
+        {{!-- <button class="btn btn-warning btn-sm edit-offer-btn" 
+        data-bs-toggle="modal" 
+        data-bs-target="#editOfferModal"
+        data-id="{{_id}}"
+        data-name="{{offerName}}"
+        data-code="{{code}}"
+        data-discount="{{discount}}"
+        data-valid="{{validUntil}}"
+        data-type="{{type}}"
+        data-category="{{category}}"
      
+>
+  Edit
+</button> --}}
+
+          {{!-- <a href="/admin/offers/edit/OFFER_ID" class="btn btn-sm btn-warning">Edit</a> --}}
+        
           <button type="submit" class="btn btn-sm btn-danger" onclick="deleteOffer('{{_id}}')">Delete</button>
         </td>
       </tr>
@@ -190,120 +198,96 @@
 
 
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 
- const dropdownBtn = document.getElementById("dropdownBtn");
-  const dropdownMenu = document.getElementById("dropdownMenu");
-  const productSearch = document.getElementById("productSearch");
-  const productOptions = document.getElementById("productOptions");
-  const selectedProductsInput = document.getElementById("selectedProducts");
 
-  // Toggle dropdown
-  dropdownBtn.addEventListener("click", () => {
-    dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
-  });
-
-  // Close dropdown on outside click
-  document.addEventListener("click", (e) => {
-    if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
-      dropdownMenu.style.display = "none";
-    }
-  });
-
-  // Filter products by search
-  productSearch.addEventListener("keyup", () => {
-    const keyword = productSearch.value.toLowerCase();
-    const options = productOptions.querySelectorAll(".form-check");
-
-    options.forEach(option => {
-      const label = option.querySelector("label").innerText.toLowerCase();
-      option.style.display = label.includes(keyword) ? "block" : "none";
-    });
-  });
-
-  // Update selected products
-  productOptions.addEventListener("change", () => {
-    const selected = [];
-    productOptions.querySelectorAll("input:checked").forEach(cb => {
-      selected.push(cb.value);
-    });
-    selectedProductsInput.value = selected.join(",");
-    dropdownBtn.innerText = selected.length > 0 ? `${selected.length} product(s) selected` : "Search and select products";
-  });
  
 
- document.getElementById("productOffer-form").addEventListener("submit", function (e) {
-  e.preventDefault();
+  document.getElementById("productOffer-form").addEventListener("submit", function(e) {
+    e.preventDefault();
 
-  // Clear error
-  document.getElementById("error-products").innerText = "";
+    // Clear previous errors
+    document.querySelectorAll(".text-danger").forEach(div => div.innerText = "");
 
-  // Collect selected products
-  const selected = [];
-  document.querySelectorAll("#productOptions input:checked").forEach(checkbox => {
-    selected.push(checkbox.value);
-  });
+    const form = e.target;
 
-  // Validate
-  if (selected.length === 0) {
-    document.getElementById("error-products").innerText = "Please select at least one product.";
-    return;
-  }
+    // Gather checked products into an array
+    const selectedProducts = Array.from(form.querySelectorAll('input[name="products"]:checked'))
+                                  .map(checkbox => checkbox.value);
 
-  // Assign to hidden input
-  document.getElementById("selectedProducts").value = selected.join(",");
+    // Create data object to send
+    const data = {
+      products: selectedProducts,
+      name: form.name.value,
+      code: form.code.value,
+      discount: form.discount.value,
+      validUntil: form.validUntil.value,
+      type: form.type.value
+    };
+console.log(data)
+    $.ajax({
+      url: "/admin/offers/product",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(data),
 
-  // Create data object
-  const form = e.target;
-  const data = {
-    products: selected,
-    name: form.name.value,
-    code: form.code.value,
-    discount: form.discount.value,
-    validUntil: form.validUntil.value,
-    type: form.type.value
-  };
+      success: function(res) {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Offer Created",
+            text: "Product offer created successfully!",
+          }).then(() => {
+            window.location.href = "/admin/offers";
+          });
+        }
+      },
 
-  console.log(data);
-
-  // Send to server
-  fetch("/admin/offers/product", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.json())
-  .then(res => {
-    if (res.success) {
-      Swal.fire({
-        icon: "success",
-        title: "Offer Created",
-        text: "Product offer created successfully!"
-      }).then(() => {
-        window.location.href = "/admin/offers";
-      });
-    } else if (res.errors) {
-      for (const [field, message] of Object.entries(res.errors)) {
-        const errorDiv = document.getElementById(`error-${field}`);
-        if (errorDiv) errorDiv.innerText = message;
+      error: function(xhr) {
+        if (xhr.status === 400) {
+          const res = xhr.responseJSON;
+          if (res && res.errors) {
+            for (const [field, message] of Object.entries(res.errors)) {
+              // Special handling for 'products' error (checkbox group)
+              if (field === 'products') {
+                let container = form.querySelector('.form-check').parentElement;
+                if (!container.querySelector('.text-danger-products')) {
+                  const errorDiv = document.createElement('div');
+                  errorDiv.classList.add('text-danger', 'small', 'text-danger-products');
+                  container.appendChild(errorDiv);
+                }
+                container.querySelector('.text-danger-products').innerText = message;
+              } else {
+                const errorDiv = document.getElementById(`error-${field}`);
+                 errorDiv.innerText = message;
+              }
+            }
+          }
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: "Please try again later.",
+          });
+        }
       }
-    }
-  })
-  .catch(() => {
-    Swal.fire({
-      icon: "error",
-      title: "Server Error",
-      text: "Please try again later."
     });
   });
-});
 
 
 
 
 
 
-document.getElementById("categoryOffer-form").addEventListener("submit", function (e) {
+
+
+
+
+  document.getElementById("categoryOffer-form").addEventListener("submit", function (e) {
     e.preventDefault();
 
     // Clear previous error messages
@@ -313,7 +297,7 @@ document.getElementById("categoryOffer-form").addEventListener("submit", functio
     const formData = new FormData(form);
 
     const data = {
-      name: formData.get("name").trim(),
+      name: formData.get("name"),
       code: formData.get("code"),
       discount: formData.get("discount"),
       validUntil: formData.get("validUntil"), // Match backend field name
@@ -365,6 +349,7 @@ document.getElementById("categoryOffer-form").addEventListener("submit", functio
 },
     });
   });
+
 
 
   function deleteOffer(offerId)

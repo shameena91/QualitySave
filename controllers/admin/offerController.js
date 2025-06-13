@@ -19,18 +19,19 @@ const getOffer=async(req,res)=>{
         
     }
 }
-const productOffer=async(req,res)=>{
-     try {
+const productOffer = async (req, res) => {
+  try {
     const { products, name, code, discount, validUntil, type } = req.body;
-    console.log("name",req.body)
     const errors = {};
 
+    console.log(products)
+
+    // ==== Validations ====
     if (!Array.isArray(products) || products.length === 0) {
       errors.products = 'Please select at least one product.';
     }
 
- 
-    if (!name ) {
+    if (!name || name.trim() === '') {
       errors.name = 'Offer name is required.';
     }
 
@@ -50,14 +51,16 @@ const productOffer=async(req,res)=>{
       errors.validUntil = 'Valid until date must be in the future.';
     }
 
-    if (!type || type !== 'product') {
+    if (type !== 'product') {
       errors.type = 'Invalid offer type.';
     }
-console.log(errors)
+
+    // If validation errors exist, return 400
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
+    // ==== Duplicate Code Check ====
     const existingOffer = await Offer.findOne({ code });
     if (existingOffer) {
       return res.status(400).json({
@@ -68,56 +71,57 @@ console.log(errors)
       });
     }
 
+    // ==== Create New Offer ====
     const newOffer = new Offer({
       offerName: name,
       code,
       discount,
       validUntil,
       type,
-      products, 
+      products,
     });
 
     await newOffer.save();
 
-  const matchedProducts = await Product.find({ _id: { $in: products } })
-  .populate("category")
-  
-  .lean();
-  console.log("mmmm",matchedProducts)
-  if(!matchedProducts)
-  {
-    return res.status(404).json({ status: false, message: "Product not found" });
+    // ==== Fetch and Update Products ====
+    const matchedProducts = await Product.find({ _id: { $in: products } }).populate("category").lean();
 
-  }
- for (const product of matchedProducts) {
-  const categoryOffer = product.category?.categoryoffer || 0;
-  const productOffer = parseInt(discount) || 0;
+    if (!matchedProducts.length) {
+      return res.status(404).json({ success: false, message: "Products not found." });
+    }
 
-  const bestOffer = Math.max(categoryOffer, productOffer);
-  const discountedPrice = product.salePrice - Math.floor(product.salePrice * (bestOffer / 100));
+    for (const product of matchedProducts) {
+      const categoryOffer = product.category?.categoryoffer || 0;
+      const productOffer = parseInt(discount);
+      const bestOffer = Math.max(categoryOffer, productOffer);
 
-  await Product.findByIdAndUpdate(product._id, { discountedPrice ,productOffer:discount});
-}
+      const discountedPrice = product.salePrice - Math.floor(product.salePrice * (bestOffer / 100));
 
-
-   
-
+      await Product.findByIdAndUpdate(product._id, {
+        discountedPrice,
+        productOffer: discount,
+      });
+    }
 
     return res.json({ success: true });
+
   } catch (error) {
     console.error('Error creating product offer:', error);
     return res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
+
 const categoryOffer = async (req, res) => {
   try {
     const { name, code, discount, validUntil, type, categoryId } = req.body;
     const errors = {};
+    console.log("fff",name,code)
 
   
-    if (!name) errors.name = 'Offer name is required.';
-    if (!code) errors.code = 'Offer code is required.';
+    if (!name)
+      { errors.name = 'Offer name is required.';}
+    if (!code) {errors.code = 'Offer code is required.';}
     if (!discount) {
       errors.discount = 'Discount is required.';
     } else if (discount <= 0 || discount >= 100) {

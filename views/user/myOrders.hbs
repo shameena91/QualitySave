@@ -60,7 +60,9 @@
     {{#if (eq this.paymentMethod "razorpay")}}
   {{#if (eq this.RazorPay "failed")}}
     <h5 class="mt-2" style="color:orange">Order not placed</h5>
-  {{/if}}
+    
+ <a href="/retry-order/{{this.orderId}}" class="btn btn-danger">Place Order Again</a>
+   {{/if}}
 {{/if}}
       </div>
     </div>
@@ -124,5 +126,21 @@
   </form>
 {{/if}}
 </div>
+<script>
+  {{!-- function retryOrder(orderId)
+  {
+    $.ajax({
+      url:`/retry-order/${orderId}`,
+      method:'PUT',
+      success: (res) => {
+      if (res.redirectUrl) {
+        window.location.href = res.redirectUrl;
+      }
+    },
+      error:()=>{}
+
+    })
+  } --}}
+</script>
 
 {{> foote}}

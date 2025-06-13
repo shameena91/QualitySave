@@ -43,8 +43,12 @@ const getCart = async (req, res) => {
 
 const addToCart = async (req, res) => {
   try {
+     if (!req.session.user) {
+    return res.status(401).json({ status: false, message: "Please log in to add products to your cart." });
+  }
     const productId = req.body.proId;
     const userId = req.session.user;
+    
     const wishlist=await Wishlist.findOne({userId:userId})
     if (!productId || !userId) {
       return res.status(400).json({ status: false, message: "Missing product or user ID" });

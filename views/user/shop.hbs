@@ -282,10 +282,10 @@
         <div class="price-filter">
           <div class="filter-title">Filter by Price</div>
           <div class="price-options">
-            <a href="/filterPrice?gt=0&&lt=500"><button type="button" class="price-button">Under ₹500</button></a>
-            <a href="/filterPrice?gt=500&&lt=1000"><button type="button" class="price-button">₹500 - ₹1000</button></a>
-            <a href="/filterPrice?gt=1000&&lt=1500"><button type="button" class="price-button">₹1000 - ₹1500</button></a>
-            <a href="/filterPrice?gt=1500&&lt=100000"><button type="button" class="price-button">Above ₹1500</button></a>
+            <a href="/filter?gt=0&&lt=500"><button type="button" class="price-button">Under ₹500</button></a>
+            <a href="/filter?gt=500&&lt=1000"><button type="button" class="price-button">₹500 - ₹1000</button></a>
+            <a href="/filter?gt=1000&&lt=1500"><button type="button" class="price-button">₹1000 - ₹1500</button></a>
+            <a href="/filter?gt=1500&&lt=100000"><button type="button" class="price-button">Above ₹1500</button></a>
           </div>
         </div>
       </aside>
@@ -295,8 +295,12 @@
         
         {{#each products}}
           <div class="product-card ">
-        
+        {{#if @root.user}}
             <span class="wishlist-btn text-danger" onclick="addToWishlist(this,'{{_id}}')"><i class="bi bi-heart-fill"></i></span>
+          {{else}} 
+            <span class="wishlist-btn text-danger" onclick="notLogin()"><i class="bi bi-heart-fill"></i></span>
+
+          {{/if}} 
             <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{productImage.[0]}}" alt="{{productName}}" /></a>
             <h4 class="text-truncate d-block" style="max-width: 100%;">{{productName}}</h4>
             <p>Brand: {{brand.brandName}}</p>
@@ -331,10 +335,17 @@
            
              {{#if quantity}}
  <div class="card-footer bg-white border-0">
-      <a href="/addtoCart?id={{_id}}"
+  
+    {{#if @root.user}}
+      <button onclick="addToCart('{{_id}}')"
          class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
-        Add to Cart
-      </a>
+       Add to Cart 
+      {{else}}
+      <button onclick="notLogin()"
+         class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+       Add to Cart
+      </button>
+      {{/if}}
     </div>            {{else}}
              <h5 style="color:red">Currently unavailable</h5>
              {{/if}}
@@ -370,6 +381,29 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script>
+
+
+
+  function notLogin()
+{
+  
+
+     
+          Swal.fire({
+            icon: 'warning',
+            title: 'Please log in',
+            text: 'You must be logged in to add products to your cart.',
+            showCancelButton: true,
+            confirmButtonText: 'Login Now',
+            cancelButtonText: 'Cancel'
+          }).then(result => {
+            if (result.isConfirmed) {
+              window.location.href = "/login";
+            }
+          });
+}  
+   
+
   function addToWishlist(element,proId)
   {
     $.ajax({
@@ -413,6 +447,7 @@
     method: "POST",
     data: { proId: proId },
     success: (response) => {
+        console.log("Server response:", response); 
       if (response.status) {
         Swal.fire({
           title: "Added to Cart",
@@ -422,7 +457,7 @@
         });
       }else{
            Swal.fire({
-            title:" Exceed",
+            title:"Exceed",
             text:response.message,
             icon:'info',
             timer:2000
@@ -442,7 +477,5 @@
 
 
 </script>
-
-
 
 {{> foote}}

@@ -7,6 +7,10 @@ const getWishlist = async (req, res) => {
   try {
     const userId = req.session.user; 
     console.log("userId from session:", userId);
+      const userData=await User.findById(userId)
+           
+          
+            .lean()
 
     const user = await User.findById(userId); 
     if (!user) {
@@ -40,7 +44,7 @@ const getWishlist = async (req, res) => {
 
  console.log("Wishlist productssssss",wishlistItems);
     res.render("wishlist", {
-      wishlistItems,user
+      wishlistItems,user:userData
     });
 
   } catch (error) {

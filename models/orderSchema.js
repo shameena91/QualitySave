@@ -121,6 +121,10 @@ const orderSchema = new mongoose.Schema({
   updatedOn: {
     type: Date,
     default: null,
+  },
+  retry:{
+    type:Boolean,
+    default:false
   }
 });
 

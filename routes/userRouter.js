@@ -32,9 +32,9 @@ router.route("/resend-otp").post(userController.resendOtp);
 
 // home and shopping
 router.get("/", userController.loadHomePage);
-router.get("/shop", userAuth, userController.loadShopPage);
+router.get("/shop",  userController.loadShopPage);
 router.get("/filter", userAuth, userController.filterProduct);
-router.get("/filterPrice", userAuth, userController.filterByPrice);
+// router.get("/filterPrice", userAuth, userController.filterByPrice);
 router.post("/search", userAuth, userController.searchProducts);
 router.get("/sort", userAuth, userController.sortProducts);
 
@@ -68,7 +68,7 @@ router
 
 router.get("/resendForgotOTP", profileController.resendForgotPass);
 
-router.get("/productDetails/:id", userAuth, productController.productInfo);
+router.get("/productDetails/:id", productController.productInfo);
 
 router.get("/user-profile", userAuth, profileController.userProfile);
 router.patch(
@@ -163,8 +163,10 @@ router.post("/retry-payment/:orderId",userAuth, razorpayController.retryRazorpay
 
 
 
-router.get("/orderFailure",userAuth,checkoutController.getOrderFailure)
-
+router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
+router.get('/retry-order/:orderId',userAuth,razorpayController.retryOrder)
+router.put('/retry-order-cod/:orderId',userAuth,checkoutController.retryCodOrder),
+router.put('/retry-razorpay-order/:orderId',userAuth,razorpayController.retryRazorpayOrder),
 
 router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)
 router.post("/remove-coupon",userAuth,checkoutController.removeCoupon)

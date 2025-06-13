@@ -265,6 +265,48 @@ const createOrder = async (req, res) => {
   }
 };
 
+
+const retryCodOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { addressId, paymentMethod, amount, shippingCharge } = req.body;
+
+    if (paymentMethod !== 'cod') {
+      return res.status(400).json({ message: 'Invalid payment method for COD retry' });
+    }
+
+    // Update the existing order
+    const order = await Order.findOne({ _id: orderId, user: req.session.user });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Optional: check if order was previously failed
+    if (order.status !== 'failed' && order.status !== 'cancelled') {
+      return res.status(400).json({ message: 'Only failed or cancelled orders can be retried' });
+    }
+
+    order.address = addressId;
+    order.paymentMethod = 'cod';
+    order.amount = amount;
+    order.shippingCharge = shippingCharge;
+    order.totalAmount = amount + shippingCharge;
+    order.status = 'placed';
+    order.paymentStatus = 'pending';
+    order.retryCount = (order.retryCount || 0) + 1;
+    order.orderedAt = new Date(); // reset timestamp if needed
+
+    await order.save();
+
+    res.status(200).json({ message: 'COD order retried successfully', orderId: order._id });
+  } catch (err) {
+    console.error('Retry COD Order Error:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 const getMyOrders = async (req, res) => {
   try {
     const search = req.query.search || "";
@@ -574,15 +616,15 @@ const getOrderFailure = async (req, res) => {
     const orderId = req.params.orderId;
     const userId = req.session.user;
     const user = await User.findById(userId).lean();
-    // const order=await Order.findOneAndUpdate({_id:orderId},
-    //   {razorpayStatus:"failed"},
-    // {new:true}).lean()
-    //     if (!order) {
-    //   console.log("No order found to update for orderId:", orderId);
-    // } else {
-    //   console.log("Order updated to failed status:", order);
-    // }
-    //  await Cart.findOneAndDelete({ userId: userId });
+    const order=await Order.findOneAndUpdate({_id:orderId},
+      {razorpayStatus:"failed"},
+    {new:true}).lean()
+        if (!order) {
+      console.log("No order found to update for orderId:", orderId);
+    } else {
+      console.log("Order updated to failed status:", order);
+    }
+     await Cart.findOneAndDelete({ userId: userId });
     res.render("orderFailure", { user });
   } catch (error) {
     console.error(error);
@@ -602,4 +644,5 @@ module.exports = {
   getOrderFailure,
   applyCoupon,
   removeCoupon,
+  retryCodOrder
 };

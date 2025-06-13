@@ -1,4 +1,16 @@
+
+
+
 <style>
+  header {
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+}
+body, html {
+  margin: 0;
+  padding: 0;
+}
   .head {
     background-color: #fff;
   }
@@ -12,83 +24,81 @@
     max-height: 100%;
     object-fit: contain;
   }
+   .nav-link {
+    color: #333;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: #0d6efd;
+  }
+
+  .dropdown-menu a {
+    font-weight: 500;
+  }
+  
 </style>
 
-<header class="head">
-  <div class="container-fluid">
-    <div class="row align-items-center py-3 border-bottom">
+<header class="bg-white shadow-sm">
+  <nav class="navbar navbar-expand-md bg-white py-2 ">
+    <div class="container-fluid">
 
       <!-- Logo -->
-      <div class="col-6 col-md-3 d-flex align-items-center">
-        <a href="/">
-          <div class="img-container">
-            <img src="/images/qslogo.png" alt="logo" />
-          </div>
-        </a>
+      <a class="navbar-brand" href="/">
+        <img src="/images/qslogo-1.png" alt="Logo" style="height: 50px; width: auto;">
+      </a>
+
+      <!-- Toggler -->
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Offcanvas -->
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title">Menu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav ms-auto gap-3">
+
+            <li class="nav-item">
+              <a class="nav-link fw-semibold" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link fw-semibold" href="/shop">Shopping</a>
+            </li>
+
+            {{#if user}}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="text-transform:capitalize">
+                {{user.name}}
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/user-profile">Profile</a></li>
+                <li><a class="dropdown-item" href="/my-orders">My Orders</a></li>
+                <li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
+                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+              </ul>
+            </li>
+            {{else}}
+            <li class="nav-item">
+              <a class="nav-link" href="/login"><i class="fa-regular fa-user me-1"></i>Login</a>
+            </li>
+            {{/if}}
+
+            <li class="nav-item">
+              <a class="nav-link" href="/wishlist"><i class="fa-regular fa-heart me-1"></i>Wishlist</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/cart"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a>
+            </li>
+
+          </ul>
+        </div>
       </div>
 
-      <!-- Menu for large screens -->
-      <div class="col-md-6 d-none d-md-flex justify-content-center">
-        <ul class="navbar-nav list-unstyled d-flex flex-row gap-3 gap-lg-4 mb-0 align-items-center">
-          <li><a href="/" class="nav-link"><h6>Home</h6></a></li>
-          <li><a href="/shop" class="nav-link"><h6>Shopping</h6></a></li>
-          {{#if user}}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              {{user.name}}
-            </a>
-            <ul class="dropdown-menu border-0 shadow-lg rounded-0">
-              <li><a class="dropdown-item" href="/user-profile">Profile</a></li>
-              <li><a class="dropdown-item" href="/logout">Logout</a></li>
-            </ul>
-          </li>
-          {{else}}
-          <li><a href="/login" class="nav-link"><i class="fa-regular fa-user"></i> Login</a></li>
-          {{/if}}
-          <li><a href="/wishlist" class="nav-link"><i class="fa-regular fa-heart"></i></a></li>
-          <li><a href="/cart" class="nav-link"><i class="fa-solid fa-cart-shopping"></i></a></li>
-        </ul>
-      </div>
-
-      <!-- Toggler and icons -->
-      <div class="col-6 col-md-3 d-flex justify-content-end align-items-center gap-3">
-        <!-- Offcanvas Toggler (Mobile) -->
-        <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-          aria-controls="offcanvasNavbar">
-          <svg width="24" height="24" viewBox="0 0 24 24">
-            <use xlink:href="#menu"></use>
-          </svg>
-        </button>
-
-        <!-- Icons (optional) -->
-        <a href="/user-profile"><svg width="24" height="24"><use xlink:href="#user"></use></svg></a>
-        <a href="/wishlist"><svg width="24" height="24"><use xlink:href="#wishlist"></use></svg></a>
-        <a href="/cart" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-          <svg width="24" height="24"><use xlink:href="#shopping-bag"></use></svg>
-        </a>
-      </div>
     </div>
-  </div>
-
-  <!-- Offcanvas for Mobile Menu -->
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Menu</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body">
-      <ul class="navbar-nav list-unstyled">
-        <li><a href="/" class="nav-link">Home</a></li>
-        <li><a href="/shop" class="nav-link">Shopping</a></li>
-        {{#if user}}
-        <li><a href="/user-profile" class="nav-link">Profile</a></li>
-        <li><a href="/logout" class="nav-link">Logout</a></li>
-        {{else}}
-        <li><a href="/login" class="nav-link">Login</a></li>
-        {{/if}}
-        <li><a href="/wishlist" class="nav-link">Wishlist</a></li>
-        <li><a href="/cart" class="nav-link">Cart</a></li>
-      </ul>
-    </div>
-  </div>
+  </nav>
 </header>
+
