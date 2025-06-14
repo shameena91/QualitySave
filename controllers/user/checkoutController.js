@@ -21,17 +21,28 @@ const applyCoupon = async (req, res) => {
     const coupon = await Coupon.findById(couponId);
 
     if (!coupon.usedUsers) {
-      coupon.usedUsers = [];
+      coupon.usedUsers =[];
     }
-    if (!coupon.usedUsers.includes(userId)) {
-      coupon.usedUsers.push(userId);
-      await coupon.save();
-      req.session.coupon = couponId;
-      //  req.session.couponId=id
-      return res.json({ success: true });
-    } else {
-      return res.json({ success: false });
+
+
+
+      if (coupon.usedUsers && coupon.usedUsers.includes(userId)) {
+      return res.json({ success: false, message: "Coupon already used" });
     }
+
+    // Save coupon info in session for later
+    req.session.coupon = couponId;
+return res.json({ success: true });
+
+    // if (!coupon.usedUsers.includes(userId)) {
+    //   coupon.usedUsers.push(userId);
+    //   await coupon.save();
+    //   req.session.coupon = couponId;
+    //   //  req.session.couponId=id
+    //   return res.json({ success: true });
+    // } else {
+    //   return res.json({ success: false });
+    // }
   } catch (error) {
     console.error("Error updating coupon usage:", error);
     return res.status(500).json({ success: false, message: "Server error." });
@@ -66,7 +77,7 @@ const getCheckout = async (req, res) => {
       .populate("cartItems.productId")
       .lean();
 
-    const cartProducts = cartItemsDoc.cartItems;
+const cartProducts = cartItemsDoc.cartItems.filter(item => item.productId.quantity > 0); 
 
     const finalSalePrice = cartProducts.reduce((acc, curr) => {
       return acc + curr.totalSalePrice;
@@ -242,7 +253,15 @@ const createOrder = async (req, res) => {
       invoiceDate: new Date(),
       paymentMethod: paymentMethod,
       shipping: shippingCharge,
+      orderStatus:'Placed'
     });
+      if (couponId ) {
+      await Coupon.updateOne(
+        { _id: couponId },
+        { $addToSet: { usedBy: userId } } // add only if not already there
+      );
+      req.session.coupon = null 
+    }
     console.log("nnnn", newOrder);
     await newOrder.save();
     await Cart.findOneAndDelete({ userId: userId });

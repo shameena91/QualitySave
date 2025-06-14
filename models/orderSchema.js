@@ -122,6 +122,11 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  orderStatus:{
+    type:String,
+  enum: ['Not placed', 'Placed'],
+  default:'Not placed'
+  },
   retry:{
     type:Boolean,
     default:false

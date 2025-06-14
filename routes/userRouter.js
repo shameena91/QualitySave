@@ -168,6 +168,8 @@ router.get('/retry-order/:orderId',userAuth,razorpayController.retryOrder)
 router.put('/retry-order-cod/:orderId',userAuth,checkoutController.retryCodOrder),
 router.put('/retry-razorpay-order/:orderId',userAuth,razorpayController.retryRazorpayOrder),
 
+router.delete("/deletePendingOrder/:orderId",userAuth,razorpayController.deletePendingOrder)
+
 router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)
 router.post("/remove-coupon",userAuth,checkoutController.removeCoupon)
 router.get("/wallet-transaction",userAuth,walletController.walletTransaction)

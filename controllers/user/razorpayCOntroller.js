@@ -16,6 +16,7 @@ const Ledger = require("../../models/ledgerSchema");
 const createRazorpayOrder = async (req, res) => {
   try {
     const userId = req.session.user;
+     const couponId = req.session.coupon;
     const { addressId, paymentMethod,amount ,shippingCharge,orderId} = req.body;
 console.log("nnnn",shippingCharge)
     if (!addressId || !paymentMethod) {
@@ -35,10 +36,10 @@ console.log("nnnn",shippingCharge)
       (sum, item) => sum + item.totalSalePrice,
       0
     );
+    // const totalDiscount=userCart.cartItems.reduce((sum,item)=>sum+item.discountedPrice)
      const discount = totalAmount - finalAmount;
-         const amountToPay = finalAmount + parseInt(shippingCharge);
-
-      const couponDiscount= finalAmount- (amountToPay - shippingCharge)
+        //  const amountToPay = finalAmount + parseInt(shippingCharge);
+   const couponDiscount = finalAmount - amountPay;
 console.log("jjjjjjjjjjjjjjjjjjjjjj");
 
       console.log(totalAmount)
@@ -58,14 +59,14 @@ console.log("jjjjjjjjjjjjjjjjjjjjjj");
         quantity: item.quantity,
         price: item.price,
         status: 'Pending',
-        discountedAmount:(item.totalSalePrice-item.totalPrice)*item.quantity
+        discountedAmount:(item.totalSalePrice-item.totalPrice)
 
       })),
       totalPrice:totalAmount,
       discount,
-       couponDiscount:couponDiscount,
-      finalAmount: amountToPay,
-    
+      couponDiscount:couponDiscount,
+      finalAmount: amountPay,
+     couponUsed: couponId,
       address: addressId,
       paymentMethod:paymentMethod,
       invoiceDate: new Date(),
@@ -135,8 +136,17 @@ console.log("kkkk", order)
   razorpayPaymentId,
   razorpaySignature,
   razorpayStatus: 'paid',
+  orderStatus:'Placed'
  
 });
+
+ if (req.session.coupon) {
+        await Coupon.updateOne(
+          { _id: req.session.coupon },
+          { $addToSet: { usedUsers: req.session.user } }
+        );
+         req.session.coupon = null;
+      }
    const updatedOrder = await Order.findById(orderId);
 
 if (updatedOrder && updatedOrder.razorpayStatus === "paid") {
@@ -309,12 +319,24 @@ console.log("yyyyyyyy",razorpayOrder)
   }
 };
 
-
+const deletePendingOrder=async(req,res)=>{
+   try {
+    const { orderId } = req.params;
+    console.log("mmmmmmmmm",orderId)
+    // Ensure to check order status before deletion
+    await Order.deleteOne({ _id: orderId});
+    res.json({ success: true, message: 'Order deleted' });
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
 
 module.exports={
 createRazorpayOrder,
 verifyPayment,
 retryRazorpayPayment,
 retryOrder,
-retryRazorpayOrder
+retryRazorpayOrder,
+deletePendingOrder
 }

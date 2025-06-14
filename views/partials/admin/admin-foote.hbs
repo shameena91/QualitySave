@@ -13,34 +13,46 @@
 
 <!-- Sidebar Toggle Script -->
 <script>
-   document.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const navbar = document.querySelector('.navbar');
-    const toggleBtn = document.getElementById('sidebarToggle');
 
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-      mainContent.classList.toggle('full');
-      navbar.classList.toggle('collapsed');
-    });
-  });
+    document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('.sidebar-link');
+    const currentPath = window.location.pathname;
 
-
-   const dropdown = document.getElementById('customDropdown');
-    const button = dropdown.querySelector('.dropdown-button');
-
-    button.addEventListener('click', () => {
-      dropdown.classList.toggle('show');
-    });
-
-    // Close dropdown if clicked outside
-    window.addEventListener('click', (e) => {
-      if (!dropdown.contains(e.target)) {
-        dropdown.classList.remove('show');
+    links.forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+      else {
+        link.classList.remove('active');
       }
     });
-</script>
+  });
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('mainContent');
+      const navbar = document.querySelector('.navbar');
+      const toggleBtn = document.getElementById('sidebarToggle');
+
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('full');
+        navbar.classList.toggle('collapsed');
+      });
+
+      const dropdown = document.getElementById('customDropdown');
+      const button = dropdown.querySelector('.dropdown-button');
+
+      button.addEventListener('click', () => {
+        dropdown.classList.toggle('show');
+      });
+
+      window.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('show');
+        }
+      });
+    });
+  </script>
 
 </body>
 </html>

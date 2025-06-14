@@ -106,6 +106,7 @@ id="address-{{this._id}}"
       <!-- Order Summary Section -->
       <h4 class="mt-5 mb-3">Order Summary</h4>
       {{#each cartProducts}}
+      {{#if this.productId.quantity}}
       
       <div class="card mb-3">
         <div class="row g-0 p-3">
@@ -129,6 +130,7 @@ id="address-{{this._id}}"
           </div>
         </div>
       </div>
+      {{/if}}
       {{/each}}
     
 
@@ -607,17 +609,36 @@ function launchRazorpay(response) {
     },
     modal: {
       ondismiss: function () {
-        Swal.fire({ title: 'Cancelled',
-         text: 'Payment cancelled.',
-          icon: 'info' });
+        // Make an AJAX call to delete the order
+        fetch(`/deletePendingOrder/${response.orderId}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          Swal.fire({
+            title: 'Cancelled',
+            text: 'Payment cancelled ',
+            icon: 'info'
+          });
+        })
+        .catch(err => {
+          console.error('Error deleting order:', err);
+          Swal.fire({
+            title: 'Error',
+            text: 'Payment cancelled, but order deletion failed.',
+            icon: 'error'
+          });
+        });
       }
     }
   };
 
   const rzp = new Razorpay(options);
+
   rzp.on('payment.failed', function () {
     window.location.href = `/orderFailure/${response.orderId}`;
   });
+
   rzp.open();
 }
 

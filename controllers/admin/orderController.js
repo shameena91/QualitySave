@@ -27,7 +27,7 @@ const getOrderDetails = async (req, res) => {
     if (statusFilter) {
       query["orderItems.status"] = statusFilter;
     }
-  //  query["orderItems.status"] = { $ne: "Cancelled" };
+   query["orderStatus"] = "Placed";
 
     const orderdata = await Order.find(query)
       .populate("orderItems.product")

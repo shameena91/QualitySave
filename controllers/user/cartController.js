@@ -18,11 +18,13 @@ const getCart = async (req, res) => {
    .lean()
 
   const cartProducts=cart? cart.cartItems :[];
-   console.log("cccccccccccc",cartProducts)
-  const sumTotalPrice=cartProducts.reduce((acc,curr)=>{
+  const availableProducts=cart.cartItems.filter(item => item.productId.quantity > 0); 
+
+   console.log("cccccccccccc",availableProducts)
+  const sumTotalPrice=availableProducts.reduce((acc,curr)=>{
     return acc+curr.totalPrice
   },0)
-  const sumSalePrice=cartProducts.reduce((acc,curr)=>{
+  const sumSalePrice=availableProducts.reduce((acc,curr)=>{
     return acc+curr.totalSalePrice
   },0)
 // findProduct.salePrice - Math.floor(findProduct.salePrice * (percentage / 100))

@@ -59,9 +59,10 @@
 
     {{#if (eq this.paymentMethod "razorpay")}}
   {{#if (eq this.RazorPay "failed")}}
-    <h5 class="mt-2" style="color:orange">Order not placed</h5>
-    
- <a href="/retry-order/{{this.orderId}}" class="btn btn-danger">Place Order Again</a>
+   <div class="d-flex justify-content-between align-items-center  mt-3">
+  <h5 class="mb-0" style="color: orange;">Order not placed</h5>
+  <a href="/retry-order/{{this.orderId}}" class="btn btn-outline-secondary btn-sm">Place Order Again</a>
+</div>
    {{/if}}
 {{/if}}
       </div>
