@@ -171,19 +171,22 @@
          
       </div>
         <div>
-   {{#if (eq orderProduct.status "Delivered")}}
+   {{#if (eq orderProduct.status "Cancelled")}}
+
    <p>
+         <strong>Order At : </strong>{{date}} , {{time}} 
+      </p>
+  
+      {{else}}
+     
+        <p>
          <strong>Order At:</strong> {{date}} , {{time}} 
       </p>
    <p>
       <strong>Delivered At: </strong>{{deliveryDate}} , {{deliveryTime}}
 
       </p>
-      {{else}}
-     
-       <p>
-         <strong>Order At : </strong>{{date}} , {{time}} 
-      </p>
+      
  {{#if (eq orderProduct.status "Cancelled")}}
  <h6>  Order Cancelled  </h6>
 

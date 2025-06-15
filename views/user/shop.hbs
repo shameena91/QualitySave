@@ -453,7 +453,12 @@
           title: "Added to Cart",
           text: response.message,
           icon: 'success',
+          confirmButtonText:'Go To Cart',
           timer: 2000
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = '/cart';
+          }
         });
       }else{
            Swal.fire({

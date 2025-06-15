@@ -6,6 +6,7 @@ const nodeMailer = require("nodemailer");
 const env = require("dotenv").config();
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const Ledger = require("../../models/ledgerSchema");
 
 const noDataFound = async (req, res) => {
   try {
@@ -187,6 +188,17 @@ console.log("userrrrrrrr",findUser)
   reason: `Referral reward from ${user.email}`,
   date: new Date()
 });
+
+
+await Ledger.create({
+  user: user._id,
+  orderId:null,
+  type: 'debit',
+  amount: 100,
+  paymentMethod: 'wallet',
+  description: `Issued for referring ${findUser.email} by ${user.email}`
+});
+
         }
  await findUser.save();
       }

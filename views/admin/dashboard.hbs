@@ -182,6 +182,7 @@
               <th>Total Discount</th>
               <th>Coupon</th>
               <th>Payment Methode</th>
+              <th>orderStatus</th>
              
             </tr>
           </thead>
@@ -193,7 +194,7 @@
               <td>₹{{this.totalPrice}}
                 
               </td>
-              <td>{{#if this.shipping}}₹{{sub this.finalAmount this.shipping }}{{else}}₹{{this.finalAmount}}{{/if}}</td>
+              <td>₹{{this.finalAmount}}</td>
               <td>₹{{ add this.discount this.couponDiscount}}</td>
               {{#if this.couponUsed}}
               <td>{{this.couponUsed.name}}</td>
@@ -201,6 +202,20 @@
                   <td>Nill</td>
                   {{/if}}
               <td>{{this.paymentMethod}}</td>
+   <td>
+  {{#with (lookup ../orderStatusList @index) as |status|}}
+    {{#if (eq status "Pending")}}
+      <span class="badge bg-warning text-dark">Pending</span>
+    {{else if (eq status "Complete")}}
+      <span class="badge bg-success">Complete</span>
+    
+    {{else if (eq status "Returned")}}
+      <span class="badge bg-secondary">Returned</span>
+    {{else if (eq status "Cancelled")}}
+      <span class="badge bg-danger">Cancelled</span>
+    {{/if}}
+  {{/with}}
+</td>
             </tr>
             {{/each}}
           

@@ -187,12 +187,12 @@
         <div class="d-flex justify-content-between pt-2">
           <span>Shipping Charges</span>
           
-          <span class="text-success">{{#if (lt sumTotalPrice 850 )}}+ ₹40 {{else}}FREE{{/if}}</span>
+          <span class="text-success">{{#if (lt sumTotalPrice 850 )}}+ ₹{{shippingCharge}} {{else}}FREE{{/if}}</span>
         </div>
         <hr>
         <div class="d-flex justify-content-between fw-bold">
           <span>Total Amount</span>
-          <span id="sumTotalPrice">{{#if (lt sumTotalPrice 850 )}}₹{{add sumTotalPrice 40}} {{else}}₹{{sumTotalPrice}}{{/if}}</span>
+          <span id="sumTotalPrice">{{#if (lt sumTotalPrice 850 )}}₹{{add sumTotalPrice shippingCharge}} {{else}}₹{{sumTotalPrice}}{{/if}}</span>
         </div>
        
         {{#if (and cartProducts.length (gt hasStock 0))}}

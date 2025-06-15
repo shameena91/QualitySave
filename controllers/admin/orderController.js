@@ -93,6 +93,8 @@ const updateStatus = async (req, res) => {
   try {
     const { orderId, productId } = req.params;
     const { status } = req.body;
+
+    
     console.log("productid:", orderId, productId);
     console.log(status);
     if (!status) {

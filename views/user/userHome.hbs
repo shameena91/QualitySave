@@ -220,7 +220,7 @@ body, html {
 {{/if}}
    
     </div>
-
+{{#if quantity}}
     <!-- Add to Cart Button -->
     <div class="card-footer bg-white border-0">
        {{#if @root.user}}
@@ -235,6 +235,9 @@ body, html {
     </button>
     {{/if}}
     </div>
+    {{else}}
+                 <h5 style="color:red">Currently unavailable</h5>
+{{/if}}
   </div>
 </div>
 
@@ -295,8 +298,13 @@ function notLogin()
           title: "Added to Cart",
           text: response.message,
           icon: 'success',
+          confirmButtonText:'Go TO Cart',
           timer: 2000
-        });
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = '/cart';
+          }
+        });;
       }else{
            Swal.fire({
             title:" Exceed",

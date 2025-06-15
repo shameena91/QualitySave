@@ -201,88 +201,93 @@ const createOrder = async (req, res) => {
     const userId = req.session.user;
     const couponId = req.session.coupon;
     const { addressId, paymentMethod, amount, shippingCharge } = req.body;
-    // const userAddressDoc = await Address.findOne({ userId:userId }).lean();
 
-    console.log(addressId);
-    console.log(paymentMethod);
-    console.log("ggggggggg", amount);
+    console.log("Address:", addressId);
+    console.log("Payment Method:", paymentMethod);
+    console.log("Total Amount (with shipping):", amount);
+
     const amountPay = amount - shippingCharge;
-    //     if(paymentMethod==="cod")
-    //       {
-    // paymentMethod="Cash on delivery"
-    //       }
 
-    const cartItemsDoc = await Cart.findOne({ userId: userId })
+    const findCartItems = await Cart.findOne({ userId })
       .populate("cartItems.productId")
       .lean();
-    console.log("docssss", cartItemsDoc);
 
-    const orderItems = cartItemsDoc.cartItems.map((item) => ({
-      product: item.productId,
+    if (!findCartItems || findCartItems.cartItems.length === 0) {
+      return res.status(400).json({ message: "Your cart is empty." });
+    }
+
+    // Only include products with stock > 0
+    const filteredCartItems = findCartItems.cartItems.filter(
+      (item) => item.productId.quantity > 0
+    );
+
+    if (filteredCartItems.length === 0) {
+      return res.status(400).json({ message: "All cart items are out of stock." });
+    }
+
+    const orderItems = filteredCartItems.map((item) => ({
+      product: item.productId._id,
       quantity: item.quantity,
       price: item.price,
       status: "Pending",
       discountedAmount: (item.totalSalePrice - item.totalPrice) * item.quantity,
     }));
-    console.log("odrer", orderItems);
 
-    const finalAmount = cartItemsDoc.cartItems.reduce(
+    const finalAmount = filteredCartItems.reduce(
       (sum, item) => sum + item.totalPrice,
       0
-    ); // Sum of all item totals
-    const totalAmount = cartItemsDoc.cartItems.reduce(
+    );
+    const totalAmount = filteredCartItems.reduce(
       (sum, item) => sum + item.totalSalePrice,
       0
     );
 
     const discount = totalAmount - finalAmount;
-    console.log("amounu:", finalAmount);
-    console.log(totalAmount);
-
     const couponDiscount = finalAmount - amountPay;
 
     const newOrder = new Order({
-      userId: userId,
+      userId,
       orderItems,
       totalPrice: totalAmount,
       discount,
-      couponDiscount: couponDiscount,
-      finalAmount: amount,
+      couponDiscount,
+      finalAmount: amountPay,
       address: addressId,
       couponUsed: couponId,
       invoiceDate: new Date(),
-      paymentMethod: paymentMethod,
+      paymentMethod,
       shipping: shippingCharge,
-      orderStatus:'Placed'
+      orderStatus: 'Placed',
     });
-      if (couponId ) {
+
+    if (couponId) {
       await Coupon.updateOne(
         { _id: couponId },
-        { $addToSet: { usedBy: userId } } // add only if not already there
+        { $addToSet: { usedBy: userId } }
       );
-      req.session.coupon = null 
+      req.session.coupon = null;
     }
-    console.log("nnnn", newOrder);
+
     await newOrder.save();
-    await Cart.findOneAndDelete({ userId: userId });
+    await Cart.findOneAndDelete({ userId });
 
     for (let item of orderItems) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { quantity: -item.quantity },
       });
     }
-    req.session.coupon = null;
+
     res.status(201).json({
       message: "Order created successfully.",
       orderId: newOrder.orderId,
     });
+
   } catch (error) {
     console.error("Error creating order:", error);
-    res
-      .status(500)
-      .json({ message: "Something went wrong while creating the order." });
+    res.status(500).json({ message: "Something went wrong while creating the order." });
   }
 };
+
 
 
 const retryCodOrder = async (req, res) => {

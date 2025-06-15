@@ -18,6 +18,19 @@ const getCart = async (req, res) => {
    .lean()
 
   const cartProducts=cart? cart.cartItems :[];
+
+    if (!cart || cartProducts.length === 0) {
+      return res.render("cart", {
+        hasStock: 0,
+        cartProducts: [],
+        sumTotalPrice: 0,
+        sumSalePrice: 0,
+        discount: 0,
+        user,
+        shippingCharge:0,
+        emptyMessage: "Your cart is empty.",
+      });
+    }
   const availableProducts=cart.cartItems.filter(item => item.productId.quantity > 0); 
 
    console.log("cccccccccccc",availableProducts)
@@ -36,7 +49,10 @@ const getCart = async (req, res) => {
  }
   console.log(hasStock)
   
-    res.render("cart",{hasStock,cartProducts,sumTotalPrice,sumSalePrice,discount,user});
+    res.render("cart",{hasStock,cartProducts,sumTotalPrice,
+      sumSalePrice,discount,user,
+       shippingCharge:40,
+    emptyMessage: null});
   }catch (error) {
   console.error("Get Cart Error:", error);
   return res.status(500).render("errorPage", { message: "Internal Server Error" });

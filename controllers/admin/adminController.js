@@ -109,7 +109,7 @@ const getTopproducts = async () => {
         sold: { $sum: '$orderItems.quantity' }
       }
     },
-    { $sort: { totalSales: -1 } },
+    { $sort: { sold: -1 } },
     { $limit: 10 }
   ]);
 };
@@ -165,7 +165,7 @@ const getCategories=async()=>{
       }
     },
 
-    { $sort: { totalSalesAmount: -1 } },
+    { $sort: {  productsSold: -1 } },
     { $limit: 10 }
   ]);
 
@@ -215,7 +215,8 @@ const getTopBrands=async()=>{
         numberOfProducts: { $size: '$productIds' }
       }
     },
-
+ { $sort: { productsSold: -1 } },
+    { $limit: 10 }
 
    ])
 }
@@ -279,9 +280,10 @@ const loadDashboard = async (req, res) => {
 
     let orders = await Order.find(filter)
       .populate('couponUsed')
+      
       .sort({ createdOn: -1 })
       .lean();
-
+console.log(orders)
     if (search) {
       orders = orders.filter((order) =>
         order.orderId.toLowerCase().includes(search.toLowerCase())
@@ -308,8 +310,25 @@ const loadDashboard = async (req, res) => {
     console.log("hhhhh",topProducts)
     const shipcharge=orders.shipping
 
+
+  
+ const orderStatusList = orders.map(order => {
+  const statusList = order.orderItems.map(item => item.status);
+
+  if (statusList.some(status => ["Pending", "Processing", "Shipped"].includes(status))) {
+    return "Pending";
+  } else if (statusList.every(status => status === "Cancelled")) {
+    return "Cancelled";
+  } else if (statusList.every(status => status === "Returned")) {
+    return "Returned";
+  } else {
+    return "Complete";
+  }
+})
+
     return res.render("dashboard", {
       totalOrders,
+        orderStatusList,
       totalSale: totalSales.toLocaleString(),
       totalDiscount: totalDiscount.toLocaleString(),
       totalCouponDiscount: totalCouponDiscount.toLocaleString(),
@@ -321,7 +340,8 @@ const loadDashboard = async (req, res) => {
       topCategories,
       topBrands,
       shipcharge,
-      search
+      search,
+    
    
     });
   } catch (error) {

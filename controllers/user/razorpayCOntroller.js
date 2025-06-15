@@ -25,14 +25,19 @@ console.log("nnnn",shippingCharge)
 
     const amountPay=amount-shippingCharge
     // 1. Get user's cart
-    const userCart = await Cart.findOne({ userId }).populate('cartItems.productId').lean();
+    const findCartItems = await Cart.findOne({ userId })
+    .populate('cartItems.productId').lean();
     console.log("111111111",amount)
+
+        const userCart = findCartItems.cartItems
+        .filter(item => item.productId.quantity > 0);
+
     // 2. Calculate totals
- const finalAmount = userCart.cartItems.reduce(
+ const finalAmount = userCart.reduce(
       (sum, item) => sum + item.totalPrice,
       0
     ); // Sum of all item totals
-    const totalAmount = userCart.cartItems.reduce(
+    const totalAmount = userCart.reduce(
       (sum, item) => sum + item.totalSalePrice,
       0
     );
@@ -54,7 +59,7 @@ console.log("jjjjjjjjjjjjjjjjjjjjjj");
     // 3. Create the Order (not marking as paid yet)
     const newOrder = new Order({
       userId,
-      orderItems: userCart.cartItems.map(item => ({
+      orderItems: userCart.map(item => ({
         product: item.productId,
         quantity: item.quantity,
         price: item.price,
@@ -65,7 +70,7 @@ console.log("jjjjjjjjjjjjjjjjjjjjjj");
       totalPrice:totalAmount,
       discount,
       couponDiscount:couponDiscount,
-      finalAmount: amountPay,
+      finalAmount: finalAmount,
      couponUsed: couponId,
       address: addressId,
       paymentMethod:paymentMethod,
