@@ -35,10 +35,14 @@ type:Number,
             type:Number,
             required:true
         },
-        status:{
-            type:String,
-            default:"placed"
-        },
+        // status:{
+        //     type:String,
+        //     default:"placed"
+        // },
+        offer:{
+            type:Number,
+            default:0
+        }
        
     }]
 })

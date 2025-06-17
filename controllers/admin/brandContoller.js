@@ -31,10 +31,21 @@ const loadBrandPage=async(req,res)=>{
 const addBrand=async(req,res)=>{
     try {
         const brand=req.body.name.trim()
+ const image=req.file?.filename
         console.log(brand)
         const findbrand=await Brand.findOne({brand})
+
+
+    if (brand || !image) {
+      return res.status(400).render('brandInfo', {
+        error: 'Brand name and image are required.',
+        data: await Brand.find() // or however you fetch existing brands
+      });
+    }
+
+
         if(!findbrand){
-            const image=req.file?.filename
+           
             const newbrand=new Brand({
                 brandName:brand,
                 brandImage:image,

@@ -1,4 +1,5 @@
 const Cart = require("../../models/cartSchema");
+const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
 const Wishlist = require("../../models/wishlistSchema");
@@ -66,12 +67,16 @@ const addToCart = async (req, res) => {
   }
     const productId = req.body.proId;
     const userId = req.session.user;
+   
     
     const wishlist=await Wishlist.findOne({userId:userId})
     if (!productId || !userId) {
       return res.status(400).json({ status: false, message: "Missing product or user ID" });
     }
       const product = await Product.findById(productId);
+       const categoryData=await Category.findById(product.category)
+       console.log(categoryData)
+
     if (!product) {
       return res.status(404).json({ status: false, message: "Product not found" });
     }
@@ -86,6 +91,11 @@ if (wishlist) {
     });
   }
 }
+const offer =
+      categoryData && categoryData.categoryoffer > product.productOffer
+        ? categoryData.categoryoffer
+        : product.productOffer;
+        console.log("ooooo",offer)
        const quantity = 1;
       let maxQuantity=5
     
@@ -93,6 +103,7 @@ if (wishlist) {
         const totalPrice = quantity * price;
         const salePrice=product.salePrice
         const totalSalePrice=quantity*salePrice
+   
     let cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -104,7 +115,8 @@ if (wishlist) {
             price,
             salePrice,
             totalPrice,
-            totalSalePrice
+            totalSalePrice,
+            offer
         }]
       });
     } else {
@@ -128,7 +140,7 @@ if (wishlist) {
             price,
             salePrice,
             totalPrice,
-            totalSalePrice });
+            totalSalePrice,offer });
     }
 
     await cart.save();

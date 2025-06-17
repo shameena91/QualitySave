@@ -118,13 +118,13 @@
         <div class="product-details" >
             <a href="/productDetails/{{this.productId._id}}" class= "text-decoration-none" style="color:black"><h5>{{this.productId.productName}}</h5></a>
             
-            {{#if this.productId.productOffer}}
+            {{#if this.offer}}
                 <span class="text-muted text-decoration-line-through ms-1"  style="display:none;" id="salePrice-{{this.productId._id}}">₹{{this.salePrice}}</span>
                   <span class="text-muted text-decoration-line-through ms-1" id="totalSalePrice-{{this.productId._id}}">₹{{this.totalSalePrice}}</span>
                 <span class="fs-4 text-primary fw-bold" id="totalPrice-{{this.productId._id}}">₹{{this.totalPrice}}</span>
                 <span class="text-muted" id="price-{{this.productId._id}}" style="display:none;">{{this.price}}</span>
 
-                <span class="offer ms-2" style="color:green;font-size:20px;font-weight:600">&nbsp;{{this.productId.productOffer}}% off</span>
+                <span class="offer ms-2" style="color:green;font-size:20px;font-weight:600">&nbsp;{{this.offer}}% off</span>
             {{else}}
             <span class="text-muted text-decoration-line-through ms-1"  style="display:none;" id="salePrice-{{this.productId._id}}">₹{{this.salePrice}}</span>
                 <span class="fs-4 text-primary fw-bold" id="totalPrice-{{this.productId._id}}">₹{{this.totalPrice}}</span>

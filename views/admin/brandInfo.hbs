@@ -12,6 +12,11 @@
           <h4 class="mb-0">Add Brand</h4>
         </div>
         <div class="card-body">
+                   {{#if error}}
+  <div class="alert alert-danger" role="alert">
+    {{error}}
+  </div>
+{{/if}}
           <form action="/admin/brand" method="post" enctype="multipart/form-data">
             <div class="mb-3">
               <label for="brandName" class="form-label">Brand Name</label>
@@ -34,6 +39,7 @@
           <h4 class="mb-0">Brand List</h4>
         </div>
         <div class="card-body">
+ 
           <table class="table table-hover align-middle">
             <thead class="table-light">
               <tr>
