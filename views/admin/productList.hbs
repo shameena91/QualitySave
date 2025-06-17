@@ -58,22 +58,8 @@
 </td>
 
 
+        <td>{{#if quantity}}{{quantity}}{{else}}<span class="status-pill bg-danger text-white rounded-2 ps-1 pe-1">Out of Stock</span>{{/if}}</td>
 
-        {{!-- <td>
-          {{#if  productOffer  }}
-      
-                    <button class="btn btn-info text-white" onclick="removeOffer('{{_id}}')">remove</button>
-
-        {{else}}
-                    <button class="btn btn-info text-white" onclick="addOffer('{{_id}}')">Add Offer</button>
-
-                    {{/if}}
- </td> --}}
-        
-        <td>{{quantity}}</td>
-
-    
-        
         <td>
         {{#if isBlocked}}
             <button class="btn btn-danger btn-sm ">

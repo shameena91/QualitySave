@@ -120,13 +120,6 @@ router.post("/removeItem", userAuth, cartController.removeCartItem);
 
 router.get("/checkout", userAuth, checkoutController.getCheckout);
 
-router.post("/createOrder", userAuth, checkoutController.createOrder);
-router.get(
-  "/orderSuccess/:orderId",
-  userAuth,
-  checkoutController.getOrderSuccess
-);
-
 
 
 
@@ -157,6 +150,14 @@ router.get(
   invoiceController.downloadInvoice
 );
 
+router.post("/createOrder", userAuth, checkoutController.createOrder);
+router.get(
+  "/orderSuccess/:orderId",
+  userAuth,
+  checkoutController.getOrderSuccess
+);
+// router.post("/createWalletOrder", userAuth, walletController.createwalletOrder);
+
 router.post("/verifyPayment",userAuth,razorpayController.verifyPayment)
 router.post("/createRazorpayOrder",userAuth, razorpayController.createRazorpayOrder)
 router.post("/retry-payment/:orderId",userAuth, razorpayController.retryRazorpayPayment)
@@ -167,6 +168,11 @@ router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
 router.get('/retry-order/:orderId',userAuth,razorpayController.retryOrder)
 router.put('/retry-order-cod/:orderId',userAuth,checkoutController.retryCodOrder),
 router.put('/retry-razorpay-order/:orderId',userAuth,razorpayController.retryRazorpayOrder),
+
+
+router.post('/wallet/create-order', walletController.createWalletOrder);
+router.post('/wallet/verify-payment', walletController.verifyWalletPayment);
+
 
 router.delete("/deletePendingOrder/:orderId",userAuth,razorpayController.deletePendingOrder)
 

@@ -130,34 +130,29 @@ const updateAddress = async (req, res) => {
   }
 };
 const deleteAddress = async (req, res) => {
-try {
-const addressId = req.params.id;
-console.log("addressId:",addressId)
+  try {
+    const addressId = req.params.id;
+    console.log("addressId:", addressId);
 
+    const findAddress = await Address.findOne({ "address._id": addressId });
 
-const findAddress = await Address.findOne({ "address._id": addressId });
+    if (!findAddress) {
+      return res.status(404).json({ message: "Address not found" });
+    }
 
-if (!findAddress) {
-  return res.status(404).json({ message: "Address not found" });
-}
+    await Address.updateOne(
+      { "address._id": addressId },
+      { $pull: { address: { _id: addressId } } }
+    );
 
-await Address.updateOne(
-  { "address._id": addressId },
-  { $pull: { address: { _id: addressId } } }
-);
-
-return res.status(200).json({success:true, message: 'Address deleted successfully' });
-
-
-} catch (error) {
-console.error(error);
-return res.status(500).json({ message: "Server error" });
-}
+    return res
+      .status(200)
+      .json({ success: true, message: "Address deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
-
-
-
-
 
 module.exports = {
   getAddress,

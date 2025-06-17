@@ -32,10 +32,11 @@ const loadHomePage = async (req, res) => {
     const categories = await Category.find({ isListed: true }).lean();
     let productDetails = await Product.find({
       isBlocked: false,
-      category: { $in: categories.map((category) => category._id) }
-    }).populate("brand")
-    .populate("category")
-    .lean();
+      category: { $in: categories.map((category) => category._id) },
+    })
+      .populate("brand")
+      .populate("category")
+      .lean();
     productDetails.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
@@ -47,8 +48,7 @@ const loadHomePage = async (req, res) => {
       console.log(productDetails);
       res.render("userHome", { user: userData, products: productDetails });
     } else {
-      
-      return res.render("userHome", { products: productDetails,user: null });
+      return res.render("userHome", { products: productDetails, user: null });
     }
   } catch (error) {
     console.log("Home page not found");
@@ -96,8 +96,6 @@ async function sendVerificationEmail(email, otp) {
   }
 }
 
-
-
 function generateReferalCode(username) {
   const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 random characters
   return `${username.slice(0, 4).toUpperCase()}${randomPart}`;
@@ -105,7 +103,7 @@ function generateReferalCode(username) {
 
 const userSignup = async (req, res) => {
   try {
-    const { name, phone, email, password, cpassword ,referalCode} = req.body;
+    const { name, phone, email, password, cpassword, referalCode } = req.body;
     if (password != cpassword) {
       return res.render("signUp", { message: "password not matched" });
     }
@@ -114,9 +112,7 @@ const userSignup = async (req, res) => {
     if (findUser) {
       return res.render("signUp", { message: "User already exists" });
     }
-  const generatedReferralCode = generateReferalCode(name);
-
-
+    const generatedReferralCode = generateReferalCode(name);
 
     const otp = generateOtp();
     const emailSent = await sendVerificationEmail(email, otp);
@@ -127,7 +123,14 @@ const userSignup = async (req, res) => {
       // return res.json("email.error")
     }
     req.session.userOtp = otp;
-    req.session.userData = { email, password, name, phone ,generatedReferralCode,referalCode};
+    req.session.userData = {
+      email,
+      password,
+      name,
+      phone,
+      generatedReferralCode,
+      referalCode,
+    };
     console.log("OTP sent", otp);
     res.render("otp-varify");
   } catch (error) {
@@ -163,46 +166,42 @@ const varifyOtp = async (req, res) => {
         email: user.email,
         phone: user.phone,
         password: passwordHash,
-        referralCode:user.generatedReferralCode,
-        referredBy:user.referalCode
+        referralCode: user.generatedReferralCode,
+        referredBy: user.referalCode,
       });
 
       if (user.googleId) {
         userData.googleId = user.googleId;
       }
       await saveUserData.save();
-console.log(user.referalCode)
-      if(user.referalCode)
-      {
-        const findUser=await User.findOne({referralCode:user.referalCode})
-        if(findUser)
-        {
-       findUser.wallet = (findUser.wallet || 0) + 100; 
-          findUser.walletHistory = findUser.walletHistory || []; 
-     
-console.log("userrrrrrrr",findUser)
-   
-    findUser.walletHistory.push({
-  type: 'credit',
-  amount: 100,
-  reason: `Referral reward from ${user.email}`,
-  date: new Date()
-});
+      console.log(user.referalCode);
+      if (user.referalCode) {
+        const findUser = await User.findOne({ referralCode: user.referalCode });
+        if (findUser) {
+          findUser.wallet = (findUser.wallet || 0) + 100;
+          findUser.walletHistory = findUser.walletHistory || [];
 
+          console.log("userrrrrrrr", findUser);
 
-await Ledger.create({
-  user: user._id,
-  orderId:null,
-  type: 'debit',
-  amount: 100,
-  paymentMethod: 'wallet',
-  description: `Issued for referring ${findUser.email} by ${user.email}`
-});
+          findUser.walletHistory.push({
+            type: "credit",
+            amount: 100,
+            reason: `Referral reward from ${user.email}`,
+            date: new Date(),
+          });
 
+          await Ledger.create({
+            user: user._id,
+            orderId: null,
+            type: "debit",
+            amount: 100,
+            paymentMethod: "wallet",
+            description: `Issued for referring ${findUser.email} by ${user.email}`,
+          });
         }
- await findUser.save();
+        await findUser.save();
       }
-      
+
       req.session.user = saveUserData._id;
       res.json({ success: true, redirectUrl: "/" });
     } else {
@@ -234,21 +233,17 @@ const resendOtp = async (req, res) => {
         .status(200)
         .json({ success: true, message: "OTP resend successfully" });
     } else {
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "failed to  resend OTP.please try again",
-        });
+      res.status(500).json({
+        success: false,
+        message: "failed to  resend OTP.please try again",
+      });
     }
   } catch (error) {
     console.error("Error resnding OTP");
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error.Please try again later",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.Please try again later",
+    });
   }
 };
 
@@ -309,7 +304,7 @@ const loadShopPage = async (req, res) => {
     const user = req.session.user;
     const userData = await User.findOne({ _id: user }).lean();
     const categories = await Category.find({ isListed: true }).lean();
-    
+
     const categoryIds = categories.map((category) => category._id.toString());
     const page = parseInt(req.query.page) || 1;
     console.log("page", page);
@@ -321,7 +316,7 @@ const loadShopPage = async (req, res) => {
       category: { $in: categories.map((category) => category._id) },
     })
       .populate("brand")
-      .populate("category")  
+      .populate("category")
       .sort({ createdAt: -1 })
 
       .skip(skip)
@@ -340,7 +335,7 @@ const loadShopPage = async (req, res) => {
       _id: category._id,
       name: category.name,
     }));
-  
+
     const productOffer = products.productOffer;
 
     console.log(productOffer);
@@ -349,8 +344,7 @@ const loadShopPage = async (req, res) => {
       req.session.filteredProducts = null;
     }
 
-  
-    console.log("iiiiiiiiiiiiiiiiii",products)
+    console.log("iiiiiiiiiiiiiiiiii", products);
     res.render("shop", {
       user: userData,
       products: products,
@@ -359,7 +353,6 @@ const loadShopPage = async (req, res) => {
       currentPage: page,
       brand: brands,
       totalPages: totalPages,
-
     });
   } catch (error) {
     return res.redirect("/pageNotFound");
@@ -370,23 +363,20 @@ const filterProduct = async (req, res) => {
     const userId = req.session.user;
     const { category, brand, gt, lt, page } = req.query;
 
-    // Fetch current user
     const findUser = await User.findById(userId).lean();
 
-    // Fetch all categories and brands (always show full list in sidebar)
     const categories = await Category.find({ isListed: true }).lean();
     const brands = await Brand.find({ isBlocked: false }).lean();
 
-    // Optional filters
-    const findCategory = category ? await Category.findById(category).lean() : null;
+    const findCategory = category
+      ? await Category.findById(category).lean()
+      : null;
     const findBrand = brand ? await Brand.findById(brand).lean() : null;
 
-    // Build product query
     const query = { isBlocked: false };
 
     if (findCategory) query.category = findCategory._id;
 
-    
     if (findBrand) query.brand = findBrand._id;
     if (gt && lt) {
       query.discountedPrice = {
@@ -398,7 +388,6 @@ const filterProduct = async (req, res) => {
     const searchCat = findCategory ? findCategory.name : null;
     const searchBrand = findBrand ? findBrand.brandName : null;
 
-    // Find matching products
     let products = await Product.find(query)
       .populate("brand")
       .populate("category")
@@ -408,20 +397,19 @@ const filterProduct = async (req, res) => {
       return res.redirect("/no-data-found");
     }
 
-    // Sort by newest first
     products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // Pagination setup
     const itemsPerPage = 6;
     const currentPage = parseInt(page) || 1;
     const totalPages = Math.ceil(products.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentProduct = products.slice(startIndex, startIndex + itemsPerPage);
+    const currentProduct = products.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
 
-    // Save filtered results in session (optional)
     req.session.filteredProducts = currentProduct;
 
-    // Render shop page with filters
     res.render("shop", {
       user: findUser,
       products: currentProduct,
@@ -433,13 +421,11 @@ const filterProduct = async (req, res) => {
       searchBrand,
       count: products.length,
     });
-
   } catch (error) {
     console.error("Filter Product Error:", error.message);
     res.redirect("/pageNotfound");
   }
 };
-
 
 const searchProducts = async (req, res) => {
   try {

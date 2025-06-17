@@ -21,18 +21,16 @@ const applyCoupon = async (req, res) => {
     const coupon = await Coupon.findById(couponId);
 
     if (!coupon.usedUsers) {
-      coupon.usedUsers =[];
+      coupon.usedUsers = [];
     }
 
-
-
-      if (coupon.usedUsers && coupon.usedUsers.includes(userId)) {
+    if (coupon.usedUsers && coupon.usedUsers.includes(userId)) {
       return res.json({ success: false, message: "Coupon already used" });
     }
 
     // Save coupon info in session for later
     req.session.coupon = couponId;
-return res.json({ success: true });
+    return res.json({ success: true });
 
     // if (!coupon.usedUsers.includes(userId)) {
     //   coupon.usedUsers.push(userId);
@@ -77,7 +75,9 @@ const getCheckout = async (req, res) => {
       .populate("cartItems.productId")
       .lean();
 
-const cartProducts = cartItemsDoc.cartItems.filter(item => item.productId.quantity > 0); 
+    const cartProducts = cartItemsDoc.cartItems.filter(
+      (item) => item.productId.quantity > 0
+    );
 
     const finalSalePrice = cartProducts.reduce((acc, curr) => {
       return acc + curr.totalSalePrice;
@@ -116,6 +116,7 @@ const cartProducts = cartItemsDoc.cartItems.filter(item => item.productId.quanti
         coupons,
         user,
         shippingCharge,
+        wallet: user.wallet,
       });
     }
     const addresses = userAddressDoc.address;
@@ -130,6 +131,7 @@ const cartProducts = cartItemsDoc.cartItems.filter(item => item.productId.quanti
       totalDiscount,
       coupons,
       shippingCharge,
+      wallet: user.wallet,
     });
   } catch (error) {
     console.error("Error in getCheckout:", error.message);
@@ -200,6 +202,8 @@ const createOrder = async (req, res) => {
   try {
     const userId = req.session.user;
     const couponId = req.session.coupon;
+
+    const userData = await User.findById(userId);
     const { addressId, paymentMethod, amount, shippingCharge } = req.body;
 
     console.log("Address:", addressId);
@@ -222,7 +226,9 @@ const createOrder = async (req, res) => {
     );
 
     if (filteredCartItems.length === 0) {
-      return res.status(400).json({ message: "All cart items are out of stock." });
+      return res
+        .status(400)
+        .json({ message: "All cart items are out of stock." });
     }
 
     const orderItems = filteredCartItems.map((item) => ({
@@ -257,8 +263,28 @@ const createOrder = async (req, res) => {
       invoiceDate: new Date(),
       paymentMethod,
       shipping: shippingCharge,
-      orderStatus: 'Placed',
+      orderStatus: "Placed",
     });
+    if (paymentMethod === "wallet") {
+      if (userData.wallet < amount) {
+        return res.status(400).json({
+          message:
+            "Insufficient wallet balance. Please choose another payment method.",
+        });
+      }
+      // if (newOrder.status !== 'failed' && newOrder.status !== 'cancelled') {
+      //   return res.status(400).json({
+      //     message: 'try again'
+      //   });
+      // }
+      userData.wallet -= amount;
+      userData.walletHistory.push({
+        amount: amount,
+        type: "debit",
+        reason: `Amount credited for order  ${newOrder.orderId}`,
+      });
+      await userData.save();
+    }
 
     if (couponId) {
       await Coupon.updateOne(
@@ -272,64 +298,62 @@ const createOrder = async (req, res) => {
     await Cart.findOneAndDelete({ userId });
 
     for (let item of orderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { quantity: -item.quantity },
-      });
+      await Product.updateOne(
+        { _id: item.product, quantity: { $gte: item.quantity } },
+        { $inc: { quantity: -item.quantity } }
+      );
     }
 
     res.status(201).json({
       message: "Order created successfully.",
       orderId: newOrder.orderId,
     });
-
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ message: "Something went wrong while creating the order." });
+    res
+      .status(500)
+      .json({ message: "Something went wrong while creating the order." });
   }
 };
-
-
 
 const retryCodOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { addressId, paymentMethod, amount, shippingCharge } = req.body;
+    console.log(orderId);
 
-    if (paymentMethod !== 'cod') {
-      return res.status(400).json({ message: 'Invalid payment method for COD retry' });
+    if (paymentMethod !== "cod") {
+      return res
+        .status(400)
+        .json({ message: "Invalid payment method for COD retry" });
     }
 
     // Update the existing order
-    const order = await Order.findOne({ _id: orderId, user: req.session.user });
-
+    const order = await Order.findOne({ orderId: orderId });
+    console.log("oooooo", order);
     if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    // Optional: check if order was previously failed
-    if (order.status !== 'failed' && order.status !== 'cancelled') {
-      return res.status(400).json({ message: 'Only failed or cancelled orders can be retried' });
+      return res.status(404).json({ message: "Order not found" });
     }
 
     order.address = addressId;
-    order.paymentMethod = 'cod';
-    order.amount = amount;
-    order.shippingCharge = shippingCharge;
-    order.totalAmount = amount + shippingCharge;
-    order.status = 'placed';
-    order.paymentStatus = 'pending';
-    order.retryCount = (order.retryCount || 0) + 1;
-    order.orderedAt = new Date(); // reset timestamp if needed
+    order.paymentMethod = "cod";
 
+    order.orderStatus = "Placed";
+    order.paymentStatus = "pending";
+    order.retry = true;
+    order.razorpayStatus = "created";
+    order.updatedOn = new Date(); // reset timestamp if needed
+    console.log("ggg", order);
     await order.save();
 
-    res.status(200).json({ message: 'COD order retried successfully', orderId: order._id });
+    res
+      .status(200)
+      .json({ message: "COD order retried successfully", orderId: orderId });
   } catch (err) {
-    console.error('Retry COD Order Error:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Retry COD Order Error:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 const getMyOrders = async (req, res) => {
   try {
@@ -640,15 +664,17 @@ const getOrderFailure = async (req, res) => {
     const orderId = req.params.orderId;
     const userId = req.session.user;
     const user = await User.findById(userId).lean();
-    const order=await Order.findOneAndUpdate({_id:orderId},
-      {razorpayStatus:"failed"},
-    {new:true}).lean()
-        if (!order) {
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId },
+      { razorpayStatus: "failed" },
+      { new: true }
+    ).lean();
+    if (!order) {
       console.log("No order found to update for orderId:", orderId);
     } else {
       console.log("Order updated to failed status:", order);
     }
-     await Cart.findOneAndDelete({ userId: userId });
+    await Cart.findOneAndDelete({ userId: userId });
     res.render("orderFailure", { user });
   } catch (error) {
     console.error(error);
@@ -668,5 +694,5 @@ module.exports = {
   getOrderFailure,
   applyCoupon,
   removeCoupon,
-  retryCodOrder
+  retryCodOrder,
 };

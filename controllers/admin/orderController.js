@@ -27,7 +27,7 @@ const getOrderDetails = async (req, res) => {
     if (statusFilter) {
       query["orderItems.status"] = statusFilter;
     }
-   query["orderStatus"] = "Placed";
+    query["orderStatus"] = "Placed";
 
     const orderdata = await Order.find(query)
       .populate("orderItems.product")
@@ -38,7 +38,7 @@ const getOrderDetails = async (req, res) => {
     const allOrders = await Order.find();
 
     const requestItem = allOrders.flatMap((order) =>
-      order.orderItems.filter((item) => item.returnStatus === "Requested" )
+      order.orderItems.filter((item) => item.returnStatus === "Requested")
     );
     console.log("lllllllll", requestItem.length);
 
@@ -47,22 +47,22 @@ const getOrderDetails = async (req, res) => {
     }
 
     const products = orderdata.flatMap((order) =>
-  order.orderItems
-    .filter((item) => item.product) // Exclude deleted products
-    .map((item) => ({
-      orderId: order.orderId,
-      orderDate: order.createdOn.toLocaleDateString(),
-      orderTime: order.createdOn.toLocaleTimeString(),
-      productName: item.product.productName,
-      productImage: item.product.productImage?.[0] || "no-image.jpg",
-      quantity: item.quantity,
-      price: item.price * item.quantity,
-      user: order.userId?.name || "Unknown User",
-      status: item.status,
-      productId: item.product._id,
-      returnStatus: item.returnStatus,
-    }))
-);
+      order.orderItems
+        .filter((item) => item.product) // Exclude deleted products
+        .map((item) => ({
+          orderId: order.orderId,
+          orderDate: order.createdOn.toLocaleDateString(),
+          orderTime: order.createdOn.toLocaleTimeString(),
+          productName: item.product.productName,
+          productImage: item.product.productImage?.[0] || "no-image.jpg",
+          quantity: item.quantity,
+          price: item.price * item.quantity,
+          user: order.userId?.name || "Unknown User",
+          status: item.status,
+          productId: item.product._id,
+          returnStatus: item.returnStatus,
+        }))
+    );
 
     console.log(products);
     console.log("length:", products.length);
@@ -94,7 +94,6 @@ const updateStatus = async (req, res) => {
     const { orderId, productId } = req.params;
     const { status } = req.body;
 
-    
     console.log("productid:", orderId, productId);
     console.log(status);
     if (!status) {
@@ -124,26 +123,24 @@ const updateStatus = async (req, res) => {
       });
     }
 
+    if (order.paymentMethod === "cod" && orderProduct.status === "Delivered") {
+      const existingLedger = await Ledger.findOne({
+        user: order.userId,
+        orderId: order._id,
+        description: `COD payment received for product ${productId}`,
+      });
 
-  if (order.paymentMethod === 'cod' && orderProduct.status === 'Delivered') {
-  const existingLedger = await Ledger.findOne({
-    user: order.userId,
-    orderId: order._id,
-    description: `COD payment received for product ${productId}`
-  });
-
-  if (!existingLedger) {
-    await Ledger.create({
-      user: order.userId,
-      orderId: order._id,
-      type: 'credit',
-      amount: orderProduct.price * orderProduct.quantity,
-      paymentMethod: 'cod',
-      description: `COD payment received for product ${productId}`
-    });
-  }
-}
-
+      if (!existingLedger) {
+        await Ledger.create({
+          user: order.userId,
+          orderId: order._id,
+          type: "credit",
+          amount: orderProduct.price * orderProduct.quantity,
+          paymentMethod: "cod",
+          description: `COD payment received for product ${productId}`,
+        });
+      }
+    }
 
     res.json({ message: "Status updated successfully." });
   } catch (err) {
@@ -199,7 +196,7 @@ const orderView = async (req, res) => {
       time,
       deliveryDate,
       deliveryTime,
-      order
+      order,
     });
   } catch (error) {
     console.log(error);
@@ -219,14 +216,16 @@ const updateReturnStatus = async (req, res) => {
     const orderProduct = order.orderItems.find((item) => {
       return item.product._id.toString() === productId;
     });
-    const returnedProducts = order.orderItems.filter((item) => item.status === "Returned");
+    const returnedProducts = order.orderItems.filter(
+      (item) => item.status === "Returned"
+    );
     let sumPriceReturned = 0;
-if (returnedProducts.length > 0) {
-  sumPriceReturned = returnedProducts.reduce((acc, curr) => {
-    return acc + (curr.quantity * curr.price);
-  }, 0);
-}
-  
+    if (returnedProducts.length > 0) {
+      sumPriceReturned = returnedProducts.reduce((acc, curr) => {
+        return acc + curr.quantity * curr.price;
+      }, 0);
+    }
+
     console.log("ppp", orderProduct);
     if (!orderProduct) {
       return res.status(404).json({ message: "Product not found in order" });
@@ -234,100 +233,99 @@ if (returnedProducts.length > 0) {
 
     orderProduct.returnStatus = returnStatus;
     const userId = order.userId;
-     let couponId=order.couponUsed
-     const findCoupon=await Coupon.findById(couponId)
-        const user = await User.findById(userId);
-        const returnProduct=await Product.findById(productId)
-        console.log("ttttt",order.orderItems.length)
+    let couponId = order.couponUsed;
+    const findCoupon = await Coupon.findById(couponId);
+    const user = await User.findById(userId);
+    const returnProduct = await Product.findById(productId);
+    console.log("ttttt", order.orderItems.length);
 
     if (returnStatus === "Approved") {
-       await Product.findByIdAndUpdate(productId, {
+      await Product.findByIdAndUpdate(productId, {
         $inc: { quantity: orderProduct.quantity },
       });
-    let returnProductPrice=0
-      if(couponId)
-      {
-      returnProductPrice=orderProduct.price*orderProduct.quantity
-      const remainingPrice=order.finalAmount-returnProductPrice-sumPriceReturned+order.couponDiscount
+      let returnProductPrice = 0;
+      if (couponId) {
+        returnProductPrice = orderProduct.price * orderProduct.quantity;
+        const remainingPrice =
+          order.finalAmount -
+          returnProductPrice -
+          sumPriceReturned +
+          order.couponDiscount;
 
-      console.log(couponId, returnProductPrice,remainingPrice);
-      if(remainingPrice >= findCoupon.minimumPrice)
-        {
-      user.wallet = user.wallet + returnProductPrice;
-      user.walletHistory.push({
-      amount: returnProductPrice ,
-      type: 'credit',
-      reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+        console.log(couponId, returnProductPrice, remainingPrice);
+        if (remainingPrice >= findCoupon.minimumPrice) {
+          user.wallet = user.wallet + returnProductPrice;
+          user.walletHistory.push({
+            amount: returnProductPrice,
+            type: "credit",
+            reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+          });
 
-    }
-    
-);
-
-orderProduct.refundPrice=returnProductPrice
-order.finalAmount=order.finalAmount-returnProductPrice
-order.totalPrice=order.totalPrice-returnProduct.salePrice
-order.discount=order.discount-orderProduct.discountedAmount
-order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-await Ledger.create({
-  user: order.userId,
-  orderId: order._id,
-  type: 'debit',
-  amount: returnProductPrice,
-  paymentMethod: 'wallet',
-  description: `Refund issued for product${productId}`
-});
-
-        }else{
-          const amountTransfer=order.finalAmount-remainingPrice
-            user.wallet = user.wallet + amountTransfer;
-               user.walletHistory.push({
-  amount: amountTransfer ,
-  type: 'credit',
-  reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
-});
-   orderProduct.refundPrice=amountTransfer
-   order.finalAmount=order.finalAmount-amountTransfer
-   order.totalPrice=order.totalPrice-returnProduct.salePrice
-  order.discount=order.discount-orderProduct.discountedAmount
-   order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-    await Ledger.create({
-  user: order.userId,
-  orderId: order._id,
-  type: 'debit',
-  amount: amountTransfer,
-  paymentMethod: 'wallet',
-  description: `Refund issued for product${productId}`
-});    
-  
-  }
-
-              
-      }else{
-        returnProductPrice=orderProduct.price*orderProduct.quantity
-         user.wallet = user.wallet +returnProductPrice;
-           user.walletHistory.push({
-  amount: returnProductPrice >= 0 ? returnProductPrice : 0,
-  type: 'credit',
-  reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
-});
-   orderProduct.refundPrice=returnProductPrice  
-     order.finalAmount=order.finalAmount-returnProductPrice
-     order.totalPrice=order.totalPrice-returnProduct.salePrice
-      order.discount=order.discount-orderProduct.discountedAmount
-        order.couponDiscount=order.couponDiscount-Math.floor(order.couponDiscount/order.orderItems.length)
-await Ledger.create({
-  user: order.userId,
-  orderId: order._id,
-  type: 'debit',
-  amount: returnProductPrice,
-  paymentMethod: 'wallet',
-  description: `Refund issued for product${productId}`
-});
-
+          orderProduct.refundPrice = returnProductPrice;
+          order.finalAmount = order.finalAmount - returnProductPrice;
+          order.totalPrice = order.totalPrice - returnProduct.salePrice;
+          order.discount = order.discount - orderProduct.discountedAmount;
+          order.couponDiscount =
+            order.couponDiscount -
+            Math.floor(order.couponDiscount / order.orderItems.length);
+          await Ledger.create({
+            user: order.userId,
+            orderId: order._id,
+            type: "debit",
+            amount: returnProductPrice,
+            paymentMethod: "wallet",
+            description: `Refund issued for product${productId}`,
+          });
+        } else {
+          const amountTransfer = order.finalAmount - remainingPrice;
+          user.wallet = user.wallet + amountTransfer;
+          user.walletHistory.push({
+            amount: amountTransfer,
+            type: "credit",
+            reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+          });
+          orderProduct.refundPrice = amountTransfer;
+          order.finalAmount = order.finalAmount - amountTransfer;
+          order.totalPrice = order.totalPrice - returnProduct.salePrice;
+          order.discount = order.discount - orderProduct.discountedAmount;
+          order.couponDiscount =
+            order.couponDiscount -
+            Math.floor(order.couponDiscount / order.orderItems.length);
+          await Ledger.create({
+            user: order.userId,
+            orderId: order._id,
+            type: "debit",
+            amount: amountTransfer,
+            paymentMethod: "wallet",
+            description: `Refund issued for product${productId}`,
+          });
+        }
+      } else {
+        returnProductPrice = orderProduct.price * orderProduct.quantity;
+        user.wallet = user.wallet + returnProductPrice;
+        user.walletHistory.push({
+          amount: returnProductPrice >= 0 ? returnProductPrice : 0,
+          type: "credit",
+          reason: `Refund for returned product ${orderProduct.product} from order ${orderId}`,
+        });
+        orderProduct.refundPrice = returnProductPrice;
+        order.finalAmount = order.finalAmount - returnProductPrice;
+        order.totalPrice = order.totalPrice - returnProduct.salePrice;
+        order.discount = order.discount - orderProduct.discountedAmount;
+        order.couponDiscount =
+          order.couponDiscount -
+          Math.floor(order.couponDiscount / order.orderItems.length);
+        await Ledger.create({
+          user: order.userId,
+          orderId: order._id,
+          type: "debit",
+          amount: returnProductPrice,
+          paymentMethod: "wallet",
+          description: `Refund issued for product${productId}`,
+        });
       }
-  
+
       await user.save();
-      
     }
 
     await order.save();

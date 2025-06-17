@@ -1,9 +1,8 @@
-
 const Cart = require("../../models/cartSchema");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
-const Address=require("../../models/addressSchema")
+const Address = require("../../models/addressSchema");
 
 const fs = require("fs").promises;
 const path = require("path");
@@ -27,22 +26,20 @@ const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.orderId;
     const productId = req.params.productId;
-    const userId=req.session.user
+    const userId = req.session.user;
     const order = await Order.findOne({ orderId: orderId })
       .populate("orderItems.product")
       .populate("userId")
-   
-    
-      .lean();
-    const address=await Address.findOne({userId:userId})
-  
-    .lean()
 
-console.log("sssss",address)
-if (!order) {
+      .lean();
+    const address = await Address.findOne({ userId: userId })
+    .lean();
+
+    console.log("sssss", address);
+    if (!order) {
       return res.status(404).send("Order not found");
     }
-    console.log("ddddddddddddddddddddd",order);
+    console.log("ddddddddddddddddddddd", order);
 
     const templatePath = path.join(__dirname, "../../views/user/invoice.hbs");
     console.log(templatePath);
@@ -62,21 +59,19 @@ if (!order) {
       price: item.price,
       total: item.quantity * item.price,
     }));
-const deliveryAddress = address?.address?.[0] || {};
-   const html = template({
-  discount: order.totalPrice -order.finalAmount, 
-  order,
-  orderDate,
-  products,
-  userAddress: deliveryAddress.houseDetails || "",
-  userCity: deliveryAddress.city || "",
-  userState: deliveryAddress.state || "",
-  userPincode: deliveryAddress.pincode || "",
-  userPhone: deliveryAddress.phone || "",
-  userFullName: deliveryAddress.fullName || "",
-});
-  
-
+    const deliveryAddress = address?.address?.[0] || {};
+    const html = template({
+      discount: order.totalPrice - order.finalAmount,
+      order,
+      orderDate,
+      products,
+      userAddress: deliveryAddress.houseDetails || "",
+      userCity: deliveryAddress.city || "",
+      userState: deliveryAddress.state || "",
+      userPincode: deliveryAddress.pincode || "",
+      userPhone: deliveryAddress.phone || "",
+      userFullName: deliveryAddress.fullName || "",
+    });
 
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],

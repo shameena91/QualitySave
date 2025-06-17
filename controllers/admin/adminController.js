@@ -1,225 +1,215 @@
-const { ObjectId } = require('mongodb');
-const User=require('../../models/userSchema');
-const mongoose=require('mongoose')
-const bcrypt=require('bcrypt');
-const Order = require('../../models/orderSchema');
-const pageError=async(req,res)=>{
-    res.render("admin-error")
-}
+const { ObjectId } = require("mongodb");
+const User = require("../../models/userSchema");
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const Order = require("../../models/orderSchema");
+const pageError = async (req, res) => {
+  res.render("admin-error");
+};
 
-const loadLogin= (req,res)=>{
-    if(req.session.admin)
-    {
-       
-        return res.redirect("/admin/dashboard")
+const loadLogin = (req, res) => {
+  if (req.session.admin) {
+    return res.redirect("/admin/dashboard");
+  }
+  console.log("loginpage");
+  res.render("admin-login", { message: null });
+};
+
+const login = async (req, res) => {
+  try {
+    console.log("login reached");
+    const { email, password } = req.body;
+    console.log(email);
+    console.log(password);
+
+    const admin = await User.findOne({ email: email, isAdmin: true });
+    console.log(admin);
+    if (admin) {
+      const passwordmatch = await bcrypt.compare(password, admin.password);
+      if (passwordmatch) {
+        req.session.admin = true;
+        console.log("succedd");
+        return res.redirect("/admin/dashboard");
+      } else {
+        console.log("error");
+        return redirect("/admin-login");
+      }
     }
-    console.log("loginpage")
-    res.render("admin-login",{message:null})
-}
-
-const login= async (req,res)=>{
-    try {
-        console.log("login reached")
-        const {email,password}=req.body;
-        console.log(email)
-        console.log(password)
-       
-
-        const admin=await User.findOne({email:email,isAdmin:true})
-        console.log(admin)
-        if(admin){
-            const passwordmatch=await bcrypt.compare(password,admin.password)
-            if(passwordmatch)
-            {
-                req.session.admin=true
-                console.log("succedd")
-                return res.redirect('/admin/dashboard')
-            }else{
-                console.log("error")
-                return redirect("/admin-login")
-            }
-        }
-    } catch (error) {
-        console.log("login failed",error);
-        return res.redirect("/pageerror")
-        
-        
-    }
-}
-const adminlogout=async(req,res)=>{
-    try {
-        req.session.destroy(err=>{
-            if(err)
-            {
-                console.log("Error occured destroying session",err);
-                return res.redirect("/pageerror")
-            }
-            res.redirect('/admin/login')
-        })
-    } catch (error) {
-        console.log("unexpected error during logout");
-        res.redirect("/pageerror")
-    }
-
-}
-
-
+  } catch (error) {
+    console.log("login failed", error);
+    return res.redirect("/pageerror");
+  }
+};
+const adminlogout = async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.log("Error occured destroying session", err);
+        return res.redirect("/pageerror");
+      }
+      res.redirect("/admin/login");
+    });
+  } catch (error) {
+    console.log("unexpected error during logout");
+    res.redirect("/pageerror");
+  }
+};
 
 const getTopproducts = async () => {
   return await Order.aggregate([
-    { $unwind: '$orderItems' },
-    { $match: { 'orderItems.status': { $ne: 'Cancelled' } } },
+    { $unwind: "$orderItems" },
+    { $match: { "orderItems.status": { $ne: "Cancelled" } } },
 
     {
       $lookup: {
-        from: 'products',
-        localField: 'orderItems.product',
-        foreignField: '_id',
-        as: 'productDetails'
-      }
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "productDetails",
+      },
     },
-    { $unwind: '$productDetails' },
+    { $unwind: "$productDetails" },
 
-  
     {
       $addFields: {
-        'productDetails.categoryObjId': {
-          $toObjectId: '$productDetails.category'
-        }
-      }
+        "productDetails.categoryObjId": {
+          $toObjectId: "$productDetails.category",
+        },
+      },
     },
 
     {
       $lookup: {
-        from: 'categories',
-        localField: 'productDetails.categoryObjId', 
-        foreignField: '_id',
-        as: 'categoryDetails'
-      }
+        from: "categories",
+        localField: "productDetails.categoryObjId",
+        foreignField: "_id",
+        as: "categoryDetails",
+      },
     },
-    { $unwind: '$categoryDetails' },
+    { $unwind: "$categoryDetails" },
 
     {
       $group: {
-        _id: '$productDetails._id',
-        name: { $first: '$productDetails.productName' },
-        category: { $first: '$categoryDetails.name' },  
-        price: { $first: '$orderItems.price' },
-        totalSales: { $sum: '$orderItems.price' },
-        sold: { $sum: '$orderItems.quantity' }
-      }
+        _id: "$productDetails._id",
+        name: { $first: "$productDetails.productName" },
+        category: { $first: "$categoryDetails.name" },
+        price: { $first: "$orderItems.price" },
+        totalSales: { $sum: "$orderItems.price" },
+        sold: { $sum: "$orderItems.quantity" },
+      },
     },
     { $sort: { sold: -1 } },
-    { $limit: 10 }
+    { $limit: 10 },
   ]);
 };
 
-
-const getCategories=async()=>{
+const getCategories = async () => {
   return await Order.aggregate([
-    { $unwind: '$orderItems' },
-    { $match: { 'orderItems.status': { $ne: 'Cancelled' } } },
+    { $unwind: "$orderItems" },
+    { $match: { "orderItems.status": { $ne: "Cancelled" } } },
 
     {
       $lookup: {
-        from: 'products',
-        localField: 'orderItems.product',
-        foreignField: '_id',
-        as: 'productDetails'
-      }
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "productDetails",
+      },
     },
-    { $unwind: '$productDetails' },
+    { $unwind: "$productDetails" },
 
-   
     {
       $addFields: {
-        'productDetails.categoryObjId': {
-          $toObjectId: '$productDetails.category'
-        }
-      }
+        "productDetails.categoryObjId": {
+          $toObjectId: "$productDetails.category",
+        },
+      },
     },
 
     {
       $lookup: {
-        from: 'categories',
-        localField: 'productDetails.categoryObjId', // use converted ObjectId
-        foreignField: '_id',
-        as: 'categoryDetails'
-      }
+        from: "categories",
+        localField: "productDetails.categoryObjId", // use converted ObjectId
+        foreignField: "_id",
+        as: "categoryDetails",
+      },
     },
-    { $unwind: '$categoryDetails' },
+    { $unwind: "$categoryDetails" },
 
     {
       $group: {
-        _id: '$categoryDetails._id',
-        name: { $first: '$categoryDetails.name' },
-        productsSold: { $sum: '$orderItems.quantity' },  
-       
-         totalSalesAmount: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
-         productIds: { $addToSet: '$productDetails._id' }
-      }
+        _id: "$categoryDetails._id",
+        name: { $first: "$categoryDetails.name" },
+        productsSold: { $sum: "$orderItems.quantity" },
+
+        totalSalesAmount: {
+          $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] },
+        },
+        productIds: { $addToSet: "$productDetails._id" },
+      },
     },
-{
+    {
       $addFields: {
-        numberOfProducts: { $size: '$productIds' }
-      }
+        numberOfProducts: { $size: "$productIds" },
+      },
     },
 
-    { $sort: {  productsSold: -1 } },
-    { $limit: 10 }
+    { $sort: { productsSold: -1 } },
+    { $limit: 10 },
   ]);
-
-}
-const getTopBrands=async()=>{
-   return await Order.aggregate([
-     { $unwind: '$orderItems' },
-    { $match: { 'orderItems.status': { $ne: 'Cancelled' } } },
+};
+const getTopBrands = async () => {
+  return await Order.aggregate([
+    { $unwind: "$orderItems" },
+    { $match: { "orderItems.status": { $ne: "Cancelled" } } },
 
     {
       $lookup: {
-        from: 'products',
-        localField: 'orderItems.product',
-        foreignField: '_id',
-        as: 'productDetails'
-      }
+        from: "products",
+        localField: "orderItems.product",
+        foreignField: "_id",
+        as: "productDetails",
+      },
     },
-    { $unwind: '$productDetails' },
-     {
+    { $unwind: "$productDetails" },
+    {
       $addFields: {
-        'productDetails.brandObjId': {
-          $toObjectId: '$productDetails.brand'
-        }
-      }
+        "productDetails.brandObjId": {
+          $toObjectId: "$productDetails.brand",
+        },
+      },
     },
 
     {
-      $lookup:{
-        from:"brands",
-        localField:'productDetails.brandObjId',
-        foreignField:'_id',
-        as:'brandDetails'
-      }
+      $lookup: {
+        from: "brands",
+        localField: "productDetails.brandObjId",
+        foreignField: "_id",
+        as: "brandDetails",
+      },
     },
-    {$unwind:"$brandDetails"},
- {
+    { $unwind: "$brandDetails" },
+    {
       $group: {
-        _id: '$brandDetails._id',
-        name: { $first: '$brandDetails.brandName' },
-        productsSold: { $sum: '$orderItems.quantity' }, 
-       
-         totalSalesAmount: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
-         productIds: { $addToSet: '$productDetails._id' }
-      }
-    },{
-      $addFields: {
-        numberOfProducts: { $size: '$productIds' }
-      }
-    },
- { $sort: { productsSold: -1 } },
-    { $limit: 10 }
+        _id: "$brandDetails._id",
+        name: { $first: "$brandDetails.brandName" },
+        productsSold: { $sum: "$orderItems.quantity" },
 
-   ])
-}
+        totalSalesAmount: {
+          $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] },
+        },
+        productIds: { $addToSet: "$productDetails._id" },
+      },
+    },
+    {
+      $addFields: {
+        numberOfProducts: { $size: "$productIds" },
+      },
+    },
+    { $sort: { productsSold: -1 } },
+    { $limit: 10 },
+  ]);
+};
 
 const loadDashboard = async (req, res) => {
   try {
@@ -230,7 +220,7 @@ const loadDashboard = async (req, res) => {
       paymentMethod,
       status,
       search,
- 
+
       page,
     } = req.query;
 
@@ -239,33 +229,31 @@ const loadDashboard = async (req, res) => {
     const skip = (currentPage - 1) * itemsPerPage;
     const filter = {};
 
- 
-    if (paymentMethod && paymentMethod !== 'all') {
+    if (paymentMethod && paymentMethod !== "all") {
       filter.paymentMethod = paymentMethod;
     }
-
 
     let startDate, endDate;
     const now = new Date();
 
     switch (reportType) {
-      case 'daily':
+      case "daily":
         startDate = new Date(now.setHours(0, 0, 0, 0));
         endDate = new Date(now.setHours(23, 59, 59, 999));
         break;
-      case 'weekly':
+      case "weekly":
         startDate = new Date(now.setDate(now.getDate() - 7));
         endDate = new Date();
         break;
-      case 'monthly':
+      case "monthly":
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         endDate = new Date();
         break;
-      case 'yearly':
+      case "yearly":
         startDate = new Date(now.getFullYear(), 0, 1);
         endDate = new Date();
         break;
-      case 'custom':
+      case "custom":
         if (fromDate && toDate) {
           startDate = new Date(fromDate);
           endDate = new Date(toDate);
@@ -279,11 +267,11 @@ const loadDashboard = async (req, res) => {
     }
 
     let orders = await Order.find(filter)
-      .populate('couponUsed')
-      
+      .populate("couponUsed")
+
       .sort({ createdOn: -1 })
       .lean();
-console.log(orders)
+    console.log(orders);
     if (search) {
       orders = orders.filter((order) =>
         order.orderId.toLowerCase().includes(search.toLowerCase())
@@ -304,31 +292,33 @@ console.log(orders)
     const totalPages = Math.ceil(orders.length / itemsPerPage);
     const paginatedOrders = orders.slice(skip, skip + itemsPerPage);
 
-    const topProducts=await getTopproducts()
-    const topCategories=await getCategories()
-    const topBrands=await getTopBrands()
-    console.log("hhhhh",topProducts)
-    const shipcharge=orders.shipping
+    const topProducts = await getTopproducts();
+    const topCategories = await getCategories();
+    const topBrands = await getTopBrands();
+    console.log("hhhhh", topProducts);
+    const shipcharge = orders.shipping;
 
+    const orderStatusList = orders.map((order) => {
+      const statusList = order.orderItems.map((item) => item.status);
 
-  
- const orderStatusList = orders.map(order => {
-  const statusList = order.orderItems.map(item => item.status);
-
-  if (statusList.some(status => ["Pending", "Processing", "Shipped"].includes(status))) {
-    return "Pending";
-  } else if (statusList.every(status => status === "Cancelled")) {
-    return "Cancelled";
-  } else if (statusList.every(status => status === "Returned")) {
-    return "Returned";
-  } else {
-    return "Complete";
-  }
-})
+      if (
+        statusList.some((status) =>
+          ["Pending", "Processing", "Shipped"].includes(status)
+        )
+      ) {
+        return "Pending";
+      } else if (statusList.every((status) => status === "Cancelled")) {
+        return "Cancelled";
+      } else if (statusList.every((status) => status === "Returned")) {
+        return "Returned";
+      } else {
+        return "Complete";
+      }
+    });
 
     return res.render("dashboard", {
       totalOrders,
-        orderStatusList,
+      orderStatusList,
       totalSale: totalSales.toLocaleString(),
       totalDiscount: totalDiscount.toLocaleString(),
       totalCouponDiscount: totalCouponDiscount.toLocaleString(),
@@ -341,8 +331,6 @@ console.log(orders)
       topBrands,
       shipcharge,
       search,
-    
-   
     });
   } catch (error) {
     console.error(error);
@@ -355,74 +343,79 @@ function getGroupAndDateFormat(chartReportType) {
   let dateFormat;
 
   switch (chartReportType) {
-    case 'daily':
+    case "daily":
       groupId = {
-        year: { $year: '$createdOn' },
-        month: { $month: '$createdOn' },
-        day: { $dayOfMonth: '$createdOn' },
+        year: { $year: "$createdOn" },
+        month: { $month: "$createdOn" },
+        day: { $dayOfMonth: "$createdOn" },
       };
-      dateFormat = { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } };
+      dateFormat = {
+        $dateToString: { format: "%Y-%m-%d", date: "$createdOn" },
+      };
       break;
 
-    case 'monthly':
+    case "monthly":
       groupId = {
-        year: { $year: '$createdOn' },
-        month: { $month: '$createdOn' },
+        year: { $year: "$createdOn" },
+        month: { $month: "$createdOn" },
       };
-      dateFormat = { $dateToString: { format: '%Y-%m', date: '$createdOn' } };
+      dateFormat = { $dateToString: { format: "%Y-%m", date: "$createdOn" } };
       break;
-        case 'weekly':
-    groupId = {
-  year: { $isoWeekYear: '$createdOn' },
-  week: { $isoWeek: '$createdOn' },
-};
-dateFormat = {
-  $concat: [
-    { $toString: { $isoWeekYear: '$createdOn' } },
-    '-W',
-    {
-      $cond: {
-        if: { $lte: [{ $isoWeek: '$createdOn' }, 9] },
-        then: { $concat: ['0', { $toString: { $isoWeek: '$createdOn' } }] },
-        else: { $toString: { $isoWeek: '$createdOn' } },
-      },
-    },
-  ],
-};
-break;
-
-    case 'yearly':
+    case "weekly":
       groupId = {
-        year: { $year: '$createdOn' },
+        year: { $isoWeekYear: "$createdOn" },
+        week: { $isoWeek: "$createdOn" },
       };
-      dateFormat = { $dateToString: { format: '%Y', date: '$createdOn' } };
+      dateFormat = {
+        $concat: [
+          { $toString: { $isoWeekYear: "$createdOn" } },
+          "-W",
+          {
+            $cond: {
+              if: { $lte: [{ $isoWeek: "$createdOn" }, 9] },
+              then: {
+                $concat: ["0", { $toString: { $isoWeek: "$createdOn" } }],
+              },
+              else: { $toString: { $isoWeek: "$createdOn" } },
+            },
+          },
+        ],
+      };
+      break;
+
+    case "yearly":
+      groupId = {
+        year: { $year: "$createdOn" },
+      };
+      dateFormat = { $dateToString: { format: "%Y", date: "$createdOn" } };
       break;
 
     default:
       groupId = {
-        year: { $year: '$createdOn' },
-        month: { $month: '$createdOn' },
-        day: { $dayOfMonth: '$createdOn' },
+        year: { $year: "$createdOn" },
+        month: { $month: "$createdOn" },
+        day: { $dayOfMonth: "$createdOn" },
       };
-      dateFormat = { $dateToString: { format: '%Y-%m-%d', date: '$createdOn' } };
+      dateFormat = {
+        $dateToString: { format: "%Y-%m-%d", date: "$createdOn" },
+      };
   }
 
   return { groupId, dateFormat };
 }
 
-const loadchartData=async(req,res)=>{
+const loadchartData = async (req, res) => {
   try {
     const {
-      chartReportType = 'daily', 
+      chartReportType = "daily",
       fromDate,
       toDate,
       paymentMethod,
     } = req.query;
 
-
     const filter = {};
 
-    if (paymentMethod && paymentMethod !== 'all') {
+    if (paymentMethod && paymentMethod !== "all") {
       filter.paymentMethod = paymentMethod;
     }
 
@@ -440,69 +433,75 @@ const loadchartData=async(req,res)=>{
       {
         $group: {
           _id: groupId,
-          totalSales: { $sum: '$totalPrice' },
+          totalSales: { $sum: "$totalPrice" },
           count: { $sum: 1 },
           date: { $first: dateFormat },
         },
       },
-      { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 ,'_id.week':1} },
+      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.week": 1 } },
     ]);
 
     let chartLabels = [];
-let chartData = [];
+    let chartData = [];
 
-if (chartReportType === 'monthly') {
-  const year = new Date().getFullYear(); 
+    if (chartReportType === "monthly") {
+      const year = new Date().getFullYear();
 
-  const monthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Ju", "Aug", "Sept", "Oct", "Nov", "Dec"
-  ];
+      const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Ju",
+        "Aug",
+        "Sept",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
 
-  chartLabels = monthNames.map(m => `${m}`);
+      chartLabels = monthNames.map((m) => `${m}`);
 
-  const salesMap = new Map(
-    chartAggregation.map(item => [item._id.month, item.totalSales])
-  );
+      const salesMap = new Map(
+        chartAggregation.map((item) => [item._id.month, item.totalSales])
+      );
 
-  chartData = [];
-  for (let m = 1; m <= 12; m++) {
-    chartData.push(salesMap.get(m) || 0);
-  }
-}
- else if (chartReportType === 'yearly') {
-  const startYear = 2021;
-  const endYear = new Date().getFullYear();
+      chartData = [];
+      for (let m = 1; m <= 12; m++) {
+        chartData.push(salesMap.get(m) || 0);
+      }
+    } else if (chartReportType === "yearly") {
+      const startYear = 2021;
+      const endYear = new Date().getFullYear();
 
-  chartLabels = [];
-  for (let y = startYear; y <= endYear; y++) {
-    chartLabels.push(`${y}`);
-  }
+      chartLabels = [];
+      for (let y = startYear; y <= endYear; y++) {
+        chartLabels.push(`${y}`);
+      }
 
-  const salesMap = new Map(
-    chartAggregation.map(item => [item.date, item.totalSales])
-  );
+      const salesMap = new Map(
+        chartAggregation.map((item) => [item.date, item.totalSales])
+      );
 
-  chartData = chartLabels.map(label => salesMap.get(label) || 0);
-} else {
-  chartLabels = chartAggregation.map(item => item.date);
-  chartData = chartAggregation.map(item => item.totalSales);
-}
+      chartData = chartLabels.map((label) => salesMap.get(label) || 0);
+    } else {
+      chartLabels = chartAggregation.map((item) => item.date);
+      chartData = chartAggregation.map((item) => item.totalSales);
+    }
     res.json({ labels: chartLabels, data: chartData });
   } catch (error) {
-    console.error('Error fetching chart data:', error);
-    res.status(500).json({ error: 'Failed to load chart data' });
+    console.error("Error fetching chart data:", error);
+    res.status(500).json({ error: "Failed to load chart data" });
   }
-}
+};
 
-
-
-
-module.exports={loadLogin,
-    login,
-    loadDashboard,
-    pageError,
-    adminlogout,
-    loadchartData
-   
-  }
+module.exports = {
+  loadLogin,
+  login,
+  loadDashboard,
+  pageError,
+  adminlogout,
+  loadchartData,
+};

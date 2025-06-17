@@ -104,11 +104,40 @@ id="address-{{this._id}}"
 </button>
 
       <!-- Order Summary Section -->
-      <h4 class="mt-5 mb-3">Order Summary</h4>
+      <h4 class="mt-5 mb-3">Order Summary  </h4>
+
+      {{#if orderId}}
+      {{#each cartProducts}}
+<div class="card mb-3">
+       
+        <div class="row g-0 p-3">
+          <div class="col-md-2">
+            <img src="/uploads/re-image/{{#if @root.retry}}{{this.product.productImage.[0]}}{{else}}{{this.productId.productImage.[0]}}{{/if}}" 
+            class="img-fluid rounded"
+             alt="{{this.productId.productName}}" 
+             style="height:120px;width:120px;padding:15px" />
+          </div>
+          <div class="col-md-10">
+            <div class="card-body p-0">
+              <h6 class="card-title">{{#if @root.retry}}{{this.product.productName}}{{else}}{{this.productId.productName}}{{/if}}</h6>
+              <p class="mb-1">Qty: {{this.quantity}}</p>
+              <p class="mb-1">Price: ₹{{this.price}}</p>
+              <p class="mb-0 fw-bold">Item Total:
+                {{#if @root.retry}}
+                {{mul this.quantity this.price}}
+                {{else}}
+                 ₹{{this.totalPrice}}{{/if}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+      {{/if}}
       {{#each cartProducts}}
       {{#if this.productId.quantity}}
       
       <div class="card mb-3">
+       
         <div class="row g-0 p-3">
           <div class="col-md-2">
             <img src="/uploads/re-image/{{#if @root.retry}}{{this.product.productImage.[0]}}{{else}}{{this.productId.productImage.[0]}}{{/if}}" 
@@ -222,16 +251,16 @@ id="address-{{this._id}}"
     <!-- Payment Methods Section -->
     <h5 class="mb-3 mt-4">Select Payment Method</h5>
     <div class="mb-3">
-      <div class="form-check">
+      {{!-- <div class="form-check">
         <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="creditCard">
         <label class="form-check-label" for="creditCard">
           <i class="bi bi-credit-card" style="font-size: 20px;"></i> Credit Card
         </label>
-      </div>
+      </div> --}}
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" value="paypal">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="wallet">
         <label class="form-check-label" for="paypal">
-          <i class="bi bi-paypal" style="font-size: 20px;"></i> PayPal
+          <i class="bi bi-wallet" style="font-size: 20px;"></i> Wallet(Balance: ₹{{wallet}})
         </label>
       </div>
       <div class="form-check">
@@ -534,7 +563,7 @@ function createOrder() {
        icon: 'warning' });
   }
 
-  if (paymentMethod === 'cod') {
+  if (paymentMethod === 'cod' || paymentMethod === 'wallet') {
     $.post('/createOrder', { addressId, paymentMethod, amount, shippingCharge }, (response) => {
       Swal.fire({ 
         title: 'Order Placed!',
@@ -542,12 +571,14 @@ function createOrder() {
          .then(() => {
         window.location.href = `/orderSuccess/${response.orderId}`;
       });
-    }).fail(() => {
-      Swal.fire({
-         title: 'Failed',
-          text: 'Try again.',
-           icon: 'error' });
-    });
+    }).fail((xhr) => {
+  const errorMessage = xhr.responseJSON?.message || 'Order could not be placed. Try again.';
+  Swal.fire({
+    title: 'Failed',
+    text: errorMessage,
+    icon: 'error'
+  });
+});
   } else if (paymentMethod === 'razorpay') {
     $.post('/createRazorpayOrder',
      { addressId, paymentMethod, amount, shippingCharge }, 
@@ -559,6 +590,9 @@ function createOrder() {
        icon: 'error' });
     });
   }
+
+
+
 }
 
 function updateOrder(orderId) {
@@ -574,7 +608,7 @@ console.log(orderId,paymentMethod)
       method: 'PUT',
       data: { addressId, paymentMethod, amount, shippingCharge },
       success: (response) => {
-        Swal.fire({ title: 'Order Updated!', icon: 'success' }).then(() => {
+        Swal.fire({ title: 'Order Placed!', icon: 'success' }).then(() => {
           window.location.href = `/orderSuccess/${response.orderId}`;
         });
       },
