@@ -49,7 +49,7 @@ const productList = async (req, res) => {
 
     // productData.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
    
-
+console.log(productData)
     if (category && brand) {
       res.render("productList", {
         data: productData,

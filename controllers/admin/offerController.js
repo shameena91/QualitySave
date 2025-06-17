@@ -99,7 +99,7 @@ const productOffer = async (req, res) => {
 
       await Product.findByIdAndUpdate(product._id, {
         discountedPrice,
-        productOffer: discount,
+        productOffer: productOffer,
       });
     }
 
@@ -189,6 +189,7 @@ const categoryOffer = async (req, res) => {
 
       await Product.findByIdAndUpdate(product._id, {
         discountedPrice,
+        categoryOffer:categoryOffer
       });
     }
 

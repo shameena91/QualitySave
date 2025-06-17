@@ -31,12 +31,12 @@
         <td>{{this.phone}}</td>
         <td>
           {{#if this.isBlocked}}
-            <button class="btn btn-danger btn-sm" >
-              <a href="/admin/unblockUser?id={{this._id}}">Unblock</a>
+            <button class="btn btn-danger btn-sm  " >
+              <a href="/admin/unblockUser?id={{this._id}}" class="text-decoration-none text-white">Unblock</a>
             </button>
             {{else}}
-            <button class="btn btn-success btn-sm">
-              <a href="/admin/blockUser?id={{this._id}}">block</a>
+            <button class="btn btn-success btn-sm  ">
+              <a href="/admin/blockUser?id={{this._id}}" class="text-decoration-none text-white">block</a>
             </button>
             {{/if}}
         </td>

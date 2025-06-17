@@ -50,12 +50,15 @@
         
         
         <td>
-  {{#if productOffer}}
-    {{productOffer}}%
+{{#if (lt productOffer category.categoryoffer)}}
+    {{category.categoryoffer}}%
   {{else}}
-    0%
+    {{productOffer}}%
   {{/if}}
 </td>
+
+
+
         {{!-- <td>
           {{#if  productOffer  }}
       

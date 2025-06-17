@@ -52,19 +52,19 @@
         </td> --}}
         <td>
           {{#if this.isListed}}
-          <span class="badge rounded-pill text-bg-success">Listed</span>
+          <span class="badge rounded-pill text-bg-success ">Listed</span>
           {{else}}
-        <span class="badge rounded-pill text-bg-danger">Unlisted</span>
+        <span class="badge rounded-pill text-bg-danger ">Unlisted</span>
         {{/if}}
         </td>
         <td>
               {{#if this.isListed}}
             <button class="btn btn-danger btn-sm">
-              <a href="/admin/categoryunListed?id={{this._id}}">Unlist</a>
+              <a href="/admin/categoryunListed?id={{this._id}}" class="text-white text-decoration-none">Unlist</a>
               </button>
              {{else}}
             <button class="btn btn-success btn-sm">
-              <a href="/admin/categoryListed?id={{this._id}}">List</a>
+              <a href="/admin/categoryListed?id={{this._id}}" class="text-white text-decoration-none">List</a>
 
             </button>
             {{/if}}
