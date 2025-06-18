@@ -235,9 +235,9 @@
     const totalPrice = price * quantity;
     const totalSalePrice = salePrice * quantity;
     const sumTotalPriceNew = sumTotalPrice + price;
-
+const totalSalePricenew=totalSalePrice+salePrice
     if (totalPriceElement) totalPriceElement.textContent = `₹${totalPrice}`;
-    if (totalSalePriceElement) totalSalePriceElement.textContent = `₹${totalSalePrice}`;
+    if (totalSalePriceElement) totalSalePriceElement.textContent = `₹${totalSalePricenew}`;
     if (sumTotalPriceElement) sumTotalPriceElement.textContent = `₹${sumTotalPriceNew}`;
     
     updateCart(productId, quantity, totalPrice, totalSalePrice);

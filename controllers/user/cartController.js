@@ -50,6 +50,7 @@ const getCart = async (req, res) => {
       hasStock = cartProducts[0].productId.quantity;
     }
     console.log(hasStock);
+    
 
     res.render("cart", {
       hasStock,
