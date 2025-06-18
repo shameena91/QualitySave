@@ -66,9 +66,10 @@ const createWalletOrder = async (req, res) => {
 };
 
 const verifyWalletPayment = async (req, res) => {
-  const { amount, userId } = req.body;
+
 
   try {
+      const { amount, userId } = req.body;
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature, orderId } =
       req.body;
     console.log(
@@ -97,6 +98,7 @@ const verifyWalletPayment = async (req, res) => {
         },
       },
     });
+
 
     res.json({ message: "Wallet updated" });
   } catch (err) {

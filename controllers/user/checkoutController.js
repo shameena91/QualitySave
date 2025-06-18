@@ -284,6 +284,16 @@ const createOrder = async (req, res) => {
         reason: `Amount credited for order  ${newOrder.orderId}`,
       });
       await userData.save();
+      
+          await Ledger.create({
+            user: userId,
+            orderId: newOrder._id,
+            type: "credit",
+            amount:amount,
+            paymentMethod: paymentMethod,
+            description: `Order payment received for Order ${newOrder.orderId}`,
+          });
+       
     }
 
     if (couponId) {
@@ -675,7 +685,7 @@ const getOrderFailure = async (req, res) => {
       console.log("Order updated to failed status:", order);
     }
     await Cart.findOneAndDelete({ userId: userId });
-    res.render("orderFailure", { user });
+    res.render("orderFailure", { user ,orderId});
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

@@ -238,8 +238,16 @@
       <!-- Payment Method -->
       <div class="card p-3">
         <h6>Payment Method</h6>
-        <p>{{#if (eq order.paymentMethod "cod")}} Cash on delivery{{else}} Online Payment{{/if}} </p>
-        <div class="text-end">
+        <p>{{#if (eq order.paymentMethod "cod")}}
+  Cash on Delivery
+{{else}}
+  {{#if (eq order.paymentMethod "razorpay")}}
+    Online Payment
+  {{else}}
+    {{order.paymentMethod}}
+  {{/if}}
+{{/if}}
+        <div class="text-end text-capitalize">
           {{#if (or (eq status "Delivered") (eq razorpayStatus "paid"))}}
                   <a href="/invoice/download/{{orderId}}/{{product._id}}" target="_blank"  class="btn btn-sm btn-outline-success">
   Download Invoice PDF

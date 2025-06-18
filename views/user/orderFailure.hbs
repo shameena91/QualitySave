@@ -5,7 +5,7 @@
   <h2 class="mt-4">Oops! Your payment didn’t go through.</h2>
   <p class="mb-4">Please try again or view your order for more options.</p>
   <div>
-    <button id="retryButton" class="btn btn-warning">Retry Payment</button>
+    <button class="btn btn-warning" onclick="retryPayment('{{orderId}}')">Retry Payment</button>
     <a href="/my-orders" class="btn btn-outline-secondary">View Order Details</a>
   </div>
 </div>
@@ -13,14 +13,14 @@
 
 
 
-<script>
+{{!-- <script>
   document.getElementById("retryButton").addEventListener("click", function(event) {
     event.preventDefault();
     history.back(); 
   });
-</script>
-{{!-- <script>
- 
+</script> --}}
+<script>
+                                 
 
 
  function retryPayment(orderId) {
@@ -70,5 +70,5 @@ function verifyPayment(paymentResult, orderId) {
     }
   });
 }
-</script> --}}
+</script>
 {{> foote}}
