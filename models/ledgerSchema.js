@@ -1,46 +1,46 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const ledgerSchema = new mongoose.Schema({
   date: {
     type: Date,
     required: true,
-    default: Date.now
+    default: Date.now,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: false // Optional for admin transactions
+    ref: "User",
+    required: false,
   },
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Order',
-    required: false
+    ref: "Order",
+    required: false,
   },
   type: {
     type: String,
-    enum: ['credit', 'debit'],
-    required: true
+    enum: ["credit", "debit"],
+    required: true,
   },
   amount: {
     type: Number,
-    required: true
+    required: true,
   },
   paymentMethod: {
     type: String,
-    enum: ['razorpay', 'paypal', 'cod', 'wallet'],
-    required: false
+    enum: ["razorpay", "paypal", "cod", "wallet"],
+    required: false,
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
- 
+
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-   const Ledger=mongoose.model("Ledger",ledgerSchema)
-   
-   module.exports=Ledger
+const Ledger = mongoose.model("Ledger", ledgerSchema);
+
+module.exports = Ledger;

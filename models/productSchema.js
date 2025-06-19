@@ -1,65 +1,57 @@
-const mongoose=require('mongoose')
-const productSchema=new mongoose.Schema({
-productName:{
-    type:String,
-    required:true
-},
-description:{
-    type:String,
-    required:true
-},
-productImage:{
-    type:[String],
-    required:true
-},
-brand:{
-    type:String,
-    ref:"Brand"
-},
-category:{
-    type:String,
-    ref:"Category",
-},
-regularPrice:{
-    type:Number,
-    required:true
-},
-salePrice:{
-    type:Number,
-    required:true
-},
-discountedPrice:{
-    type:Number,
-    default:0
-    
-},
-productOffer:{
-    type:Number,
-    default:0
-},
-// appliedOffer:{
-//      type:Number,
-//     default:0
-// },
-quantity:{
-    type:Number,
-    default:0
-},
-isBlocked:{
-    type:Boolean,
-    default:false
-},
-createdAt:{
-    type:Date,
-    default:Date.now
-},
-// unit:{
-//     type:String,enum: ['kg', 'gm', 'ltr', 'ml', 'pcs'],
-//      required: true,
-//      default:"gm"
-//     },
+const mongoose = require("mongoose");
+const productSchema = new mongoose.Schema(
+  {
+    productName: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    productImage: {
+      type: [String],
+      required: true,
+    },
+    brand: {
+      type: String,
+      ref: "Brand",
+    },
+    category: {
+      type: String,
+      ref: "Category",
+    },
+    regularPrice: {
+      type: Number,
+      required: true,
+    },
+    salePrice: {
+      type: Number,
+      required: true,
+    },
+    discountedPrice: {
+      type: Number,
+      default: 0,
+    },
+    productOffer: {
+      type: Number,
+      default: 0,
+    },
 
-
-},{timestamps:true})
-const Product=mongoose.model("Product",productSchema)
-module.exports=Product
+    quantity: {
+      type: Number,
+      default: 0,
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true }
+);
+const Product = mongoose.model("Product", productSchema);
+module.exports = Product;

@@ -167,23 +167,7 @@
         <td>{{discount}}</td>
         <td>{{formatDate validUntil}}</td>
         <td>
-        {{!-- <button class="btn btn-warning btn-sm edit-offer-btn" 
-        data-bs-toggle="modal" 
-        data-bs-target="#editOfferModal"
-        data-id="{{_id}}"
-        data-name="{{offerName}}"
-        data-code="{{code}}"
-        data-discount="{{discount}}"
-        data-valid="{{validUntil}}"
-        data-type="{{type}}"
-        data-category="{{category}}"
-     
->
-  Edit
-</button> --}}
-
-          {{!-- <a href="/admin/offers/edit/OFFER_ID" class="btn btn-sm btn-warning">Edit</a> --}}
-        
+      
           <button type="submit" class="btn btn-sm btn-danger" onclick="deleteOffer('{{_id}}')">Delete</button>
         </td>
       </tr>
@@ -193,19 +177,11 @@
   </table>
 </div>
 
-
-
-
-
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-
-
- 
 
   document.getElementById("productOffer-form").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -278,15 +254,6 @@ console.log(data)
     });
   });
 
-
-
-
-
-
-
-
-
-
   document.getElementById("categoryOffer-form").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -300,7 +267,7 @@ console.log(data)
       name: formData.get("name"),
       code: formData.get("code"),
       discount: formData.get("discount"),
-      validUntil: formData.get("validUntil"), // Match backend field name
+      validUntil: formData.get("validUntil"), 
       type: formData.get("type"),
       categoryId: formData.get("categoryId")
     };

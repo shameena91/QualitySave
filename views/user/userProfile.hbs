@@ -141,7 +141,6 @@
   <i class="fa fa-copy" onclick="copyReferral()" style="cursor:pointer;color:#1e918b;" title="Copy"></i>
   <p>Share this code with your friends and earn ₹100 when they sign up!</p>
     </div>
-    {{!-- <small style="color: #888;">Referral: <strong class="mb-3">{{user.referralCode}}</strong></small> --}}
 
   {{/if}}
   </div>
@@ -213,9 +212,9 @@
 
 function removeProImage(id) {
   $.ajax({
-    url: `/user-profile/${id}`,  // Update the URL to match the route
+    url: `/user-profile/${id}`, 
     method: "DELETE",
-    contentType: "application/json", // Ensure content type is correct
+    contentType: "application/json", 
     success: function (data) {
       Swal.fire({
         title: "Image Removed",
@@ -223,8 +222,8 @@ function removeProImage(id) {
         icon: "success",
         confirmButtonText: "OK"
       }).then(() => {
-        // Update UI or reload page if necessary
-        window.location.reload(); // Or change to appropriate redirection
+       
+        window.location.reload(); 
       });
     },
     error: function (err) {

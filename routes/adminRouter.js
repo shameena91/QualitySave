@@ -6,10 +6,10 @@ const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers//admin/productController");
 const brandController = require("../controllers/admin/brandContoller");
 const orderController = require("../controllers/admin/orderController");
-const couponController=require("../controllers/admin/couponController")
-const salesReportController=require("../controllers/admin/salesReportController")
-const ledgerController=require("../controllers/admin/ledgerController")
-const offrController=require("../controllers/admin/offerController")
+const couponController = require("../controllers/admin/couponController");
+const salesReportController = require("../controllers/admin/salesReportController");
+const ledgerController = require("../controllers/admin/ledgerController");
+const offrController = require("../controllers/admin/offerController");
 
 const { userAuth, adminAuth } = require("../middlewares/auth");
 const multer = require("multer");
@@ -21,11 +21,11 @@ router.get("/admin/login", adminController.loadLogin);
 router.post("/admin/login", adminController.login);
 router.get("/admin/dashboard", adminAuth, adminController.loadDashboard);
 
-
-
-
-router.get("/admin/dashboard/chart-data",adminAuth, adminController.loadchartData)
-
+router.get(
+  "/admin/dashboard/chart-data",
+  adminAuth,
+  adminController.loadchartData
+);
 
 router.get("/admin/logout", adminController.adminlogout);
 router.get("/admin/users", adminAuth, customerController.customerInfo);
@@ -59,18 +59,6 @@ router.get(
   adminAuth,
   categoryController.categoryunListed
 );
-// router.post(
-//   "/admin/addCategoryOffer",
-//   adminAuth,
-//   categoryController.addCategoryOffer
-// );
-// router.post(
-//   "/admin/removeCategoryOffer",
-//   adminAuth,
-//   categoryController.removeCategoryOffer
-// );
-
-// routes for product handling
 router.get("/admin/productList", adminAuth, productController.productList);
 router
   .route("/admin/addProducts")
@@ -121,18 +109,6 @@ router
   .route("/admin/brand/:id/unblock")
   .patch(adminAuth, brandController.unblockBrand);
 
-// router.post(
-//   "/admin/addProductOffer",
-//   adminAuth,
-//   productController.addProductOffer
-// );
-
-// router.post(
-//   "/admin/removeProductOffer",
-//   adminAuth,
-//   productController.removeProductOffer
-// );
-
 router.get("/admin/blockProduct", adminAuth, productController.blockProduct);
 router.get(
   "/admin/unblockProduct",
@@ -165,28 +141,38 @@ router.patch(
   orderController.updateReturnStatus
 );
 
+router.get("/admin/coupons", adminAuth, couponController.getCoupon);
+router.post("/admin/coupons", adminAuth, couponController.addCoupon);
 
-router.get("/admin/coupons",adminAuth,couponController.getCoupon)
-router.post("/admin/coupons",adminAuth,couponController.addCoupon)
+router.get("/admin/offers", adminAuth, offrController.getOffer);
+router.post("/admin/offers/product", adminAuth, offrController.productOffer);
+router.post("/admin/offers/category", adminAuth, offrController.categoryOffer);
+router.delete(
+  "/admin/deleteOffer/:offerId",
+  adminAuth,
+  offrController.deleteOffer
+);
+router.patch(
+  "/admin/editCoupon/:couponId",
+  adminAuth,
+  couponController.updateCoupon
+);
+router.delete(
+  "/admin/deleteCoupon/:couponId",
+  adminAuth,
+  couponController.deleteCoupon
+);
 
-
-
-router.get("/admin/offers",adminAuth,offrController.getOffer)
-router.post("/admin/offers/product",adminAuth,offrController.productOffer)
-router.post("/admin/offers/category",adminAuth,offrController.categoryOffer)
-router.delete("/admin/deleteOffer/:offerId",adminAuth,offrController.deleteOffer)
-
-
-
-
-// router.get("admin/editCoupon/:id",adminAuth,couponController.getEditCoupon)
-router.patch("/admin/editCoupon/:couponId",adminAuth,couponController.updateCoupon)
-router.delete("/admin/deleteCoupon/:couponId",adminAuth,couponController.deleteCoupon)
-
-router.get("/admin/salesReport",adminAuth,salesReportController.downloadExcel)
-router.get("/admin/salesReportpdf",adminAuth,salesReportController.downloadPDF)
-router.get("/admin/ledger",adminAuth,ledgerController.getLedger)
-
-
+router.get(
+  "/admin/salesReport",
+  adminAuth,
+  salesReportController.downloadExcel
+);
+router.get(
+  "/admin/salesReportpdf",
+  adminAuth,
+  salesReportController.downloadPDF
+);
+router.get("/admin/ledger", adminAuth, ledgerController.getLedger);
 
 module.exports = router;

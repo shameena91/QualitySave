@@ -53,9 +53,7 @@
             <tbody>
 
               {{#each data}}
-              <tr>
-          
-             
+              <tr>         
                 <td>{{this.brandName}}</td>
                 <td><img src="/uploads/re-image/{{this.brandImage}}" 
                 alt="{{this.name}}" style="width:50px;height:50px;"/>
@@ -83,14 +81,6 @@
             {{/if}}
 </td>
 
-                {{!-- <td><button class="btn btn-danger btn-sm">
-              <a href="">Unlist</a>
-              </button>
-         
-            <button class="btn btn-success btn-sm">
-              <a href="">List</a>
-
-            </button></td> --}}
             <td> 
               <button class="btn btn-primary" data-bs-toggle="modal"
                data-bs-target="#editBrandModal" 

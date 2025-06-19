@@ -10,8 +10,8 @@ const cartController = require("../controllers/user/cartController");
 const checkoutController = require("../controllers/user/checkoutController");
 const walletController = require("../controllers/user/walletController");
 const invoiceController = require("../controllers/user/invoiceContoller");
-const aboutController=require("../controllers/user/aboutController")
-const razorpayController=require("../controllers/user/razorpayCOntroller")
+const aboutController = require("../controllers/user/aboutController");
+const razorpayController = require("../controllers/user/razorpayCOntroller");
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({ storage: storage });
@@ -32,9 +32,9 @@ router.route("/resend-otp").post(userController.resendOtp);
 
 // home and shopping
 router.get("/", userController.loadHomePage);
-router.get("/shop",  userController.loadShopPage);
+router.get("/shop", userController.loadShopPage);
 router.get("/filter", userAuth, userController.filterProduct);
-// router.get("/filterPrice", userAuth, userController.filterByPrice);
+
 router.post("/search", userAuth, userController.searchProducts);
 router.get("/sort", userAuth, userController.sortProducts);
 
@@ -47,7 +47,7 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/signUp" }),
   (req, res) => {
-     req.session.user = req.user._id;
+    req.session.user = req.user._id;
     res.redirect("/");
   }
 );
@@ -121,11 +121,6 @@ router.post("/removeItem", userAuth, cartController.removeCartItem);
 
 router.get("/checkout", userAuth, checkoutController.getCheckout);
 
-
-
-
-
-
 router.post(
   "/checkout-addAddress",
   userAuth,
@@ -157,32 +152,49 @@ router.get(
   userAuth,
   checkoutController.getOrderSuccess
 );
-// router.post("/createWalletOrder", userAuth, walletController.createwalletOrder);
 
-router.post("/verifyPayment",userAuth,razorpayController.verifyPayment)
-router.post("/createRazorpayOrder",userAuth, razorpayController.createRazorpayOrder)
-router.post("/retry-payment/:orderId",userAuth, razorpayController.retryRazorpayPayment)
+router.post("/verifyPayment", userAuth, razorpayController.verifyPayment);
+router.post(
+  "/createRazorpayOrder",
+  userAuth,
+  razorpayController.createRazorpayOrder
+);
+router.post(
+  "/retry-payment/:orderId",
+  userAuth,
+  razorpayController.retryRazorpayPayment
+);
 
+router.get(
+  "/orderFailure/:orderId",
+  userAuth,
+  checkoutController.getOrderFailure
+);
+router.get("/retry-order/:orderId", userAuth, razorpayController.retryOrder);
+router.put(
+  "/retry-order-cod/:orderId",
+  userAuth,
+  checkoutController.retryCodOrder
+),
+  router.put(
+    "/retry-razorpay-order/:orderId",
+    userAuth,
+    razorpayController.retryRazorpayOrder
+  ),
+  router.post("/wallet/create-order", walletController.createWalletOrder);
+router.post("/wallet/verify-payment", walletController.verifyWalletPayment);
 
+router.delete(
+  "/deletePendingOrder/:orderId",
+  userAuth,
+  razorpayController.deletePendingOrder
+);
 
-router.get("/orderFailure/:orderId",userAuth,checkoutController.getOrderFailure)
-router.get('/retry-order/:orderId',userAuth,razorpayController.retryOrder)
-router.put('/retry-order-cod/:orderId',userAuth,checkoutController.retryCodOrder),
-router.put('/retry-razorpay-order/:orderId',userAuth,razorpayController.retryRazorpayOrder),
-
-
-router.post('/wallet/create-order', walletController.createWalletOrder);
-router.post('/wallet/verify-payment', walletController.verifyWalletPayment);
-
-
-router.delete("/deletePendingOrder/:orderId",userAuth,razorpayController.deletePendingOrder)
-
-router.post("/apply-coupon",userAuth,checkoutController.applyCoupon)
-router.post("/remove-coupon",userAuth,checkoutController.removeCoupon)
-router.get("/wallet-transaction",userAuth,walletController.walletTransaction)
-router.get("/privacy-polycy",userAuth,aboutController.getPrivacy)
-router.get("/terms-conditions",userAuth,aboutController.getTermsConditions)
-router.get("/about-us",userAuth,aboutController.getAboutUs)
-
+router.post("/apply-coupon", userAuth, checkoutController.applyCoupon);
+router.post("/remove-coupon", userAuth, checkoutController.removeCoupon);
+router.get("/wallet-transaction", userAuth, walletController.walletTransaction);
+router.get("/privacy-polycy", aboutController.getPrivacy);
+router.get("/terms-conditions", aboutController.getTermsConditions);
+router.get("/about-us", aboutController.getAboutUs);
 
 module.exports = router;

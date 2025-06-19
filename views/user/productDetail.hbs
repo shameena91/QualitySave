@@ -179,14 +179,6 @@
 
 {{/if}}
 
-
-          {{!-- {{#if productOffer}}
-            <span class="fs-4 text-primary fw-bold">₹{{product.discountedPrice}}</span>
-            <span class="text-muted text-decoration-line-through ms-3">₹{{product.salePrice}}</span>
-            <span class="badge bg-success ms-2">&nbsp;&nbsp;{{productOffer}}% off</span>
-          {{else}}
-            <span class="fs-4 text-primary fw-bold">₹{{product.salePrice}}</span>
-          {{/if}} --}}
         </div>
 
         <!-- Offers -->
@@ -198,11 +190,7 @@
         <!-- Quantity + Buttons -->
         {{#if stock}}
           <div class="d-flex align-items-center gap-3 mb-3">
-            {{!-- <div class="input-group" style="width: 120px;">
-              <button class="btn btn-outline-secondary btn-sm" type="button">-</button>
-              <input type="text" class="form-control text-center" value="1">
-              <button class="btn btn-outline-secondary btn-sm" type="button">+</button>
-            </div> --}}
+           
 {{#if user}}
            <button class="btn btn-lg btn-success" type="button" 
   onclick="addToCart('{{product._id}}')">
