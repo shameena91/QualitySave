@@ -45,22 +45,15 @@ const createRazorpayOrder = async (req, res) => {
       (sum, item) => sum + item.totalSalePrice,
       0
     );
-    // const totalDiscount=userCart.cartItems.reduce((sum,item)=>sum+item.discountedPrice)
     const discount = totalAmount - finalAmount;
-    //  const amountToPay = finalAmount + parseInt(shippingCharge);
     const couponDiscount = finalAmount - amountPay;
     console.log("jjjjjjjjjjjjjjjjjjjjjj");
-
     console.log(totalAmount);
     console.log(finalAmount);
     console.log(discount);
 
     console.log(couponDiscount);
-    // const totalPrice = userCart.cartItemsitems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-    // const discount = 0; // apply logic if needed
-    // const finalAmount = totalPrice - discount;
-
-    // 3. Create the Order (not marking as paid yet)
+  
     const newOrder = new Order({
       userId,
       orderItems: userCart.map((item) => ({
@@ -82,15 +75,6 @@ const createRazorpayOrder = async (req, res) => {
       shipping: shippingCharge,
     });
 
-    //     console.log(newOrder)
-    // console.log("Creating Razorpay order with:", {
-    //   amount: amount * 100,
-    //   currency: "INR",
-    //   receipt: String(newOrder._id),
-    //   payment_capture: 1,
-    // });
-
-    // 4. Create Razorpay order
     const razorpayOrder = await razorpayInstance.orders.create({
       amount: amount * 100, // in paise
       currency: "INR",
