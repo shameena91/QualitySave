@@ -139,18 +139,60 @@
               {{/if}}
             </td>
             <td>
+
+                 
+                 
+
+
               <form onsubmit="updateStatus('{{this.orderId}}','{{this.productId}}', event)" class="d-flex align-items-center gap-2">
                 <select name="status" class="form-select form-select-sm" style="min-width: 120px;">
+                  {{#if (or (eq status "Returned")(eq status "Cancelled"))}}
+                 
+                  <option value="" selected disabled>Not Editable</option>
+{{else}}
+
                   <option value="" selected disabled>Select status</option>
-                  <option value="Pending">Pending</option>
+
+{{#if (eq status "Shipped")}}
+<option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Returned">Returned</option>
+
+{{else}}
+{{#if (eq status "Out for Delivery")}}
+  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Returned">Returned</option>
+
+                  {{else}}
+                  {{#if (eq status "Delivered")}}
+                   
+                  <option value="Returned">Returned</option>
+   <option value="Cancelled">Cancelled</option>
+
+{{else}}
+                  <option value="Pending"> Pending</option>
+                 
                   <option value="Shipped">Shipped</option>
                   <option value="Out for Delivery">Out for Delivery</option>
                   <option value="Delivered">Delivered</option>
                   <option value="Cancelled">Cancelled</option>
                   <option value="Returned">Returned</option>
+                  {{/if}}
+                  {{/if}}
+                  {{/if}}
+                  {{/if}}
                 </select>
-                <button type="submit" class="btn btn-sm btn-success">Update</button>
+{{#if (or (eq status "Returned")(eq status "Cancelled"))}}
+                 
+                <button type="submit" class="btn btn-sm btn-success" disabled>Update</button>
+           {{else }} 
+              <button type="submit" class="btn btn-sm btn-success" >Update</button>
+{{/if}}
               </form>
+            
             </td>
             <td>
               <a href="/admin/orderView/{{this.orderId}}/{{this.productId}}" class="btn btn-sm btn-info">View</a>

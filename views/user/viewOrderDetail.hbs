@@ -22,114 +22,61 @@
    
 
 <div class="container my-5">
- 
-    
-
-
   <!-- Two Column Order Details Layout -->
-  <div class="row">
+  <div class="row ms-5">
     <!-- Left Column: Product Info -->
-    <div class="col-md-8">
-{{#if (eq status "Delivered")}}
-  {{#if (eq returnStatus "Approved")}}
-    <div class="card p-4 shadow-sm" style="background: #e6f9f0; border-left: 5px solid #28a745;">
+    <div class="col-md-7">
+      <div class="m-3" style="color:#c0bebe;font-size:large">
+  Order Id: {{orderId}}
+      </div>
+    
+     
+      {{#each products}}
+     
+
+
+
+  {{#if (eq ../order.paymentMethod "razorpay")}}
+  {{#if (eq ../order.razorpayStatus "failed")}}
+    <div class="card p-3 shadow-sm" style="background: #f8d7da; border-left: 5px solid #dc3545;">
+     
+      <h5 class="mb-2 text-danger">Order Not Placed</h5>
+      <p class="mb-0">Due to an error with the payment, this order could not be placed.</p>
+      <p class="mb-2">If money was deducted, please contact your bank.</p>
+          <a href="/retry-order/{{../orderId}}" class="btn btn-secondary btn-sm w-25 ">Place Order Again</a>
+    </div>
+   
+  {{/if}}
+{{/if}}
+
+      <div class="card p-3 mb-4 shadow-sm"> 
+
+{{!-- {{#if (eq ../order.paymentMethod "razorpay")}}
+{{#if (eq status "Cancelled")}}
+  
+    <div class="card p-2 shadow-sm" style="background: #e6f9f0; border-left: 5px solid #28a745;">
       <div class="d-flex align-items-center mb-2">
         <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3"
              style="width: 40px; height: 40px;">
           <i class="fas fa-wallet"></i>
         </div>
-        <div>
-          <h5 class="mb-0 text-success">Refund Credited</h5>
-          <small class="text-muted">to your wallet</small>
-        </div>
-      </div>
-      <div class="ps-5">
+        <div class="ps-2">
+        
         <h4 class="text-dark fw-bold mb-0">₹{{finalAmount}}</h4>
         <p class="text-muted mb-0">The amount has been successfully added to your wallet.</p>
       </div>
+      </div> 
     </div>
-  {{else}}
-    <div class="card p-4 shadow-sm" style="background: #ebf7f7; border-left: 5px solid #28a745;">
-      <div class="d-flex align-items-center mb-2">
-        <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3"
-             style="width: 40px; height: 40px;">
-          <i class="fas fa-check"></i>
-        </div>
-        <div>
-          <h5 class="mb-0 text-success">Payment Successful</h5>
-          <small class="text-muted">Thank you for your purchase</small>
-        </div>
-      </div>
-    </div>
-  {{/if}}
-{{/if}}
+    {{/if}}
+    {{/if}} --}}
+        <div class="d-flex justify-content-between">
 
-  {{#if (eq order.paymentMethod "razorpay")}}
-  {{#if (eq order.razorpayStatus "failed")}}
-    <div class="card p-4 shadow-sm" style="background: #f8d7da; border-left: 5px solid #dc3545;">
-      <h5 class="mb-2 text-danger">Order Not Placed</h5>
-      <p class="mb-1">Due to an error with the payment, this order could not be placed.</p>
-      <p class="mb-3">If money was deducted, please contact your bank.</p>
-      {{!-- <a href="/checkout" class="btn btn-danger w-25">Place Order Again</a> --}}
-    </div>
-  {{/if}}
-{{/if}}
-
-
-
-
-  {{#if (eq order.razorpayStatus "failed")}}
-  <div class="card p-3 mb-4 shadow-sm">
-     <div style="color:#c0bebe">Order ID :{{order.orderId}}</div>
-
-        <div class="d-flex justify-content-between mt-4 py-3">
-          
-  
           
           <div class="ms-4">
-            <h6 class="mb-1">{{product.productName}}</h6>
+            <h5 class="mb-1">{{product.productName}}</h5>
             <p class="mb-1">Qty: {{quantity}}</p>
             <p class="mb-2">Price: {{price}}
               </p>
-
-         
-          </div>
-          <div class="text-end">
-            <img src="/uploads/re-image/{{product.productImage.[0]}}" class="me-3" style="height: 100px;" />
-
-          </div>
-
-        </div>
-
-
-
-
- <div class="d-flex align-items-center mt-2 p-2" role="alert">
-        <i class="fas fa-check-circle me-2" style="color:red"></i>
-        <div>Order Not Placed ,{{formatDate order.createdOn}}</div>
-      </div>
-
-
-      </div>
-         
-
-  {{else}}
-
-
-
-
-      <div class="card p-3 mb-4 shadow-sm">
-     
-<div style="color:#c0bebe">Order ID :{{order.orderId}}</div>
-        <div class="d-flex justify-content-between mt-4 py-3">
-  
-          
-          <div class="ms-4">
-            <h6 class="mb-1">{{product.productName}}</h6>
-            <p class="mb-1">Qty: {{quantity}}</p>
-            <p class="mb-2">Price: {{price}}
-              </p>
-
             <div>
         
     {{#if (eq this.status "Cancelled")}}
@@ -142,7 +89,8 @@
         </div>
           </div>
           <div class="text-end">
-            <img src="/uploads/re-image/{{product.productImage.[0]}}" class="me-3" style="height: 100px;" />
+            <img src="/uploads/re-image/{{product.productImage.[0]}}"
+             class="me-3" style="height: 100px;" />
 
           </div>
 
@@ -152,31 +100,55 @@
 
            <div class="text-end">
             {{#if (eq status "Pending") }}
-            <button class="btn btn-sm btn-danger " data-bs-toggle="modal" data-bs-target="#cancelModal">
+      
+ 
+{{#if (eq  ../order.razorpayStatus "failed" )}}
+ <div class="d-flex align-items-center mt-2 p-2" role="alert">
+        <i class="fas fa-check-circle me-2" style="color:red"></i>
+        <div>Order Not Placed ,{{formatDate order.createdOn}}</div>
+      </div>
+      
+    {{else}} 
+<button class="btn btn-sm btn-danger m-3"
+        data-bs-toggle="modal"
+        data-bs-target="#cancelModal"
+        data-order-id="{{../orderId}}"
+        data-product-id="{{product._id}}">
   Cancel Order
-</button> 
-
+</button>
+{{/if}}
 {{/if}}  
        </div>
 
-
-
-
        <div class="text-end mt-3">
+        {{#if (eq ../order.paymentMethod "razorpay")}}
+{{#if (eq status "Cancelled")}}
+ <div class="alert alert-danger d-flex align-items-center mt-2 p-2" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <div>You cancelled the order. The amount has been successfully added to your wallet.</div>
+      </div>
+      {{/if}}
+      {{/if}}
+
 
   {{#if (eq status "Delivered")}}
 
     <!-- Return Button -->
-    {{#if (not returnStatus)}}
-      <button class="btn btn-sm btn-outline-danger mb-2" 
-              data-bs-toggle="modal" data-bs-target="#returnModal">
-        <i class="fas fa-undo-alt me-1"></i> Request Return
-      </button>
-    {{else}}
-      <button class="btn btn-sm btn-outline-secondary mb-2" disabled>
-        <i class="fas fa-undo-alt me-1"></i> Return Requested
-      </button>
+   {{#if (not returnStatus)}}
+
+  <button class="btn btn-sm btn-outline-danger mb-2" 
+          data-bs-toggle="modal" 
+          data-bs-target="#returnModal" 
+          data-product-id="{{product._id}}"
+        data-order-id="{{../orderId}}">
+        
+    <i class="fas fa-undo-alt me-1"></i> Request Return
+  </button>
+
+
     {{/if}}
+
+
 
    
     {{#if (eq returnStatus "Approved")}}
@@ -200,7 +172,8 @@
 
 </div>
       </div>
-    {{/if}}     
+        
+    {{/each}}
     </div>
 
    
@@ -219,20 +192,35 @@
 </div>
       <!-- Order Summary -->
       <div class="card p-3 mb-4">
+      
         <h6>Order Summary</h6>
-        <div class="d-flex justify-content-between">
-          <span>Total Price:</span>
+        <div class="d-flex justify-content-between mt-2">
+          <span>Subtotal (All Products) :</span>
           <span>₹{{totalPrice}}</span>
         </div>
-        <div class="d-flex justify-content-between">
-          <span>Discount:</span>
-          <span>-₹{{discount}}</span>
+        <div class="d-flex justify-content-between mt-2">
+          <span>Discount :</span>
+          <span>-₹{{totalDiscount}}</span>
+        </div>
+         <div class="d-flex justify-content-between mt-2">
+          {{#if couponName}}
+          <span>Coupon ({{couponName}}) :</span>
+          <span>-₹{{couponDiscount}}</span>
+          {{/if}}
         </div>
         <hr>
-        <div class="d-flex justify-content-between fw-bold">
-          <span>Final Amount:</span>
-          <span>₹{{finalAmount}}</span>
+        <div class="d-flex justify-content-between fw-bold mt-2">
+          <span>Net Payable :</span>
+          <span>₹{{payableAmount}}</span>
         </div>
+        {{#if totalRefund}}
+        <div class="d-flex justify-content-between  mt-2">
+          <span>Refund Amount :</span>
+          <span>₹{{totalRefund}}</span>
+        </div>
+        {{/if}}
+
+         
       </div>
 
       <!-- Payment Method -->
@@ -262,9 +250,9 @@
 
 
 <!-- Cancel Reason Modal -->
-<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel">
   <div class="modal-dialog">
-    <form method="POST" action="/cancel-order" id="cancelForm">
+    <form  id="cancelForm">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
@@ -272,7 +260,9 @@
         </div>
         
         <div class="modal-body">
+        
           <div class="mb-3">
+           
             <label for="cancelReason" class="form-label">Select a reason for cancellation</label>
             <select class="form-select" name="reason" id="cancelReason" required>
               <option value="" selected disabled>Choose a reason</option>
@@ -283,8 +273,9 @@
               <option value="Other">Other</option>
             </select>
           </div>
-          <input type="hidden" name="orderId" value="{{orderId}}">
-          <input type="hidden" name="productId" value="{{product._id}}">
+        
+          <input type="hidden" name="orderId" >
+          <input type="hidden" name="productId" >
         </div>
         
         <div class="modal-footer">
@@ -297,9 +288,9 @@
 </div>
 {{!-- return request model --}}
 
-<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel">
   <div class="modal-dialog">
-    <form id="returnRequestForm">
+    <form  id="returnRequestForm"> <!-- Assuming you're using form submit -->
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="returnModalLabel">Return Request</h5>
@@ -307,12 +298,15 @@
         </div>
 
         <div class="modal-body">
+          
           <div class="mb-3">
             <label for="returnReason" class="form-label">Reason for Return</label>
             <textarea class="form-control" name="reason" id="returnReason" rows="3" required></textarea>
           </div>
-          <input type="hidden" name="orderId" value="{{orderId}}">
-          <input type="hidden" name="productId" value="{{product._id}}">
+
+          <!-- Hidden fields for order & product IDs -->
+     <input type="hidden" name="orderId" id="modalOrderId">
+          <input type="hidden" name="productId" id="modalProductId">
         </div>
 
         <div class="modal-footer">
@@ -326,40 +320,93 @@
 
 
 <script>
- document.getElementById('returnRequestForm').addEventListener('submit', function(e) {
+  document.addEventListener('DOMContentLoaded', () => {
+  const returnModal = document.getElementById('returnModal');
+
+  returnModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const orderId = button.getAttribute('data-order-id');
+    const productId = button.getAttribute('data-product-id');
+
+    document.getElementById('modalOrderId').value = orderId;
+    document.getElementById('modalProductId').value = productId;
+  });
+
+  document.getElementById('returnRequestForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const reason = document.getElementById('returnReason').value;
+    const orderId = document.getElementById('modalOrderId').value;
+    const productId = document.getElementById('modalProductId').value;
+
+    $.ajax({
+      url: `/request-return/${orderId}/${productId}`,
+      type: 'POST',
+      data: { reason },
+      success: (data) => {
+        Swal.fire({
+          title: "Return Requested",
+          text: data.message || "Your return request has been submitted.",
+          icon: "success",
+          confirmButtonText: "OK"
+        }).then(() => {
+          window.location.reload();
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire({
+          title: "Error",
+          text: "Failed to submit return request.",
+          icon: "error",
+          confirmButtonText: "OK"
+        });
+      }
+    });
+  });
+});
+  const cancelModal = document.getElementById('cancelModal');
+  cancelModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const orderId = button.getAttribute('data-order-id');
+    const productId = button.getAttribute('data-product-id');
+
+    cancelModal.querySelector('input[name="orderId"]').value = orderId;
+    cancelModal.querySelector('input[name="productId"]').value = productId;
+  });
+
+  document.getElementById('cancelForm').addEventListener('submit', function (e) {
   e.preventDefault();
 
-  const form = e.target;
-  const reason = form.reason.value;
-  const orderId = form.orderId.value;
-  const productId = form.productId.value;
+  const formData = new FormData(this);
+  const reason = formData.get('reason');
+  const orderId = formData.get('orderId');
+  const productId = formData.get('productId');
 
   $.ajax({
-    url: `/request-return/${orderId}/${productId}`,
+    url: '/cancel-order',
     type: 'POST',
-    data: { reason },
-    success: (data) => {
+    data: { reason, orderId, productId },
+    success: (res) => {
       Swal.fire({
-        title: "Return Requested",
-        text: data.message || "Your return request has been submitted.",
-        icon: "success",
-        confirmButtonText: "OK"
+        icon: 'success',
+        title: 'Order Cancelled',
+        text: res.message || 'Your order was successfully cancelled.',
       }).then(() => {
         window.location.reload();
       });
     },
     error: (err) => {
-      console.error(err);
       Swal.fire({
-        title: "Error",
-        text: "Failed to submit return request.",
-        icon: "error",
-        confirmButtonText: "OK"
+        icon: 'error',
+        title: 'Error',
+        text: 'Unable to cancel the order.',
       });
     }
   });
 });
 
 </script>
+
 {{> foote}}
 

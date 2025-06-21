@@ -1,7 +1,7 @@
 {{> headr}}
 
 <style>
-  .order-card { border: 1px solid #ddd; border-radius: 8px; margin-bottom:5px; padding: 5px; background: #fff; }
+  .order-card { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; padding: 15px; background: #fff; }
   .status-pill { padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; }
   .status-pending { background-color: #fff3cd; color: #856404; }
   .status-delivered { background-color: #d4edda; color: #155724; }
@@ -51,73 +51,52 @@
 
     <!-- Example Order Card -->
     {{#each orders}}
-  <div class="order-card shadow-sm mb-3 p-2">
-    <div class="row">
-      <div class="col-6">
-     <div><strong>Order ID:</strong> {{this.orderId}}</div>
+  <div class="order-card shadow-sm mb-4">
+    <div class="d-flex justify-content-between">
+      <div>
+        <div><strong>Order ID:</strong> {{this.orderId}}</div>
         <div><strong>Placed on:</strong> {{this.orderDate}} at {{this.orderTime}}</div>
 
-      </div>
-      <div class="col-6 text-end">
-            <a href="/view-orderDetails/{{this.orderId}}" class="btn btn-sm btn-outline-primary mt-3">View Details</a>
-    
-    
-      </div>
-    </div>
-
-    <div class="row">
-        {{#if (eq this.paymentMethod "razorpay")}}
+    {{#if (eq this.paymentMethod "razorpay")}}
   {{#if (eq this.RazorPay "failed")}}
-      <div class="col-6">
-  
    <div class="d-flex justify-content-between align-items-center  mt-3">
   <h5 class="mb-0" style="color: orange;">Order not placed</h5>
-  {{!-- <a href="/retry-order/{{this.orderId}}" class="btn btn-outline-secondary btn-sm">Place Order Again</a> --}}
+  <a href="/retry-order/{{this.orderId}}" class="btn btn-outline-secondary btn-sm">Place Order Again</a>
 </div>
-
-      </div>
-      
-         {{/if}}
+   {{/if}}
 {{/if}}
+      </div>
     </div>
-   
 
     <hr>
 
     {{#each this.products}}
-      <div class="row align-items-center mb-3">
+      <div class="row align-items-center mb-4">
 
         <div class="col-md-2">
-          <img src="/uploads/re-image/{{this.productImage}}" 
-          alt="Product" class="product-img ms-4" style="width: 80px; height: auto;">
+          <img src="/uploads/re-image/{{this.productImage}}" alt="Product" class="product-img" style="width: 100px; height: auto;">
         </div>
         <div class="col-md-6">
          
           <h6>{{this.productName}}</h6>
-          {{!-- <div>Quantity: {{this.quantity}}</div>
-          <div>Price: ₹{{this.price}}</div> --}}
+          <div>Quantity: {{this.quantity}}</div>
+          <div>Price: ₹{{this.price}}</div>
         </div>
         <div class="col-md-4 text-end">
           {{#if (eq this.status "Cancelled")}}
             <span class="status-pill bg-danger text-white p-1 ps-2 pe-2">{{this.status}}</span>
           {{else if (eq this.status "Delivered")}}
             <span class="status-pill bg-success text-white p-1 ps-2 pe-2">{{this.status}}</span>
-           {{else if (eq ../RazorPay "failed")}}
-                       <span class="status-pill bg-info text-dark p-1 ps-2 pe-2" hidden>{{this.status}}</span>
-
-         
           {{else}}
             <span class="status-pill bg-warning text-dark p-1 ps-2 pe-2">{{this.status}}</span>
-         
-         
           {{/if}}
 
-          {{!-- <div class="mt-4 mb-2">
+          <div class="mt-4 mb-2">
             <a href="/view-orderDetails/{{../orderId}}/{{this.productId}}" class="btn btn-sm btn-outline-primary">View Details</a>
-          </div> --}}
+          </div>
         </div>
 
-            {{!-- {{#if (eq ../paymentMethod "razorpay")}}
+            {{#if (eq ../paymentMethod "razorpay")}}
   {{#if (eq ../RazorPay "failed")}}
   <div>
 
@@ -126,24 +105,13 @@
         <i class="fa-solid fa-circle-info"></i>  Payment not successful. Please contyact your bank for any money deduct</p>
   </div>
   {{/if}}
-{{/if}} --}}
+{{/if}}
       </div>
     {{/each}}
-      {{#if (eq this.paymentMethod "razorpay")}}
-  {{#if (eq this.RazorPay "failed")}}
 
-  <div>
-
-  
-        <p class="mt-2  p-2" style="border:1px solid rgb(212, 212, 248);background-color:rgb(243, 243, 252)">
-        <i class="fa-solid fa-circle-info"></i>  Payment not successful. Please contyact your bank for any money deduct</p>
-  </div>
-  {{/if}}
-{{/if}}
   </div>
 {{/each}}
 
-    
 
     <!-- Repeat more .order-card blocks here for more orders -->
   </div>

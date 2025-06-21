@@ -108,10 +108,29 @@
                  alt="{{this.productId.productName}}" />
         </a>
         <div class="quantity-control justify-content-center mt-2">
+
             <div class="qty-btn" onclick="decreaseQty('{{this.productId._id}}')">-</div>
-            <div class="quantity-circle" id="qtyDisplay-{{this.productId._id}}">{{this.quantity}}</div>
-            <div class="qty-btn" onclick="increaseQty('{{this.productId._id}}')">+</div>
+            <div class="quantity-circle" id="qtyDisplay-{{this.productId._id}}">
+              {{#if (lt this.productId.quantity this.quantity)}}
+              {{this.productId.quantity}}
+              {{else}}
+              {{this.quantity}}
+              {{/if}}
+              </div>
+                     
+         {{#if (lte this.productId.quantity  this.quantity )}}
+       
+            <div class="qty-btn disabled" onclick="return false;">+</div>
+       {{else}}
+     
+          <div class="qty-btn " onclick="increaseQty('{{this.productId._id}}')">+</div>
+
+
+{{/if}}
         </div>
+      {{#if (lte this.productId.quantity  this.quantity )}}
+      <div class="text-danger ms-2 pt-2">only{{this.productId.quantity}} available</div>
+      {{/if}}
     </div>
 
     <div class="product-section">
@@ -216,7 +235,7 @@
   const qtyDisplay = document.getElementById(`qtyDisplay-${productId}`);
   let quantity = parseInt(qtyDisplay.textContent);
   const maxQuantity = 5;
-
+ 
   if (quantity < maxQuantity) {
     quantity++;
     qtyDisplay.textContent = quantity;
@@ -239,7 +258,7 @@ const totalSalePricenew=totalSalePrice+salePrice
     if (totalPriceElement) totalPriceElement.textContent = `₹${totalPrice}`;
     if (totalSalePriceElement) totalSalePriceElement.textContent = `₹${totalSalePricenew}`;
     if (sumTotalPriceElement) sumTotalPriceElement.textContent = `₹${sumTotalPriceNew}`;
-    
+   
     updateCart(productId, quantity, totalPrice, totalSalePrice);
   } else {
     Swal.fire({
@@ -297,6 +316,9 @@ function updateCart(productId, quantity,totalPrice ,totalSalePrice) {
           text: `The quantity and total price have been updated successfully.`,
           icon: 'success',
           timer: 2000
+        }).then(() => {
+          // Refresh the page after alert closes
+          window.location.reload();
         });
       }
     },

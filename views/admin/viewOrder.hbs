@@ -120,9 +120,15 @@
         </div>
 
         <div class="text-end">
+            {{#if (or (eq orderProduct.status "Returned")(eq orderProduct.status "Cancelled"))}}
+    <button class="btn btn-sm btn-success " data-bs-toggle="modal" data-bs-target="#cancelModal" disabled >
+ Update Status
+</button>
+{{else}}
     <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#cancelModal">
  Update Status
 </button>
+{{/if}}
 
         </div>
          
@@ -238,13 +244,39 @@
           <div class="mb-3">
             <label for="updateStatus" class="form-label">Select a status</label>
             <select class="form-select" name="status" id="updateStatus" required>
-             <option value="">All Statuses </option>
-        <option value="Pending">Pending</option>
-        <option value="Shipped">Shipped</option>
-        <option value="Out for Delivery">Out for Delivery</option>
-        <option value="Delivered">Delivered</option>
-        <option value="Cancelled">Cancelled</option>
-        <option value="Returned">Returned</option>
+           
+      <option value="" selected disabled>Select status</option>
+{{#if (eq orderProduct.status "Shipped")}}
+<option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Returned">Returned</option>
+
+{{else}}
+{{#if (eq orderProduct.status "Out for Delivery")}}
+  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Returned">Returned</option>
+
+                  {{else}}
+                  {{#if (eq orderProduct.status "Delivered")}}
+                   
+                  <option value="Returned">Returned</option>
+   <option value="Cancelled">Cancelled</option>
+
+{{else}}
+                  <option value="Pending"> Pending</option>
+                 
+                  <option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                  <option value="Returned">Returned</option>
+                  {{/if}}
+                  {{/if}}
+                  {{/if}}
+                
             </select>
           </div>
           <input type="hidden" name="orderId" value="{{orderId}}">

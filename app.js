@@ -55,6 +55,7 @@ app.engine('hbs', engine({
       path.join(__dirname, 'views/partials/admin')
     ],
     helpers: {
+      neq:(a,b)=>a !== b,
       eq: (a, b) => a === b,
       add: (a, b) => a + b,
       sub: (a, b) => a - b,
@@ -62,6 +63,7 @@ app.engine('hbs', engine({
       and: (a, b) => a && b,
       gt: (a,b)=> a > b,
       lt: (a,b)=> a < b,
+        lte: (a,b)=> a <= b,
       or: (a,b)=> a || b,
       not: value => !value,
       range: (start, end) => {

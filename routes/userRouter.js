@@ -129,7 +129,7 @@ router.post(
 
 router.get("/my-orders", userAuth, checkoutController.getMyOrders);
 router.get(
-  "/view-orderDetails/:orderId/:productId",
+  "/view-orderDetails/:orderId",
   userAuth,
   checkoutController.getOrderDetail
 );

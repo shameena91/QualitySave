@@ -236,7 +236,7 @@ const createOrder = async (req, res) => {
       quantity: item.quantity,
       price: item.price,
       status: "Pending",
-      discountedAmount: (item.salePrice - item.price) * item.quantity,
+      discountedAmount: (item.totalSalePrice - item.totalPrice) * item.quantity,
     }));
 
     const finalAmount = filteredCartItems.reduce(
@@ -438,11 +438,11 @@ const getMyOrders = async (req, res) => {
 const getOrderDetail = async (req, res) => {
   try {
     const userId = req.session.user;
-    const { orderId } = req.params;
+    const { orderId, productId } = req.params;
     console.log("orderid", orderId);
     const user = await User.findById(userId).lean();
 
-
+    console.log("proid", productId);
     const order = await Order.findOne({ orderId: orderId, userId: userId })
       .populate("orderItems.product")
       .lean();
@@ -455,64 +455,30 @@ const getOrderDetail = async (req, res) => {
       return item._id.toString() === addressId.toString();
     });
     console.log("add", addressId, specifiedAddress);
-const products=order.orderItems
-console.log(products)
-let findOrderItems=null
-if(order.paymentMethode==="cod")
-{
 
-findOrderItems=order.orderItems.filter((item)=>{
-  item.status!=="Cancelled"
-})
-}
+    const specifiedProduct = order.orderItems.find((item) => {
+      //    console.log(item.product.toString())
+      return item.product._id.toString() === productId;
+    });
 
-else{
-findOrderItems=order.orderItems
-
-}
-const totalPrice=findOrderItems.reduce((acc,item)=>{
-  return acc+item.quantity*item.product.salePrice
-},0)
-
-const totalRefund=findOrderItems.reduce((acc,item)=>{
-  return acc+item.refundPrice
-},0)
-
-const couponId=order.couponUsed
-  let couponName = null;
-
-    if (couponId) {
-      const findCoupon = await Coupon.findById(couponId).lean();
-      if (findCoupon) {
-        couponName = findCoupon.name;
-      }
-    }
-
-
-const totalDiscount=findOrderItems.reduce((acc,item)=>{
-  return acc+item.
-discountedAmount
-},0)
-
-const couponDiscount=order.couponDiscount
-const payableAmount=totalPrice-totalDiscount-couponDiscount
-
-
-  
+    console.log("ggggg", specifiedProduct);
+    const totalPrice =
+      specifiedProduct.product.salePrice * specifiedProduct.quantity;
+    const finalAmount = specifiedProduct.price * specifiedProduct.quantity;
+    const discount = totalPrice - finalAmount;
     res.render("viewOrderDetail", {
-      products,
-      orderId,
-      order,
-      couponDiscount,
-      payableAmount,
-     couponName,
+      product: specifiedProduct.product,
+      quantity: specifiedProduct.quantity,
+      price: specifiedProduct.price,
+      status: specifiedProduct.status,
+      returnStatus: specifiedProduct.returnStatus,
       specifiedAddress,
       totalPrice,
-   
-      totalDiscount,
+      finalAmount,
+      discount,
+      orderId,
       user,
-      totalRefund
-     
+      order,
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -657,21 +623,17 @@ const cancelOrder = async (req, res) => {
 
 const returnRequest = async (req, res) => {
   try {
-    const { orderId,productId } = req.params;
+    const { orderId, productId } = req.params;
     console.log(orderId, productId);
     const { reason } = req.body;
     console.log(reason);
 
     const order = await Order.findOne({ orderId: orderId });
     if (!order) return res.status(404).json({ message: "Order not found" });
-   console.log("orderrrr",order)
-   console.log("bbbbbbbb",order.orderItems)
-  const item=order.orderItems.find((pro)=>{
-    console.log(pro.product)
-    console.log(productId)
-    return pro.product.toString()===productId
-  })
-    console.log("itemmmmmm",item)
+
+    const item = order.orderItems.find(
+      (i) => i.product.toString() === productId
+    );
     if (!item)
       return res.status(404).json({ message: "Product not found in order" });
 

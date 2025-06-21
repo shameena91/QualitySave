@@ -246,9 +246,7 @@ const updateReturnStatus = async (req, res) => {
       let returnProductPrice = 0;
       if (couponId) {
         returnProductPrice = orderProduct.price * orderProduct.quantity;
-        const remainingPrice =
-          order.finalAmount -
-          returnProductPrice -
+        const remainingPrice =order.finalAmount -returnProductPrice -
           sumPriceReturned +
           order.couponDiscount;
 

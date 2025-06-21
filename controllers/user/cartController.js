@@ -50,8 +50,17 @@ const getCart = async (req, res) => {
       hasStock = cartProducts[0].productId.quantity;
     }
     console.log(hasStock);
-    
-
+//     cart.cartItems.forEach(item => {
+//   if (item.quantity > item.productId.quantity) {
+//     item.quantity = item.product.quantity;
+//     item.totalPrice = item.price * item.quantity;
+//     item.totalSalePrice = item.salePrice * item.quantity;
+//     // Optionally push a message to inform user
+//   }
+  
+// });
+// await cart.save()
+  
     res.render("cart", {
       hasStock,
       cartProducts,
@@ -82,6 +91,7 @@ const addToCart = async (req, res) => {
     }
     const productId = req.body.proId;
     const userId = req.session.user;
+    const findProduct=await Product.findById(productId)
 
     const wishlist = await Wishlist.findOne({ userId: userId });
     if (!productId || !userId) {
@@ -144,23 +154,46 @@ const addToCart = async (req, res) => {
         (item) => item.productId.toString() === productId
       );
       if (productExists) {
+if(findProduct.quantity<productExists.quantity+1){
+     return res
+          .status(200)
+          .json({ status: false, message: `Only ${findProduct.quantity} left` });
+}
+
+
         if (productExists.quantity + 1 > maxQuantity) {
           return res
             .status(200)
             .json({
               status: false,
-              message: `You can only add up to ${maxQuantity} units of this product.`,
+              message: `Only ${product.quantity} units left of "${product.productName}". Please update your cart.`,
+          
+            
             });
         }
+
+
+
+
+        
+if(findProduct.quantity<productExists.quantity+1){
+  productExists.quantity =findProduct.quantity;
+  productExists.totalPrice = productExists.quantity * price;
+        productExists.totalSalePrice = productExists.quantity * salePrice;
+}
+else{
         productExists.quantity += 1;
         productExists.totalPrice = productExists.quantity * price;
         productExists.totalSalePrice = productExists.quantity * salePrice;
+}
 
         await cart.save();
         return res
           .status(200)
           .json({ status: true, message: "Your cart updated successfully" });
       }
+    
+     
 
       cart.cartItems.push({
         productId,
