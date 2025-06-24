@@ -226,10 +226,10 @@ const downloadPDF = async (req, res) => {
     doc.moveDown(2).font("Helvetica-Bold").fontSize(12);
     doc.text("Summary", 50, y + 10);
     doc.font("Helvetica").fontSize(10);
-    doc.text(`Total Sales: ₹${totalPriceSum.toFixed(2)}`, 50, y + 30);
-    doc.text(`Total Discount: ₹${discountSum.toFixed(2)}`, 50, y + 45);
+    doc.text(`Total Sales: ${totalPriceSum.toFixed(2)}`, 50, y + 30);
+    doc.text(`Total Discount: ${discountSum.toFixed(2)}`, 50, y + 45);
     // doc.text(`Total Coupon Discount: ₹${couponDiscountSum.toFixed(2)}`, 50, y + 60);
-    doc.text(`Final Revenue: ₹${finalAmountSum.toFixed(2)}`, 50, y + 75);
+    doc.text(`Final Revenue: ${finalAmountSum.toFixed(2)}`, 50, y + 75);
 
     doc.end();
   } catch (error) {
@@ -243,7 +243,3 @@ module.exports = {
   downloadPDF,
 };
 
-module.exports = {
-  downloadExcel,
-  downloadPDF,
-};

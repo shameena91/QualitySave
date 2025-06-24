@@ -1,124 +1,169 @@
-const Cart = require("../../models/cartSchema");
+// const Cart = require("../../models/cartSchema");
+// const Order = require("../../models/orderSchema");
+// const Product = require("../../models/productSchema");
+// const User = require("../../models/userSchema");
+// const Address = require("../../models/addressSchema");
+
+// // const fs = require("fs").promises;
+// // const path = require("path");
+// // const hbs = require("express-handlebars").create();
+// // const puppeteer = require("puppeteer");
+// // const Handlebars = require("handlebars");
+
+// // // Register needed helpers manually
+// // Handlebars.registerHelper("eq", (a, b) => a === b);
+// // Handlebars.registerHelper("add", (a, b) => a + b);
+// // Handlebars.registerHelper("sub", (a, b) => a - b);
+// // Handlebars.registerHelper("formatDate", (date) =>
+// //   new Date(date).toLocaleDateString("en-IN", {
+// //     day: "2-digit",
+// //     month: "2-digit",
+// //     year: "numeric",
+// //   })
+// // );
+
+
+
+const PDFDocument = require("pdfkit");
 const Order = require("../../models/orderSchema");
-const Product = require("../../models/productSchema");
-const User = require("../../models/userSchema");
 const Address = require("../../models/addressSchema");
-
-const fs = require("fs").promises;
-const path = require("path");
-const hbs = require("express-handlebars").create();
-const puppeteer = require("puppeteer");
-const Handlebars = require("handlebars");
-
-// Register needed helpers manually
-Handlebars.registerHelper("eq", (a, b) => a === b);
-Handlebars.registerHelper("add", (a, b) => a + b);
-Handlebars.registerHelper("sub", (a, b) => a - b);
-Handlebars.registerHelper("formatDate", (date) =>
-  new Date(date).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-);
 
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    const productId = req.params.productId;
     const userId = req.session.user;
-    const order = await Order.findOne({ orderId: orderId })
+
+    const order = await Order.findOne({ orderId })
       .populate("orderItems.product")
       .populate("userId")
-
       .lean();
-    const address = await Address.findOne({ userId: userId })
-    .lean();
 
-    console.log("sssss", address);
-    if (!order) {
-      return res.status(404).send("Order not found");
-    }
-    console.log("ddddddddddddddddddddd", order);
+    const address = await Address.findOne({ userId }).lean();
+    if (!order) return res.status(404).send("Order not found");
 
-    const templatePath = path.join(__dirname, "../../views/user/invoice.hbs");
-    console.log(templatePath);
-    const templateContent = await fs.readFile(templatePath, "utf-8");
-
-    const template = Handlebars.compile(templateContent);
-    const orderDate = order.createdOn.toLocaleDateString();
-
-    let orderProduct
-if(order.paymentMethod==="razorpay")
-{
-  orderProduct= order.orderItems
-  
-deliveredTotalPrice=orderProduct.reduce((acc,item)=>{
-  return acc+item.quantity*item.product.salePrice
-},0)
-deliveredTotaldiscount=orderProduct.reduce((acc,item)=>{
-  return acc+item.discountedAmount
-},0)
-}
-else {
-  
- orderProduct  = order.orderItems.filter(item => item.status !== "Cancelled");
-
-   deliveredTotalPrice = orderProduct
-  .reduce((acc, item) => acc + item.quantity * item.product.salePrice, 0);
-
-  deliveredTotaldiscount= orderProduct
-  .reduce((acc, item) => acc +  item.discountedAmount, 0);
-  
-  }
-  const finalAmount=deliveredTotalPrice-deliveredTotaldiscount+order.shipping
-    console.log(orderProduct);
-
-    const products = orderProduct.map((item) => ({
-      productName: item.product?.productName,
-      quantity: item.quantity,
-      price: item.price,
-      total: item.quantity * item.price,
-    }));
+    const orderDate = new Date(order.createdOn).toLocaleDateString();
     const deliveryAddress = address?.address?.[0] || {};
-    const html = template({
-      discount: order.totalPrice - order.finalAmount,
-      order,
-      finalAmount,
-    totalDiscount:deliveredTotaldiscount,
-  totalPrice:deliveredTotalPrice,
-      orderDate,
-      products,
-      userAddress: deliveryAddress.houseDetails || "",
-      userCity: deliveryAddress.city || "",
-      userState: deliveryAddress.state || "",
-      userPincode: deliveryAddress.pincode || "",
-      userPhone: deliveryAddress.phone || "",
-      userFullName: deliveryAddress.fullName || "",
+
+    let orderItems = order.orderItems;
+    if (order.paymentMethod !== "razorpay") {
+      orderItems = orderItems.filter((item) => item.status !== "Cancelled");
+    }
+
+    let subtotal = 0;
+    let discountTotal = 0;
+    orderItems.forEach(item => {
+      subtotal += item.quantity * item.product.salePrice;
+      discountTotal += item.discountedAmount;
     });
 
-    const browser = await puppeteer.launch({
-       executablePath: '/usr/bin/chromium',
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true,
-    });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    const couponDiscount = order.couponDiscount || 0;
+    const finalAmount = subtotal - discountTotal - couponDiscount + order.shipping;
 
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "20px", bottom: "20px" },
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice_${orderId}.pdf`
+    );
+
+    doc.pipe(res);
+
+    // Title
+    doc.fontSize(20).text("INVOICE", { align: "center" }).moveDown();
+
+    // Seller info
+    doc.fontSize(12).text("From:", { underline: true });
+    doc.text("Quality Save\n123 Business Street\nKollam, Kerala 691536\nPhone: 9876543210\nEmail: support@yourstore.com").moveDown();
+
+    // Buyer info
+    doc.text("To:", { underline: true });
+    doc.text(`${deliveryAddress.fullName || ""}\n${deliveryAddress.houseDetails || ""}\n${deliveryAddress.city || ""}, ${deliveryAddress.state || ""} - ${deliveryAddress.pincode || ""}\nPhone: ${deliveryAddress.phone || ""}`).moveDown();
+
+    // Order Details
+    // Set initial Y position
+let detailsY = doc.y;
+
+// Order ID & Date (same line)
+doc.font("Helvetica-Bold").text("Order ID:", 50, detailsY, { continued: true });
+doc.font("Helvetica").text(` ${order.orderId}`, { continued: true });
+
+doc.font("Helvetica-Bold").text("    Order Date:", { continued: true });
+doc.font("Helvetica").text(` ${orderDate}`);
+let currentY = doc.y;
+// Payment Method (next line)
+doc.font("Helvetica-Bold").text("Payment Method:", 50, currentY, { continued: true });
+
+// Payment Method Value (regular)
+doc.font("Helvetica").text(` ${order.paymentMethod === "razorpay" ? "Online" : order.paymentMethod}`);
+
+// Add spacing after line
+doc.moveDown();
+
+    // Table Headers
+    const startY = doc.y + 10;
+    doc.font("Helvetica-Bold").fontSize(12);
+    doc.text("Product", 50, startY);
+    doc.text("Qty", 300, startY, { width: 30, align: "right" });
+    doc.text("Price", 360, startY, { width: 60, align: "right" });
+    doc.text("Total", 440, startY, { width: 80, align: "right" });
+
+    doc.moveTo(50, startY + 15).lineTo(550, startY + 15).stroke();
+
+    // Product Rows
+    let y = startY + 25;
+    doc.font("Helvetica").fontSize(10);
+
+    orderItems.forEach(item => {
+      const name = item.product?.productName || "Unnamed Product";
+      const qty = item.quantity;
+      const price = item.price;
+      const total = qty * price;
+
+      if (y > 720) {
+        doc.addPage();
+        y = 50;
+      }
+
+      doc.text(name, 50, y, { width: 230 });
+      doc.text(`${qty}`, 300, y, { width: 30, align: "right" });
+      doc.text(`${price.toFixed(2)}`, 360, y, { width: 60, align: "right" });
+      doc.text(`${total.toFixed(2)}`, 440, y, { width: 80, align: "right" });
+      y += 20;
     });
 
-    await browser.close();
+    // Summary Section
+    if (y > 700) {
+      doc.addPage();
+      y = 50;
+    }
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=invoice_${orderId}.pdf`,
-      "Content-Length": pdfBuffer.length,
-    });
-    res.send(pdfBuffer);
+    doc.moveTo(50, y).lineTo(550, y).stroke();
+    y += 20;
+
+    doc.font("Helvetica-Bold");
+    doc.text(`Subtotal:`, 360, y, { width: 100, align: "right" });
+    doc.text(`${subtotal.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+    y += 15;
+
+    doc.text(`Discount:`, 360, y, { width: 100, align: "right" });
+    doc.text(`- ${discountTotal.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+    y += 15;
+
+    if (couponDiscount > 0) {
+      doc.text(`Coupon Discount:`, 360, y, { width: 100, align: "right" });
+      doc.text(`- ${couponDiscount.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+      y += 15;
+    }
+
+    doc.text(`Shipping:`, 360, y, { width: 100, align: "right" });
+    doc.text(`${order.shipping.toFixed(2)}`, 470, y, { width: 80, align: "right" });
+    y += 15;
+
+    doc.fontSize(13).text(`Grand Total:`, 360, y, { width: 100, align: "right", underline: true });
+    doc.text(`${finalAmount.toFixed(2)}`, 470, y, { width: 80, align: "right", underline: true });
+
+    doc.end();
   } catch (error) {
     console.error("Error generating invoice PDF:", error);
     res.status(500).send("Error generating PDF");
@@ -128,3 +173,6 @@ else {
 module.exports = {
   downloadInvoice,
 };
+
+
+
