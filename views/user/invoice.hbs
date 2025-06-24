@@ -80,22 +80,25 @@
             <tbody>
               <tr>
                 <th class="text-end">Subtotal:</th>
-                <td class="text-end">₹{{order.totalPrice}}</td>
+                <td class="text-end">₹{{totalPrice}}</td>
               </tr>
               <tr>
                 <th class="text-end">Discount:</th>
-                <td class="text-end">-₹{{discount}}</td>
+                <td class="text-end">-₹{{totalDiscount}}</td>
               </tr>
+              <tr>
+                {{#if order.couponDiscount}}
+              <th class="text-end">Coupon Discount:</th>
+                <td class="text-end">-₹{{order.couponDiscount}}</td>
+              </tr>
+              {{/if}}
               <tr>
                 <th class="text-end">Shipping:</th>
                 <td class="text-end">+₹{{order.shipping}}</td>
               </tr>
               <tr class="border-top">
                 <th class="text-end fs-5">Grand Total:</th>
-                <td class="text-end fs-5 fw-bold">₹{{add
-                    order.finalAmount
-                    order.shipping
-                  }}</td>
+                <td class="text-end fs-5 fw-bold">₹{{sub finalAmount order.couponDiscount}}</td>
               </tr>
             </tbody>
           </table>

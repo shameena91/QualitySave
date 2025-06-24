@@ -457,23 +457,40 @@ const getOrderDetail = async (req, res) => {
     console.log("add", addressId, specifiedAddress);
 const products=order.orderItems
 console.log(products)
-let findOrderItems=null
-if(order.paymentMethode==="cod")
-{
+let invoiceStatus = "Show";
+let findOrderItems = [];
+let deliveredTotalPrice;
+let deliveredTotaldiscount
 
-findOrderItems=order.orderItems.filter((item)=>{
-  item.status!=="Cancelled"
-})
-}
+if (order.paymentMethod === "cod") {
+  const statusList = order.orderItems.map(item => item.status);
 
-else{
-findOrderItems=order.orderItems
+  const hasUndelivered = statusList.some(status =>
+    ["Pending", "Processing", "Shipped", "Out for Delivery",].includes(status)
+  );
+  const allCancelled = statusList.every(status => status === "Cancelled");
 
-}
-const totalPrice=findOrderItems.reduce((acc,item)=>{
+  if (hasUndelivered || allCancelled) {
+    invoiceStatus = "Not Show";
+  }
+
+  findOrderItems = order.orderItems.filter(item => item.status !== "Cancelled");
+
+   deliveredTotalPrice = findOrderItems
+  .reduce((acc, item) => acc + item.quantity * item.product.salePrice, 0);
+
+  deliveredTotaldiscount= findOrderItems
+  .reduce((acc, item) => acc +  item.discountedAmount, 0);
+  
+} else {
+  findOrderItems = order.orderItems;
+deliveredTotalPrice=findOrderItems.reduce((acc,item)=>{
   return acc+item.quantity*item.product.salePrice
 },0)
-
+deliveredTotaldiscount=findOrderItems.reduce((acc,item)=>{
+  return acc+item.discountedAmount
+},0)
+}
 const totalRefund=findOrderItems.reduce((acc,item)=>{
   return acc+item.refundPrice
 },0)
@@ -489,27 +506,26 @@ const couponId=order.couponUsed
     }
 
 
-const totalDiscount=findOrderItems.reduce((acc,item)=>{
-  return acc+item.
-discountedAmount
-},0)
+
 
 const couponDiscount=order.couponDiscount
-const payableAmount=totalPrice-totalDiscount-couponDiscount
+const payableAmount=deliveredTotalPrice-deliveredTotaldiscount-couponDiscount
 
 
-  
+
+  console.log("INNN",invoiceStatus)
     res.render("viewOrderDetail", {
       products,
       orderId,
       order,
+      invoiceStatus,
       couponDiscount,
       payableAmount,
      couponName,
       specifiedAddress,
-      totalPrice,
+      totalPrice:deliveredTotalPrice,
    
-      totalDiscount,
+      totalDiscount:deliveredTotaldiscount,
       user,
       totalRefund
      

@@ -208,10 +208,16 @@
           <span>-₹{{couponDiscount}}</span>
           {{/if}}
         </div>
+        <div class="d-flex justify-content-between mt-2">
+          {{#if order.shipping}}
+          <span>Shipping  :</span>
+          <span>+₹{{order.shipping}}</span>
+          {{/if}}
+        </div>
         <hr>
         <div class="d-flex justify-content-between fw-bold mt-2">
           <span>Net Payable :</span>
-          <span>₹{{payableAmount}}</span>
+          <span>₹{{add payableAmount order.shipping}}</span>
         </div>
         {{#if totalRefund}}
         <div class="d-flex justify-content-between  mt-2">
@@ -236,10 +242,19 @@
   {{/if}}
 {{/if}}
         <div class="text-end text-capitalize">
-          {{#if (or (eq status "Delivered") (eq razorpayStatus "paid"))}}
-                  <a href="/invoice/download/{{orderId}}/{{product._id}}" target="_blank"  class="btn btn-sm btn-outline-success">
+          
+          
+          {{#if  (eq order.razorpayStatus "paid")}}
+          
+                  <a href="/invoice/download/{{orderId}}" target="_blank"  class="btn btn-sm btn-outline-success">
   Download Invoice PDF
 </a>
+{{else}}
+{{#if (eq invoiceStatus "Show")}}
+               <a href="/invoice/download/{{orderId}}" target="_blank"  class="btn btn-sm btn-outline-success">
+  Download Invoice PDF
+</a>
+{{/if}}
           {{/if}}
         </div>
       </div>

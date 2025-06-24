@@ -29,7 +29,7 @@
         <th class="custom-color" scope="col">Saleprice</th>
         <th class="custom-color" scope="col">discounted price</th>
        
-        <th class="custom-color" scope="col">Offer</th>
+        <th class="custom-color" scope="col">Applied Offer</th>
         <th class="custom-color" scope="col">Stock</th>
         <th class="custom-color" scope="col">Block/Unblock</th>
          <th class="custom-color" scope="col">Actions</th>
@@ -51,9 +51,9 @@
         
         <td>
 {{#if (lt productOffer category.categoryoffer)}}
-    {{category.categoryoffer}}%
+    {{category.categoryoffer}}%<br><span class="status-pill bg-primary rounded-5 text-white ps-2 pe-2 pb-1">category</span>
   {{else}}
-    {{productOffer}}%
+    {{productOffer}}%<br><span class="status-pill bg-secondary rounded-5 text-white ps-2 pe-2 pb-1 ">product</span>
   {{/if}}
 </td>
 

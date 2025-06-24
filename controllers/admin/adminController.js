@@ -268,7 +268,7 @@ const loadDashboard = async (req, res) => {
 
     let orders = await Order.find(filter)
       .populate("couponUsed")
-
+      .populate("userId")
       .sort({ createdOn: -1 })
       .lean();
     console.log(orders);
@@ -331,6 +331,7 @@ const loadDashboard = async (req, res) => {
       topBrands,
       shipcharge,
       search,
+      
     });
   } catch (error) {
     console.error(error);

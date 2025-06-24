@@ -1,0 +1,412 @@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+{{> admin-header}}
+
+ <div class="main-content " id="mainContent">
+<h2 class="mb-4">Offer Management</h2>
+</div>
+<div class="container mt-5">
+  
+
+  <ul class="nav nav-tabs" id="offerTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="product-tab" data-bs-toggle="tab" data-bs-target="#productOffer" type="button" role="tab">Product Offer</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="category-tab" data-bs-toggle="tab" data-bs-target="#categoryOffer" type="button" role="tab">Category Offer</button>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-4" id="offerTabsContent">
+    
+    <!-- ✅ Product Offer Form -->
+    <div class="tab-pane fade show active" id="productOffer" role="tabpanel">
+      <form id="productOffer-form" class="border p-4 rounded">
+  <h5 class="mb-3">Create Product Offer</h5>
+
+  <!-- Custom searchable multi-select -->
+  <div class="mb-3">
+    <label class="form-label fw-semibold">Select Products</label>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary w-100 text-start" type="button" id="dropdownBtn">
+        Search and select products
+      </button>
+      <div id="dropdownMenu" class="border p-2 mt-1 bg-white" style="display: none; max-height: 250px; overflow-y: auto;">
+        <input type="text" id="productSearch" class="form-control mb-2" placeholder="Search products..." />
+
+        <div id="productOptions">
+          {{#each products}}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="product{{@index}}" value="{{this._id}}">
+            <label class="form-check-label" for="product{{@index}}">{{this.productName}}</label>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+    <input type="hidden" name="products" id="selectedProducts" />
+    <div class="form-text">Search and select one or more products.</div>
+    <div id="error-products" class="text-danger small"></div>
+  </div>
+
+  <!-- Offer Fields -->
+  <div class="mb-3">
+    <label class="form-label">Offer Name</label>
+    <input type="text" class="form-control" name="name" />
+    <div id="error-name" class="text-danger small"></div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Offer Code</label>
+    <input type="text" class="form-control" name="code" />
+    <div id="error-code" class="text-danger small"></div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Discount (%)</label>
+    <input type="number" class="form-control" name="discount" min="1" max="99" />
+    <div id="error-discount" class="text-danger small"></div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Valid Until</label>
+    <input type="date" class="form-control" name="validUntil" />
+    <div id="error-validUntil" class="text-danger small"></div>
+  </div>
+
+  <input type="hidden" name="type" value="product" />
+
+  <button type="submit" class="btn btn-primary">Create Product Offer</button>
+</form>
+
+    </div>
+
+    <!-- ✅ Category Offer Form -->
+   <div class="tab-pane fade" id="categoryOffer" role="tabpanel">
+  <form id="categoryOffer-form" class="border p-4 rounded">
+    <h5 class="mb-3">Create Category Offer</h5>
+
+    <div class="mb-3">
+      <label for="category" class="form-label">Select Category</label>
+      <select class="form-select" name="categoryId" >
+        <option value="">-- Select a Category --</option>
+        {{#each category}}
+          <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+      <div class="text-danger small" id="error-categoryId"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Offer Name</label>
+      <input type="text" class="form-control" name="name" id="name" />
+      <div class="text-danger small" id="error-name"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Offer Code</label>
+      <input type="text" class="form-control" name="code" id="code" />
+      <div class="text-danger small" id="error-code"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Discount (%)</label>
+      <input type="number" class="form-control" name="discount" min="1" max="99" id="discount" />
+      <div class="text-danger small" id="error-discount"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Valid Until</label>
+      <input type="date" class="form-control" name="validUntil" id="validUntil" />
+      <div class="text-danger small" id="error-validUntil"></div>
+    </div>
+
+    <input type="hidden" name="type" value="category" />
+
+    <button type="submit" class="btn btn-success">Create Category Offer</button>
+  </form>
+</div>
+
+
+  </div>
+</div>
+<div class="container mt-5">
+  <h4 class="mb-4">All Offers</h4>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+    
+    
+        <th>Offer Name</th>
+        <th>Type</th>
+        <th>Target</th>
+        <th>Code</th>
+        <th>Discount (%)</th>
+        <th>Valid Until</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Example rows: dynamically rendered -->
+         {{#each offer}}
+      <tr>
+    
+        <td>{{offerName}}</td>
+
+        <td>
+  {{#if (eq type "product")}}
+    <span class="badge bg-primary">Product</span>
+  {{else if (eq type "category")}}
+    <span class="badge bg-success">Category</span>
+  {{/if}}
+</td>
+
+        
+        <td> {{#if (eq type "product")}}
+            {{#each products}}
+                <div>{{add @index 1}}. {{this.productName}}</div>
+            {{/each}}
+          {{else if (eq type "category")}}
+           {{category.name}}
+          {{else}}
+            <span class="text-muted">Not Assigned</span>
+          {{/if}}
+
+
+        </td>
+        <td>{{code}}</td>
+        <td>{{discount}}</td>
+        <td>{{formatDate validUntil}}</td>
+        <td>
+     
+          <button type="submit" class="btn btn-sm btn-danger" onclick="deleteOffer('{{_id}}')">Delete</button>
+        </td>
+      </tr>
+      {{/each}}
+     
+    </tbody>
+  </table>
+</div>
+
+
+
+
+
+
+<script>
+
+ const dropdownBtn = document.getElementById("dropdownBtn");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+  const productSearch = document.getElementById("productSearch");
+  const productOptions = document.getElementById("productOptions");
+  const selectedProductsInput = document.getElementById("selectedProducts");
+
+  // Toggle dropdown
+  dropdownBtn.addEventListener("click", () => {
+    dropdownMenu.style.display = dropdownMenu.style.display === "block" ? "none" : "block";
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener("click", (e) => {
+    if (!dropdownMenu.contains(e.target) && !dropdownBtn.contains(e.target)) {
+      dropdownMenu.style.display = "none";
+    }
+  });
+
+  // Filter products by search
+  productSearch.addEventListener("keyup", () => {
+    const keyword = productSearch.value.toLowerCase();
+    const options = productOptions.querySelectorAll(".form-check");
+
+    options.forEach(option => {
+      const label = option.querySelector("label").innerText.toLowerCase();
+      option.style.display = label.includes(keyword) ? "block" : "none";
+    });
+  });
+
+  // Update selected products
+  productOptions.addEventListener("change", () => {
+    const selected = [];
+    productOptions.querySelectorAll("input:checked").forEach(cb => {
+      selected.push(cb.value);
+    });
+    selectedProductsInput.value = selected.join(",");
+    dropdownBtn.innerText = selected.length > 0 ? `${selected.length} product(s) selected` : "Search and select products";
+  });
+ 
+
+ document.getElementById("productOffer-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  // Clear error
+  document.getElementById("error-products").innerText = "";
+
+  // Collect selected products
+  const selected = [];
+  document.querySelectorAll("#productOptions input:checked").forEach(checkbox => {
+    selected.push(checkbox.value);
+  });
+
+  // Validate
+  if (selected.length === 0) {
+    document.getElementById("error-products").innerText = "Please select at least one product.";
+    return;
+  }
+
+  // Assign to hidden input
+  document.getElementById("selectedProducts").value = selected.join(",");
+
+  // Create data object
+  const form = e.target;
+  const data = {
+    products: selected,
+    name: form.name.value,
+    code: form.code.value,
+    discount: form.discount.value,
+    validUntil: form.validUntil.value,
+    type: form.type.value
+  };
+
+  console.log(data);
+
+  // Send to server
+  fetch("/admin/offers/product", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Offer Created",
+        text: "Product offer created successfully!"
+      }).then(() => {
+        window.location.href = "/admin/offers";
+      });
+    } else if (res.errors) {
+      for (const [field, message] of Object.entries(res.errors)) {
+        const errorDiv = document.getElementById(`error-${field}`);
+        if (errorDiv) errorDiv.innerText = message;
+      }
+    }
+  })
+  .catch(() => {
+    Swal.fire({
+      icon: "error",
+      title: "Server Error",
+      text: "Please try again later."
+    });
+  });
+});
+
+
+
+
+
+
+document.getElementById("categoryOffer-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Clear previous error messages
+    document.querySelectorAll(".text-danger").forEach((div) => (div.innerText = ""));
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const data = {
+      name: formData.get("name").trim(),
+      code: formData.get("code"),
+      discount: formData.get("discount"),
+      validUntil: formData.get("validUntil"), // Match backend field name
+      type: formData.get("type"),
+      categoryId: formData.get("categoryId")
+    };
+
+    console.log("Sending Data:", data);
+
+    $.ajax({
+      url: "/admin/offers/category",
+      method: "POST",
+       contentType: "application/json",
+  data: JSON.stringify(data),
+      success: (res) => {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Offer Created",
+            text: "Category offer created successfully!",
+          }).then(() => {
+            window.location.href = "/admin/offers";
+          });
+        }  else {
+          Swal.fire({
+            icon: "error",
+            title: "Failed",
+            text: res.message || "Something went wrong.",
+          });
+        }
+      },
+      error: function (xhr) {
+  if (xhr.status === 400) {
+    // Parse the JSON response from the server
+    const res = xhr.responseJSON;
+    if (res && res.errors) {
+      for (const [field, message] of Object.entries(res.errors)) {
+        const errorDiv = document.getElementById(`error-${field}`);
+        if (errorDiv) errorDiv.innerText = message;
+      }
+    }
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Server Error',
+      text: 'Please try again later.',
+    });
+  }
+},
+    });
+  });
+
+
+  function deleteOffer(offerId)
+  {
+     Swal.fire({
+    title: 'Are you sure?',
+    text: "This action cannot be undone!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result)=>{
+    if(result.isConfirmed)
+    {
+$.ajax({
+      url:`/admin/deleteOffer/${offerId}`,
+      method:"DELETE",
+     
+      success:(result)=>{
+        if(result.success)
+        {
+           Swal.fire('Deleted!', 'Offer has been deleted.', 'success').then(() => {
+              location.reload(); // Reload page to reflect changes
+            });
+        }else {
+            Swal.fire('Error', res.message || 'Something went wrong.', 'error');
+          }
+
+      },error: () => {
+          Swal.fire('Error', 'Server error occurred.', 'error');
+        }
+    })
+    }
+  })
+    
+  }
+</script>
+
+
+{{> admin-foote}}

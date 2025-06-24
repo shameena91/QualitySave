@@ -14,13 +14,12 @@ const getCart = async (req, res) => {
       console.log("User not found");
       return res.redirect("/pageNotFound");
     }
-    const cart = await Cart.findOne({ userId: userId })
-      .populate("cartItems.productId")
-      .lean();
 
-    const cartProducts = cart ? cart.cartItems : [];
+    // Load cart without lean so we can update and save
+    let cart = await Cart.findOne({ userId })
+      .populate("cartItems.productId");
 
-    if (!cart || cartProducts.length === 0) {
+    if (!cart || cart.cartItems.length === 0) {
       return res.render("cart", {
         hasStock: 0,
         cartProducts: [],
@@ -32,35 +31,47 @@ const getCart = async (req, res) => {
         emptyMessage: "Your cart is empty.",
       });
     }
-    const availableProducts = cart.cartItems.filter(
-      (item) => item.productId.quantity > 0
+
+    // Fix quantity if it exceeds stock
+    cart.cartItems.forEach(item => {
+      if (
+        item.productId &&
+        item.quantity > item.productId.quantity
+      ) {
+        item.quantity = item.productId.quantity;
+        item.totalPrice = item.price * item.quantity;
+        item.totalSalePrice = item.salePrice * item.quantity;
+      }
+    });
+
+    // Save updated cart
+    await cart.save();
+
+    // Convert to plain object so images render in view
+    cart = cart.toObject();
+    const cartProducts = cart.cartItems;
+
+    // Filter in-stock products
+    const availableProducts = cartProducts.filter(
+      item => item.productId && item.productId.quantity > 0
     );
 
-    console.log("cccccccccccc", availableProducts);
-    const sumTotalPrice = availableProducts.reduce((acc, curr) => {
-      return acc + curr.totalPrice;
-    }, 0);
-    const sumSalePrice = availableProducts.reduce((acc, curr) => {
-      return acc + curr.totalSalePrice;
-    }, 0);
-    // findProduct.salePrice - Math.floor(findProduct.salePrice * (percentage / 100))
+    // Price calculations
+    const sumTotalPrice = availableProducts.reduce(
+      (acc, curr) => acc + curr.totalPrice,
+      0
+    );
+    const sumSalePrice = availableProducts.reduce(
+      (acc, curr) => acc + curr.totalSalePrice,
+      0
+    );
     const discount = sumSalePrice - sumTotalPrice;
+
     let hasStock = 1;
     if (cartProducts.length === 1) {
-      hasStock = cartProducts[0].productId.quantity;
+      hasStock = cartProducts[0]?.productId?.quantity || 0;
     }
-    console.log(hasStock);
-//     cart.cartItems.forEach(item => {
-//   if (item.quantity > item.productId.quantity) {
-//     item.quantity = item.product.quantity;
-//     item.totalPrice = item.price * item.quantity;
-//     item.totalSalePrice = item.salePrice * item.quantity;
-//     // Optionally push a message to inform user
-//   }
-  
-// });
-// await cart.save()
-  
+
     res.render("cart", {
       hasStock,
       cartProducts,
@@ -71,13 +82,13 @@ const getCart = async (req, res) => {
       shippingCharge: 40,
       emptyMessage: null,
     });
+
   } catch (error) {
     console.error("Get Cart Error:", error);
-    return res
-      .status(500)
-      .render("errorPage", { message: "Internal Server Error" });
+    return res.status(500).render("errorPage", { message: "Internal Server Error" });
   }
 };
+
 
 const addToCart = async (req, res) => {
   try {
@@ -234,10 +245,27 @@ const updateCart = async (req, res) => {
     );
     //   console.log("Cart Items:", cart.cartItems); //
     if (cartItem) {
+     
       cartItem.quantity = quantity;
       cartItem.totalPrice = totalPrice;
       cartItem.totalSalePrice = totalSalePrice;
     }
+
+
+
+
+// if(findProduct.quantity<productExists.quantity+1){
+//   productExists.quantity =findProduct.quantity;
+//   productExists.totalPrice = productExists.quantity * price;
+//         productExists.totalSalePrice = productExists.quantity * salePrice;
+// }
+// else{
+//         productExists.quantity += 1;
+//         productExists.totalPrice = productExists.quantity * price;
+//         productExists.totalSalePrice = productExists.quantity * salePrice;
+// }
+
+
 
     await cart.save();
     res.status(200).json({ status: true });

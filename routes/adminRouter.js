@@ -144,14 +144,19 @@ router.patch(
 router.get("/admin/coupons", adminAuth, couponController.getCoupon);
 router.post("/admin/coupons", adminAuth, couponController.addCoupon);
 
-router.get("/admin/offers", adminAuth, offrController.getOffer);
+router.get("/admin/offers/product", adminAuth, offrController.getProductOffer);
 router.post("/admin/offers/product", adminAuth, offrController.productOffer);
+router.get("/admin/offers/category", adminAuth, offrController.getCategoryOffer);
 router.post("/admin/offers/category", adminAuth, offrController.categoryOffer);
 router.delete(
-  "/admin/deleteOffer/:offerId",
+  "/admin/offers/:offerId",
   adminAuth,
   offrController.deleteOffer
 );
+router.put("/admin/offers/product", adminAuth, offrController.editProductOffer);
+
+router.put("/admin/offers/category", adminAuth, offrController.editCategoryOffer);
+
 router.patch(
   "/admin/editCoupon/:couponId",
   adminAuth,

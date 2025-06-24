@@ -32,7 +32,7 @@ const adminAuth = (req, res, next) => {
       if (data) {
         next();
       } else {
-        re.redirect("/admin/login");
+        res.redirect("/admin/login");
       }
     })
     .catch((error) => {

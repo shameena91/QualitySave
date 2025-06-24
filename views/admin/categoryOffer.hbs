@@ -1,0 +1,302 @@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+{{> admin-header}}
+
+ <div class="main-content " id="mainContent">
+<h2 class="mb-4">Offer Management</h2>
+</div>
+<div class="container mt-5">
+ <form id="categoryOffer-form" class="border p-4 rounded">
+    <h5 class="mb-3">Create Category Offer</h5>
+
+    <div class="mb-3">
+      <label for="category" class="form-label">Select Category</label>
+      <select class="form-select" name="categoryId" >
+        <option value="">-- Select a Category --</option>
+        {{#each category}}
+          <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+      <div class="text-danger small" id="error-categoryId"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Offer Name</label>
+      <input type="text" class="form-control" name="name" id="name" />
+      <div class="text-danger small" id="error-name"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Offer Code</label>
+      <input type="text" class="form-control" name="code" id="code" />
+      <div class="text-danger small" id="error-code"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Discount (%)</label>
+      <input type="number" class="form-control" name="discount" min="1" max="99" id="discount" />
+      <div class="text-danger small" id="error-discount"></div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Valid Until</label>
+      <input type="date" class="form-control" name="validUntil" id="validUntil" />
+      <div class="text-danger small" id="error-validUntil"></div>
+    </div>
+
+    <input type="hidden" name="type" value="category" />
+
+    <button type="submit" class="btn btn-success">Create Category Offer</button>
+  </form>
+</div>
+
+<div class="container mt-5">
+  <h4 class="mb-4">All Offers</h4>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+    
+    
+        <th>Offer Name</th>
+       
+        <th>Target</th>
+        <th>Code</th>
+        <th>Discount (%)</th>
+        <th>Valid Until</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Example rows: dynamically rendered -->
+         {{#each offer}}
+         {{#if (eq type "category")}}
+      <tr>
+    
+        <td>{{offerName}}</td>
+
+
+
+        
+        <td> 
+           
+           {{category.name}}
+         
+         
+
+
+        </td>
+        <td>{{code}}</td>
+        <td>{{discount}}</td>
+        <td>{{formatDate validUntil}}</td>
+<td>
+  {{#if (eq status "Inactive")}}
+    <span class="badge rounded-pill bg-danger">{{status}}</span>
+  {{else}}
+    <span class="badge rounded-pill bg-success">{{status}}</span>
+  {{/if}}
+</td>        <td>
+     <button type="button" class="btn btn-sm btn-warning"
+  {{!-- onclick="openEditModal(
+    '{{_id}}',
+    '{{offerName}}',
+    '{{discount}}',
+    '{{formatDate validUntil}}',
+    '{{category}}'
+  )"> --}}
+  
+  data-bs-toggle="modal"
+   data-bs-target="#editCategoryModal"
+   data-id='{{_id}}'
+   data-name='{{offerName}}'
+   data-discount='{{discount}}'
+   data-validauntil='{{formatDate validUntil}}'
+   data-categoryName='{{category.name}}'
+   data-categoryId='{{category._id}}'
+   >
+  Edit
+</button>
+
+
+          <button type="submit" class="btn btn-sm btn-danger" onclick="deleteOffer('{{_id}}')">Delete</button>
+        </td>
+      </tr>
+      {{/if}}
+      {{/each}}
+     
+    </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editOfferLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form id="editOfferForm" >
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editOfferLabel">Edit Product Offer</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="editOfferId" name="offerId">
+          <input type="hidden" id="editcategoryId" name="categoryId">
+
+  <div class="mb-3">
+      <label for="category" class="form-label">Category</label>
+      {{!-- <select class="form-select" name="categoryId" >
+        <option value="">-- Select a Category --</option>
+        {{#each category}}
+          <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select> --}}
+       <input type="text" class="form-control"
+        id="editCategoryName" name="categoryId" required>
+
+      <div class="text-danger small" id="error-categoryId"></div>
+    </div>
+
+
+          <div class="mb-3">
+            <label class="form-label">Offer Name</label>
+            <input type="text" class="form-control" id="editOfferName" name="offerName" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Discount (%)</label>
+            <input type="number" class="form-control" id="editDiscount" name="discount" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Valid Until</label>
+            <input type="date" class="form-control" id="editValidUntil" name="validUntil" required>
+          </div>
+
+          <!-- Add other fields if needed -->
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit"  class="btn btn-success">Update</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+<script>
+
+  //put value to edit offer Modal
+  function formatDateToInput(value) {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+document.getElementById("editCategoryModal").addEventListener("show.bs.modal", function (event) {
+  const button = event.relatedTarget; // The button that triggered the modal
+
+  // Get values from data attributes
+  const id = button.getAttribute("data-id");
+  const name = button.getAttribute("data-name");
+  const discount = button.getAttribute("data-discount");
+  const validUntil = button.getAttribute("data-validauntil");
+  const categoryName = button.getAttribute("data-categoryName");
+  const categoryId=button.getAttribute("data-categoryId")
+  console.log(categoryId)
+
+  // Set values into the modal input fields
+  document.getElementById("editOfferId").value = id;
+  document.getElementById("editOfferName").value = name;
+  document.getElementById("editDiscount").value = discount;
+ document.getElementById("editValidUntil").value = formatDateToInput(validUntil);
+  document.getElementById("editCategoryName").value = categoryName;
+  document.getElementById("editcategoryId").value = categoryId;
+
+});
+
+ // end of put value to edit offer Modal
+
+
+
+//edit offer form submission
+document.getElementById("editOfferForm")
+.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const data = {
+    offerId: document.getElementById("editOfferId").value,
+    offerName: document.getElementById("editOfferName").value,
+    discount: document.getElementById("editDiscount").value,
+    validUntil: document.getElementById("editValidUntil").value,
+    categoryId: document.getElementById("editcategoryId").value,
+    type: "category"
+  };
+
+  console.log("Updating Offer:", data);
+
+  $.ajax({
+    url: "/admin/offers/category",
+    method: "PUT",
+    contentType: "application/json",
+    data: JSON.stringify(data),
+    success: (response) => {
+      if (response.success) {
+        Swal.fire('Updated', 'Offer has been updated.', 'success')
+          .then(() => {
+            location.reload(); // Refresh the page to reflect updated data
+          });
+      } else {
+        Swal.fire('Error', response.message || 'Something went wrong.', 'error');
+      }
+    },
+    error: () => {
+      Swal.fire('Error', 'Server error occurred.', 'error');
+    }
+  });
+});
+
+function deleteOffer(offerId)
+  {
+     Swal.fire({
+    title: 'Are you sure?',
+    text: "This action cannot be undone!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result)=>{
+    if(result.isConfirmed)
+    {
+$.ajax({
+      url:`/admin/offers/${offerId}`,
+      method:"DELETE",
+     
+      success:(result)=>{
+        if(result.success)
+        {
+           Swal.fire('Deleted!', 'Offer has been deleted.', 'success').then(() => {
+              location.reload(); // Reload page to reflect changes
+            });
+        }else {
+            Swal.fire('Error', res.message || 'Something went wrong.', 'error');
+          }
+
+      },error: () => {
+          Swal.fire('Error', 'Server error occurred.', 'error');
+        }
+    })
+    }
+  })
+    
+  }
+</script>
+
+
+
+{{> admin-foote}}

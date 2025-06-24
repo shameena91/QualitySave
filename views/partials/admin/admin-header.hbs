@@ -291,16 +291,28 @@ border: 1px solid rgb(231, 230, 230);
       <img src="/images/qslogo-1.png" class="sidebar-logo"  alt="logo" style="width: 200px; height: 50px;">
        </div>
 <ul class="sidebar-nav">
-  <li><a href="/admin/dashboard" class="sidebar-link active"><i class="fas fa-chart-pie text-danger me-3"></i> <span>Dashboard</span></a></li>
+  <li><a href="/admin/dashboard" class="sidebar-link"><i class="fas fa-chart-pie text-danger me-3"></i> <span>Dashboard</span></a></li>
   <li><a href="/admin/users" class="sidebar-link"><i class="fas fa-users text-primary me-3"></i> <span>Customers</span></a></li>
   <li><a href="/admin/category" class="sidebar-link"><i class="fas fa-th-large text-success me-3"></i> <span>Category</span></a></li>
   <li><a href="/admin/productList" class="sidebar-link"><i class="fas fa-box text-warning me-3"></i> <span>Products</span></a></li>
   <li><a href="/admin/brand" class="sidebar-link"><i class="fas fa-tags text-info me-3"></i> <span>Brands</span></a></li>
-  <li><a href="/admin/offers" class="sidebar-link"><i class="fas fa-gift text-success me-3"></i> <span>Offers</span></a></li>
+
+  <!-- Offers Dropdown -->
+  <li class="sidebar-item">
+    <a class="sidebar-link collapsed" data-bs-toggle="collapse" href="#offersMenu" role="button" aria-expanded="false" aria-controls="offersMenu">
+      <i class="fas fa-gift text-success me-3" class="sidebar-link"></i> <span>Offers</span>
+    </a>
+    <ul class="collapse list-unstyled ms-4" id="offersMenu">
+      <li><a href="/admin/offers/product" class="sidebar-link">Product Offers</a></li>
+      <li><a href="/admin/offers/category" class="sidebar-link">Category Offers</a></li>
+    </ul>
+  </li>
+
   <li><a href="/admin/orderManagement" class="sidebar-link"><i class="fas fa-shopping-cart text-danger me-3"></i> <span>Orders</span></a></li>
   <li><a href="/admin/coupons" class="sidebar-link"><i class="fas fa-ticket-alt text-secondary me-3"></i> <span>Coupons</span></a></li>
   <li><a href="/admin/ledger" class="sidebar-link"><i class="fas fa-wallet text-warning me-3"></i> <span>Ledger</span></a></li>
   <li><a href="/admin/logout" class="sidebar-link"><i class="fas fa-sign-out-alt text-danger me-3"></i> <span>Logout</span></a></li>
 </ul>
+
   </div>
   </di>

@@ -48,11 +48,32 @@ const downloadInvoice = async (req, res) => {
     const template = Handlebars.compile(templateContent);
     const orderDate = order.createdOn.toLocaleDateString();
 
-    const orderProduct = order.orderItems.filter(
-      (item) => item.status === "Delivered"
-    );
+    let orderProduct
+if(order.paymentMethod==="razorpay")
+{
+  orderProduct= order.orderItems
+  
+deliveredTotalPrice=orderProduct.reduce((acc,item)=>{
+  return acc+item.quantity*item.product.salePrice
+},0)
+deliveredTotaldiscount=orderProduct.reduce((acc,item)=>{
+  return acc+item.discountedAmount
+},0)
+}
+else {
+  
+ orderProduct  = order.orderItems.filter(item => item.status !== "Cancelled");
 
+   deliveredTotalPrice = orderProduct
+  .reduce((acc, item) => acc + item.quantity * item.product.salePrice, 0);
+
+  deliveredTotaldiscount= orderProduct
+  .reduce((acc, item) => acc +  item.discountedAmount, 0);
+  
+  }
+  const finalAmount=deliveredTotalPrice-deliveredTotaldiscount+order.shipping
     console.log(orderProduct);
+
     const products = orderProduct.map((item) => ({
       productName: item.product?.productName,
       quantity: item.quantity,
@@ -63,6 +84,9 @@ const downloadInvoice = async (req, res) => {
     const html = template({
       discount: order.totalPrice - order.finalAmount,
       order,
+      finalAmount,
+    totalDiscount:deliveredTotaldiscount,
+  totalPrice:deliveredTotalPrice,
       orderDate,
       products,
       userAddress: deliveryAddress.houseDetails || "",

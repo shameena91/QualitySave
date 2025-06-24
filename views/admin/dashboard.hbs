@@ -166,10 +166,11 @@
       <h5 class="card-title mb-4 fw-semibold">Detailed Report</h5>
       <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover align-middle">
-          <thead class="table-dark">
+          <thead class="table-dark text-center">
             <tr>
               <th>Date</th>
               <th>Order ID</th>
+              <th>User</th>
               <th>Total Amount</th>
               <th>Final Amount</th>
               <th>Total Discount</th>
@@ -179,11 +180,13 @@
              
             </tr>
           </thead>
-          <tbody>
+          <tbody class="text-center">
             {{#each orders}}
+            {{#if (gt this.finalAmount 0)}}
             <tr>
               <td>{{formatDate createdOn}}</td>
               <td>{{this.orderId}}</td>
+              <td>{{this.userId.name}}<br>{{this.userId.email}}</td>
               <td>₹{{this.totalPrice}}
                 
               </td>
@@ -210,6 +213,7 @@
   {{/with}}
 </td>
             </tr>
+            {{/if}}
             {{/each}}
           
             <!-- Add more rows as needed -->

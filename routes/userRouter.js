@@ -141,7 +141,7 @@ router.post(
 );
 router.get("/wallet", userAuth, walletController.getWallet);
 router.get(
-  "/invoice/download/:orderId/:productId",
+  "/invoice/download/:orderId",
   userAuth,
   invoiceController.downloadInvoice
 );
