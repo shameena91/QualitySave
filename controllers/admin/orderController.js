@@ -237,6 +237,7 @@ const updateReturnStatus = async (req, res) => {
     const findCoupon = await Coupon.findById(couponId);
     const user = await User.findById(userId);
     const returnProduct = await Product.findById(productId);
+
     console.log("ttttt", order.orderItems.length);
 
     if (returnStatus === "Approved") {
@@ -261,7 +262,7 @@ const updateReturnStatus = async (req, res) => {
 
           orderProduct.refundPrice = returnProductPrice;
           order.finalAmount = order.finalAmount - returnProductPrice;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice;
+          order.totalPrice = order.totalPrice - returnProduct.salePrice*orderProduct.quantity;
           order.discount = order.discount - orderProduct.discountedAmount;
           order.couponDiscount =
             order.couponDiscount -
@@ -284,7 +285,7 @@ const updateReturnStatus = async (req, res) => {
           });
           orderProduct.refundPrice = amountTransfer;
           order.finalAmount = order.finalAmount - amountTransfer;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice;
+          order.totalPrice = order.totalPrice - returnProduct.salePrice*orderProduct.quantity;
           order.discount = order.discount - orderProduct.discountedAmount;
           order.couponDiscount =
             order.couponDiscount -
@@ -308,7 +309,7 @@ const updateReturnStatus = async (req, res) => {
         });
         orderProduct.refundPrice = returnProductPrice;
         order.finalAmount = order.finalAmount - returnProductPrice;
-        order.totalPrice = order.totalPrice - returnProduct.salePrice;
+        order.totalPrice = order.totalPrice - returnProduct.salePrice*orderProduct.quantity;
         order.discount = order.discount - orderProduct.discountedAmount;
         order.couponDiscount =
           order.couponDiscount -

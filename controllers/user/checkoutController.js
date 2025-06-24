@@ -577,7 +577,7 @@ const cancelOrder = async (req, res) => {
 
           specifiedProduct.refundPrice = returnProductPrice;
           order.finalAmount = order.finalAmount - returnProductPrice;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice;
+          order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
           order.discount = order.discount - specifiedProduct.discountedAmount;
           order.couponDiscount =
             order.couponDiscount -
@@ -602,7 +602,7 @@ const cancelOrder = async (req, res) => {
 
           specifiedProduct.refundPrice = amountTransfer;
           order.finalAmount = order.finalAmount - amountTransfer;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice;
+          order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
           order.discount = order.discount - specifiedProduct.discountedAmount;
           order.couponDiscount =
             order.couponDiscount -
@@ -631,7 +631,7 @@ const cancelOrder = async (req, res) => {
 
         specifiedProduct.refundPrice = refundAmount;
         order.finalAmount = order.finalAmount - refundAmount;
-        order.totalPrice = order.totalPrice - returnProduct.salePrice;
+        order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
         order.discount = order.discount - specifiedProduct.discountedAmount;
         order.couponDiscount =
           order.couponDiscount -
@@ -650,7 +650,7 @@ const cancelOrder = async (req, res) => {
       specifiedProduct.status = "Cancelled";
       const refundAmount = specifiedProduct.quantity * specifiedProduct.price;
       order.finalAmount = order.finalAmount - refundAmount;
-      order.totalPrice = order.totalPrice - returnProduct.salePrice;
+      order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
       order.discount = order.discount - specifiedProduct.discountedAmount;
       if (couponId) {
         order.couponDiscount =
