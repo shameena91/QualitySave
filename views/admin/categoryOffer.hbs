@@ -188,6 +188,76 @@
 
 <script>
 
+
+
+
+
+document.getElementById("categoryOffer-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Clear previous error messages
+    document.querySelectorAll(".text-danger").forEach((div) => (div.innerText = ""));
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const data = {
+      name: formData.get("name").trim(),
+      code: formData.get("code"),
+      discount: formData.get("discount"),
+      validUntil: formData.get("validUntil"), // Match backend field name
+      type: formData.get("type"),
+      categoryId: formData.get("categoryId")
+    };
+
+    console.log("Sending Data:", data);
+
+    $.ajax({
+      url: "/admin/offers/category",
+      method: "POST",
+       contentType: "application/json",
+  data: JSON.stringify(data),
+      success: (res) => {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Offer Created",
+            text: "Category offer created successfully!",
+          }).then(() => {
+            window.location.href = "/admin/offers/category";
+          });
+        }  else {
+          Swal.fire({
+            icon: "error",
+            title: "Failed",
+            text: res.message || "Something went wrong.",
+          });
+        }
+      },
+      error: function (xhr) {
+  if (xhr.status === 400) {
+    // Parse the JSON response from the server
+    const res = xhr.responseJSON;
+    if (res && res.errors) {
+      for (const [field, message] of Object.entries(res.errors)) {
+        const errorDiv = document.getElementById(`error-${field}`);
+        if (errorDiv) errorDiv.innerText = message;
+      }
+    }
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Server Error',
+      text: 'Please try again later.',
+    });
+  }
+},
+    });
+  });
+
+
+
+
   //put value to edit offer Modal
   function formatDateToInput(value) {
   const date = new Date(value);
