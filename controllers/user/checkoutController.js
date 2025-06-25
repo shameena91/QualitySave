@@ -202,36 +202,26 @@ const createOrder = async (req, res) => {
   try {
     const userId = req.session.user;
     const couponId = req.session.coupon;
-
-    const userData = await User.findById(userId);
     const { addressId, paymentMethod, amount, shippingCharge } = req.body;
 
-    console.log("Address:", addressId);
-    console.log("Payment Method:", paymentMethod);
-    console.log("Total Amount (with shipping):", amount);
+    const user = await User.findById(userId);
+    const cart = await Cart.findOne({ userId }).populate("cartItems.productId").lean();
 
-    const amountPay = amount - shippingCharge;
-
-    const findCartItems = await Cart.findOne({ userId })
-      .populate("cartItems.productId")
-      .lean();
-
-    if (!findCartItems || findCartItems.cartItems.length === 0) {
+    if (!cart || cart.cartItems.length === 0) {
       return res.status(400).json({ message: "Your cart is empty." });
     }
 
-    // Only include products with stock > 0
-    const filteredCartItems = findCartItems.cartItems.filter(
+    // Filter out-of-stock items
+    const validCartItems = cart.cartItems.filter(
       (item) => item.productId.quantity > 0
     );
 
-    if (filteredCartItems.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "All cart items are out of stock." });
+    if (validCartItems.length === 0) {
+      return res.status(400).json({ message: "All cart items are out of stock." });
     }
 
-    const orderItems = filteredCartItems.map((item) => ({
+    // Prepare order items
+    const orderItems = validCartItems.map((item) => ({
       product: item.productId._id,
       quantity: item.quantity,
       price: item.price,
@@ -239,25 +229,26 @@ const createOrder = async (req, res) => {
       discountedAmount: (item.salePrice - item.price) * item.quantity,
     }));
 
-    const finalAmount = filteredCartItems.reduce(
-      (sum, item) => sum + item.totalPrice,
+    // Calculate totals
+    const totalPrice = validCartItems.reduce(
+      (sum, item) => sum + item.salePrice * item.quantity,
       0
     );
-    const totalAmount = filteredCartItems.reduce(
-      (sum, item) => sum + item.totalSalePrice,
+    const finalAmount = validCartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
       0
     );
+    const discount = totalPrice - finalAmount;
+    const couponDiscount = finalAmount - (amount - shippingCharge);
 
-    const discount = totalAmount - finalAmount;
-    const couponDiscount = finalAmount - amountPay;
-
+    // Create order document
     const newOrder = new Order({
       userId,
       orderItems,
-      totalPrice: totalAmount,
+      totalPrice,
       discount,
       couponDiscount,
-      finalAmount: amountPay,
+      finalAmount: amount - shippingCharge,
       address: addressId,
       couponUsed: couponId,
       invoiceDate: new Date(),
@@ -265,37 +256,35 @@ const createOrder = async (req, res) => {
       shipping: shippingCharge,
       orderStatus: "Placed",
     });
+
+    // Wallet payment processing
     if (paymentMethod === "wallet") {
-      if (userData.wallet < amount) {
+      if (user.wallet < amount) {
         return res.status(400).json({
-          message:
-            "Insufficient wallet balance. Please choose another payment method.",
+          message: "Insufficient wallet balance. Please choose another payment method.",
         });
       }
-      // if (newOrder.status !== 'failed' && newOrder.status !== 'cancelled') {
-      //   return res.status(400).json({
-      //     message: 'try again'
-      //   });
-      // }
-      userData.wallet -= amount;
-      userData.walletHistory.push({
-        amount: amount,
+
+      user.wallet -= amount;
+      user.walletHistory.push({
+        amount,
         type: "debit",
-        reason: `Amount credited for order  ${newOrder.orderId}`,
+        reason: `Amount debited for order ${newOrder.orderId}`,
       });
-      await userData.save();
-      
-          await Ledger.create({
-            user: userId,
-            orderId: newOrder._id,
-            type: "credit",
-            amount:amount,
-            paymentMethod: paymentMethod,
-            description: `Order payment received for Order ${newOrder.orderId}`,
-          });
-       
+
+      await Ledger.create({
+        user: userId,
+        orderId: newOrder._id,
+        type: "debit",
+        amount,
+        paymentMethod,
+        description: `Payment for order ${newOrder.orderId}`,
+      });
+
+      await user.save();
     }
 
+    // Mark coupon as used and clear session
     if (couponId) {
       await Coupon.updateOne(
         { _id: couponId },
@@ -304,10 +293,14 @@ const createOrder = async (req, res) => {
       req.session.coupon = null;
     }
 
+    // Save the order
     await newOrder.save();
+
+    // Clear cart
     await Cart.findOneAndDelete({ userId });
 
-    for (let item of orderItems) {
+    // Decrease product stock
+    for (const item of orderItems) {
       await Product.updateOne(
         { _id: item.product, quantity: { $gte: item.quantity } },
         { $inc: { quantity: -item.quantity } }
@@ -320,11 +313,10 @@ const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating order:", error);
-    res
-      .status(500)
-      .json({ message: "Something went wrong while creating the order." });
+    res.status(500).json({ message: "Something went wrong while creating the order." });
   }
 };
+
 
 const retryCodOrder = async (req, res) => {
   try {
@@ -579,9 +571,9 @@ const cancelOrder = async (req, res) => {
           order.finalAmount = order.finalAmount - returnProductPrice;
           order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
           order.discount = order.discount - specifiedProduct.discountedAmount;
-          order.couponDiscount =
-            order.couponDiscount -
-            Math.floor(order.couponDiscount / order.orderItems.length);
+          // order.couponDiscount =
+          //   order.couponDiscount -
+          //   Math.floor(order.couponDiscount / order.orderItems.length);
           await Ledger.create({
             user: order.userId,
             orderId: order._id,
@@ -604,9 +596,9 @@ const cancelOrder = async (req, res) => {
           order.finalAmount = order.finalAmount - amountTransfer;
           order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
           order.discount = order.discount - specifiedProduct.discountedAmount;
-          order.couponDiscount =
-            order.couponDiscount -
-            Math.floor(order.couponDiscount / order.orderItems.length);
+          // order.couponDiscount =
+          //   order.couponDiscount -
+          //   Math.floor(order.couponDiscount / order.orderItems.length);
           await Ledger.create({
             user: order.userId,
             orderId: order._id,
@@ -633,9 +625,9 @@ const cancelOrder = async (req, res) => {
         order.finalAmount = order.finalAmount - refundAmount;
         order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
         order.discount = order.discount - specifiedProduct.discountedAmount;
-        order.couponDiscount =
-          order.couponDiscount -
-          Math.floor(order.couponDiscount / order.orderItems.length);
+        // order.couponDiscount =
+        //   order.couponDiscount -
+        //   Math.floor(order.couponDiscount / order.orderItems.length);
         await Ledger.create({
           user: order.userId,
           orderId: order._id,
@@ -652,11 +644,11 @@ const cancelOrder = async (req, res) => {
       order.finalAmount = order.finalAmount - refundAmount;
       order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
       order.discount = order.discount - specifiedProduct.discountedAmount;
-      if (couponId) {
-        order.couponDiscount =
-          order.couponDiscount -
-          Math.floor(order.couponDiscount / order.orderItems.length);
-      }
+      // if (couponId) {
+      //   // order.couponDiscount =
+      //   //   order.couponDiscount -
+      //   //   Math.floor(order.couponDiscount / order.orderItems.length);
+      // }
     }
 
     await order.save();
@@ -670,6 +662,7 @@ const cancelOrder = async (req, res) => {
     res.status(500).send("Error cancelling the order");
   }
 };
+
 
 const returnRequest = async (req, res) => {
   try {

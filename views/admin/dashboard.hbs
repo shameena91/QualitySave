@@ -192,6 +192,13 @@
               </td>
               <td>₹{{this.finalAmount}}</td>
               <td>₹{{ add this.discount this.couponDiscount}}</td>
+              <td>
+                {{#if (gt this.shipping 0)}}
+                {{this.shipping}}
+                {{else}}
+                Free
+                {{/if}}
+              </td>
               {{#if this.couponUsed}}
               <td>{{this.couponUsed.name}}</td>
               {{else}}

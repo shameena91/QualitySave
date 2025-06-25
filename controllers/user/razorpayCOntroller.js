@@ -66,7 +66,7 @@ const createRazorpayOrder = async (req, res) => {
       totalPrice: totalAmount,
       discount,
       couponDiscount: couponDiscount,
-      finalAmount: finalAmount,
+      finalAmount: amountPay,
       couponUsed: couponId,
       address: addressId,
       paymentMethod: paymentMethod,
