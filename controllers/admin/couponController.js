@@ -4,20 +4,48 @@ const getCoupon = async (req, res, next) => {
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
 
+    // Update status based on expiration
     await Coupon.updateMany(
       { expireOn: { $lt: todayDate }, isList: true },
       { $set: { status: "Inactive" } }
     );
-
     await Coupon.updateMany(
       { expireOn: { $gte: todayDate }, isList: true },
       { $set: { status: "Active" } }
     );
-    const coupons = await Coupon.find({ isList: true })
-      .sort({ createdOn: -1 })
+
+    const search = req.query.search || "";
+    const statusFilter = req.query.statusFilter;
+    const currentPage = parseInt(req.query.page) || 1;
+    const itemsPerPage = 7;
+    const skip = (currentPage - 1) * itemsPerPage;
+
+    const query = { isList: true };
+
+    // Apply search only if not empty
+    if (search.trim()) {
+      query.name = { $regex: new RegExp(search.trim(), "i") };
+    }
+
+    if (statusFilter) {
+      query.status = statusFilter;
+    }
+
+    const totalOffers = await Coupon.countDocuments(query);
+
+    const coupons = await Coupon.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(itemsPerPage)
       .lean();
 
-    res.render("coupon", { coupons });
+    res.render("coupon", {
+      coupons,
+      search,
+      statusFilter,
+      currentPage,
+      totalPages: Math.ceil(totalOffers / itemsPerPage),
+    });
   } catch (error) {
     next(error);
   }

@@ -1,5 +1,16 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+  input.form-control {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
 
+button.btnSearch {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+</style>
+   
 {{> admin-header}}
 
  <div class="main-content " id="mainContent">
@@ -51,7 +62,39 @@
 </div>
 
 <div class="container mt-5">
-  <h4 class="mb-4">All Offers</h4>
+  <h4 class="mb-4">All Category Offers</h4>
+  <form class="row mb-4" method="get" action="/admin/offers/category">
+<div class="col-md-5 d-flex">
+  <input
+    type="text"
+    class="form-control"
+    style="border-right: none;"
+    name="search"
+    placeholder="Search offer code"
+    value="{{search}}"
+  />
+  <button type="submit" class="btn btnSearch btn-primary me-2">
+    <i class="fas fa-search"></i>
+  </button>
+</div>
+<div class="col-md-4">
+            <select name="statusFilter" class="form-select">
+                
+               <option value="">Select </option>
+             <option value="Active" {{#if (eq statusFilter "Active")}} selected {{/if}}>Active </option>
+                
+                <option value="Inactive" {{#if (eq statusFilter "Inactive")}} selected {{/if}}>Inactive</option>
+
+            </select>
+
+</div>
+<div class="col-md-2">
+<button type="submit" class="btn btn-warning me-2">Apply</button>
+          <a href="/admin/offers/category" class="btn btn-secondary">Clear</a>
+
+</div>
+  </form>
+ 
 
   <table class="table table-bordered table-hover">
     <thead class="table-dark">
@@ -68,64 +111,56 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Example rows: dynamically rendered -->
-         {{#each offer}}
-         {{#if (eq type "category")}}
-      <tr>
-    
-        <td>{{offerName}}</td>
-
-
-
-        
-        <td> 
-           
-           {{category.name}}
-         
-         
-
-
-        </td>
-        <td>{{code}}</td>
-        <td>{{discount}}</td>
-        <td>{{formatDate validUntil}}</td>
-<td>
-  {{#if (eq status "Inactive")}}
-    <span class="badge rounded-pill bg-danger">{{status}}</span>
-  {{else}}
-    <span class="badge rounded-pill bg-success">{{status}}</span>
-  {{/if}}
-</td>        <td>
-     <button type="button" class="btn btn-sm btn-warning"
-  {{!-- onclick="openEditModal(
-    '{{_id}}',
-    '{{offerName}}',
-    '{{discount}}',
-    '{{formatDate validUntil}}',
-    '{{category}}'
-  )"> --}}
-  
-  data-bs-toggle="modal"
-   data-bs-target="#editCategoryModal"
-   data-id='{{_id}}'
-   data-name='{{offerName}}'
-   data-discount='{{discount}}'
-   data-validauntil='{{formatDate validUntil}}'
-   data-categoryName='{{category.name}}'
-   data-categoryId='{{category._id}}'
-   >
-  Edit
-</button>
-
-
-          <button type="submit" class="btn btn-sm btn-danger" onclick="deleteOffer('{{_id}}')">Delete</button>
-        </td>
-      </tr>
+ <tbody>
+  {{#if offer.length}}
+    {{#each offer}}
+      {{#if (eq type "category")}}
+        <tr>
+          <td>{{offerName}}</td>
+          <td>{{category.name}}</td>
+          <td>{{code}}</td>
+          <td>{{discount}}</td>
+          <td>{{formatDate validUntil}}</td>
+          <td>
+            {{#if (eq status "Inactive")}}
+              <span class="badge rounded-pill bg-danger">{{status}}</span>
+            {{else}}
+              <span class="badge rounded-pill bg-success">{{status}}</span>
+            {{/if}}
+          </td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-sm btn-warning"
+              data-bs-toggle="modal"
+              data-bs-target="#editCategoryModal"
+              data-id="{{_id}}"
+              data-name="{{offerName}}"
+              data-discount="{{discount}}"
+              data-validuntil="{{formatDate validUntil}}"
+              data-categoryname="{{category.name}}"
+              data-categoryid="{{category._id}}"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-danger"
+              onclick="deleteOffer('{{_id}}')"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
       {{/if}}
-      {{/each}}
-     
-    </tbody>
+    {{/each}}
+  {{else}}
+    <tr>
+      <td colspan="7" class="text-center"><h5>No results found</h5></td>
+    </tr>
+  {{/if}}
+</tbody>
+
   </table>
 </div>
 
@@ -184,7 +219,32 @@
   </div>
 </div>
 
+ {{#if (gt totalPages 1)}}
+  <div class="d-flex justify-content-end mt-4">
 
+
+    <nav aria-label="page-navigation">
+      <ul class="pagination">
+        <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+          <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+        </li>
+
+
+        {{#each (range 1 totalPages)}}
+        <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+          <a class="page-link" href="?page={{this}}">{{this}}</a>
+        </li>
+        {{/each}}
+
+
+        <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+          <a class="page-link" href="?page={{add currentPage 1}}">next</a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+  {{/if}}
 
 <script>
 

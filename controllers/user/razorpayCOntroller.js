@@ -213,6 +213,12 @@ const retryOrder = async (req, res) => {
 
       .populate("orderItems.product")
       .lean();
+let hasCoupon
+      if(order.couponUsed)
+      {
+  hasCoupon=true
+      }
+     
     console.log("ddddd", order.address);
     const orderProducts = order.orderItems;
     const addressId = order.address;
@@ -221,6 +227,7 @@ const retryOrder = async (req, res) => {
       minimumPrice: { $lt: order.finalAmount },
       isList: true,
     }).lean();
+       
 
     if (!address || !address.address || address.address.length === 0) {
       return res.render("checkout", {
@@ -228,10 +235,11 @@ const retryOrder = async (req, res) => {
         message: "No saved addresses found.",
         cartProducts: orderProducts, // if you show all saved addresses
         finalSalePrice: order.totalPrice,
-        finalTotalPrice: order.finalAmount,
+        finalTotalPrice: order.finalAmount+order.couponDiscount,
         shippingCharge: order.shipping || 0,
         coupons,
         totalDiscount: order.discount,
+    
 
         user: userData, // needed to reuse same order
         retry: true,
@@ -242,10 +250,12 @@ const retryOrder = async (req, res) => {
       addresses,
       cartProducts: orderProducts, // if you show all saved addresses
       finalSalePrice: order.totalPrice,
-      finalTotalPrice: order.finalAmount,
+      finalTotalPrice: order.finalAmount+order.couponDiscount,
       shippingCharge: order.shipping || 0,
       coupons,
       totalDiscount: order.discount,
+      wallet:userData.wallet,
+     
 
       user: userData, // needed to reuse same order
       retry: true,

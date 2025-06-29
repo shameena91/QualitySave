@@ -52,8 +52,44 @@
   <div class="main-content " id="mainContent">
 <section class="content-main">
   <div class="content-header">
-    <h2 class="content-title card-title mb-5">Coupons</h2>
+  <h2 class="content-title card-title mb-5">Coupons</h2>
+</div>
+
+<form method="get" action="/admin/coupons" class="row align-items-center justify-content-end mb-4" style="max-width: 1000px; margin-left: auto;">
+  
+  <!-- Search input with icon -->
+  <div class="col-md-4">
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control mb-0"
+        name="search"
+        placeholder="Search offer name"
+        value="{{search}}"
+      />
+      <button type="submit" class="btn btn-secondary">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
   </div>
+
+  <!-- Status filter dropdown -->
+  <div class="col-md-4 d-flex">
+    <select name="statusFilter" class="form-select ">
+      <option value="">All Status</option>
+      <option value="Active" {{#if (eq statusFilter "Active")}}selected{{/if}}>Active</option>
+      <option value="Inactive" {{#if (eq statusFilter "Inactive")}}selected{{/if}}>Inactive</option>
+    </select>
+  </div>
+
+  <!-- Apply & Clear buttons -->
+  <div class="col-md-4 d-flex gap-2">
+    <button type="submit" class="btn btn-warning">Apply</button>
+    <a href="/admin/coupons" class="btn btn-secondary">Clear</a>
+  </div>
+
+</form>
+
 
   <div class="card mt-5">
     <div class="card-body">
@@ -143,7 +179,7 @@
   Edit
 </button>
 
-                    <span><a href="#" onclick="confirmDelete('{{_id}}')" class="btn btn-danger btn-sm">Delete</a>
+  <span><a href="#" onclick="confirmDelete('{{_id}}')" class="btn btn-danger btn-sm">Delete</a>
                   </span></td>
                 </tr>
                 {{else}}
@@ -211,6 +247,33 @@
   </div>
 </div>
 
+
+ {{#if (gt totalPages 1)}}
+  <div class="d-flex justify-content-end mt-4">
+
+
+    <nav aria-label="page-navigation">
+      <ul class="pagination">
+        <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+          <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+        </li>
+
+
+        {{#each (range 1 totalPages)}}
+        <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+          <a class="page-link" href="?page={{this}}">{{this}}</a>
+        </li>
+        {{/each}}
+
+
+        <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+          <a class="page-link" href="?page={{add currentPage 1}}">next</a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+  {{/if}}
 
 
 

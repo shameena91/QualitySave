@@ -1,5 +1,15 @@
    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+  input.form-control {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
 
+button.btnSearch {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+</style>
    
    {{> admin-header}}
     <div class="main-content " id="mainContent">
@@ -68,7 +78,42 @@
 
 
 <div class="container mt-5">
-  <h4 class="mb-4">Product Offers</h4>
+  <h4 class="mb-4">All Product Offers</h4>
+
+   <form class="row mb-4" method="get" action="/admin/offers/product">
+<div class="col-md-5 d-flex">
+  <input
+    type="text"
+    class="form-control"
+    style="border-right: none;"
+    name="search"
+    placeholder="Search offer code"
+    value="{{search}}"
+  />
+  <button type="submit" class="btn btnSearch btn-primary me-2">
+    <i class="fas fa-search"></i>
+  </button>
+</div>
+
+<div class="col-md-3">
+            <select name="statusFilter" class="form-select">
+                
+               <option value="">Select </option>
+             <option value="Active" {{#if (eq statusFilter "Active")}} selected {{/if}}>Active </option>
+                
+                <option value="Inactive" {{#if (eq statusFilter "Inactive")}} selected {{/if}}>Inactive</option>
+
+            </select>
+
+
+</div>
+<div class="col-md-3">
+<button type="submit" class="btn btn-warning me-2">Apply</button>
+          <a href="/admin/offers/product" class="btn btn-secondary">Clear</a>
+
+</div>
+  </form>
+ 
 
   <table class="table table-bordered table-hover">
     <thead class="table-dark">
@@ -88,6 +133,7 @@
     </thead>
     <tbody>
       <!-- Example rows: dynamically rendered -->
+      {{#if offer.length}}
          {{#each offer}}
        {{#if (eq type "product")}}
       <tr>
@@ -139,6 +185,11 @@
       </tr>
       {{/if}}
       {{/each}}
+      {{else}}
+      <tr>
+      <td colspan="7" class="text-center"><h5>No results found</h5></td>
+    </tr>
+      {{/if}}
      
     </tbody>
   </table>
@@ -207,7 +258,32 @@
     </form>
   </div>
 </div>
+ {{#if (gt totalPages 1)}}
+  <div class="d-flex justify-content-end mt-4">
 
+
+    <nav aria-label="page-navigation">
+      <ul class="pagination">
+        <li class="page-item {{#if (eq currentPage  1)}}disabled{{/if}}">
+          <a class="page-link" href="?page={{sub currentPage 1}}">Previous</a>
+        </li>
+
+
+        {{#each (range 1 totalPages)}}
+        <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+          <a class="page-link" href="?page={{this}}">{{this}}</a>
+        </li>
+        {{/each}}
+
+
+        <li class="page-item {{#if (eq currentPage  totalPages)}}disabled{{/if}}">
+          <a class="page-link" href="?page={{add currentPage 1}}">next</a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+  {{/if}}
 
 <script>
 //edit product offer 

@@ -75,7 +75,7 @@ router.get(
   productController.geteditProduct
 );
 router.post(
-  "/admin/editProduct/:id",
+  "/admin/editProduct/:productId",
   adminAuth,
   uploads.array("images", 3),
   productController.editProduct

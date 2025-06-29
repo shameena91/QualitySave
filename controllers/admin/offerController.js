@@ -75,22 +75,93 @@ const getCommonData = async () => {
 
 const getProductOffer = async (req, res) => {
   try {
-    await updateOfferStatuses();
-    const { products, category, offer } = await getCommonData();
+    await updateOfferStatuses(); // Keep this at the top
 
-    res.render("productOffer", { products, category, offer });
+    const search = req.query.search || "";
+    const statusFilter = req.query.statusFilter;
+    const currentPage = parseInt(req.query.page) || 1;
+    const itemsPerPage = 4;
+    const skip = (currentPage - 1) * itemsPerPage;
+
+    const searchExp = new RegExp(search.trim(), "i");
+    const matchingOfferIds = await Offer.find({ code: { $regex: searchExp} ,type:"product" }).distinct("_id");
+console.log("hhhhhhhhhhh",statusFilter)
+console.log("hhhhhhhhhhh",search)
+    const query = {
+      _id: { $in: matchingOfferIds }
+    };
+
+    if (statusFilter) {
+      query.status = statusFilter;
+    }
+
+    const totalOffers = await Offer.countDocuments(query);
+    const offer = await Offer.find(query)
+      .populate("products", "productName")
+      .populate("category", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(itemsPerPage)
+      .lean();
+
+    const { products, category } = await getCommonData();
+
+    res.render("productOffer", {
+      products,
+      category,
+      offer,
+      search,
+      statusFilter,
+      currentPage,
+      totalPages: Math.ceil(totalOffers / itemsPerPage),
+    });
+
   } catch (error) {
     console.error("Error in getProductOffer:", error);
     res.status(500).send("Server Error");
   }
 };
 
+
 const getCategoryOffer = async (req, res) => {
   try {
     await updateOfferStatuses();
-    const { products, category, offer } = await getCommonData();
 
-    res.render("categoryOffer", { products, category, offer });
+const search = req.query.search || "";
+    const statusFilter = req.query.statusFilter;
+    const currentPage = parseInt(req.query.page) || 1;
+    const itemsPerPage = 5;
+    const skip = (currentPage - 1) * itemsPerPage;
+   const searchExp = new RegExp(search.trim(), "i");
+
+   const matchingOfferIds = await Offer.find({ code: { $regex: searchExp },type:"category" }).distinct("_id");
+console.log("hhhhhhhhhhh",statusFilter)
+console.log("hhhhhhhhhhh",search)
+    const query = {
+      _id: { $in: matchingOfferIds }
+    };
+
+    if (statusFilter) {
+      query.status = statusFilter;
+    }
+
+     const totalOffers = await Offer.countDocuments(query);
+    const offer = await Offer.find(query)
+      .populate("products", "productName")
+      .populate("category", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(itemsPerPage)
+      .lean();
+    const { products, category } = await getCommonData();
+
+    res.render("categoryOffer", {  products,
+      category,
+      offer,
+      search,
+      statusFilter,
+      currentPage,
+      totalPages: Math.ceil(totalOffers / itemsPerPage), });
   } catch (error) {
     console.error("Error in getCategoryOffer:", error);
     res.status(500).send("Server Error");

@@ -30,39 +30,67 @@ const loadBrandPage = async (req, res) => {
 
 const addBrand = async (req, res) => {
   try {
-    const brand = req.body.name.trim();
+    const brand = req.body.name?.trim();
     const image = req.file?.filename;
-    console.log(brand);
-    const findbrand = await Brand.findOne({ brand });
 
-    if (brand || !image) {
+    const page = parseInt(req.query.page || 1);
+    const limit = 4;
+    const skip = (page - 1) * limit;
+
+    const totalBrands = await Brand.countDocuments();
+    const totalPages = Math.ceil(totalBrands / limit);
+    const brandList = await Brand.find({})
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    if (!brand || !image) {
       return res.status(400).render("brandInfo", {
         error: "Brand name and image are required.",
-        data: await Brand.find(), // or however you fetch existing brands
+        data: brandList,
+        currentPage: page,
+        totalBrands,
+        totalPages,
       });
     }
 
-    if (!findbrand) {
-      const newbrand = new Brand({
-        brandName: brand,
-        brandImage: image,
-        isBlocked: false,
+    const findbrand = await Brand.findOne({ brandName: brand });
+
+    if (findbrand) {
+      return res.status(400).render("brandInfo", {
+        error: "Brand already exists.",
+        data: brandList,
+        currentPage: page,
+        totalBrands,
+        totalPages,
       });
-      await newbrand.save();
-      res.redirect("/admin/brand");
     }
+
+    const newbrand = new Brand({
+      brandName: brand,
+      brandImage: image,
+      isBlocked: false,
+    });
+
+    await newbrand.save();
+    res.redirect("/admin/brand");
   } catch (error) {
     console.log(error);
     res.redirect("/pageerror");
   }
 };
 
+
 const editBrand = async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
+    console.log(id,name)
 
-    const updateData = { name };
+    const updateData = {
+      brandName: name, // 🔁 use the correct field name from your schema
+    };
 
     if (req.file) {
       console.log("Uploaded file:", req.file.filename);
@@ -74,7 +102,11 @@ const editBrand = async (req, res) => {
     });
 
     if (updatedBrand) {
-      return res.json({ success: true, message: "Brand updated successfully" });
+      return res.json({
+        success: true,
+        message: "Brand updated successfully",
+        brand: updatedBrand, // optional: return updated brand if needed
+      });
     } else {
       return res.json({
         success: false,
@@ -82,7 +114,6 @@ const editBrand = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     console.error("Edit brand failed:", error);
     return res.json({
       success: false,
@@ -90,6 +121,7 @@ const editBrand = async (req, res) => {
     });
   }
 };
+
 
 const deleteBrand = async (req, res) => {
   try {

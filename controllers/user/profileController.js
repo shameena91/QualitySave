@@ -57,7 +57,7 @@ const sendVarificationEmail = async (email, otp) => {
 
 const loadForgotPassword = async (req, res) => {
   try {
-    res.render("ForgotPassword");
+    res.render("forgotPassword");
   } catch (error) {
     res.redirect("/pageNotFound");
   }

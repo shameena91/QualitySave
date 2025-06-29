@@ -72,7 +72,7 @@ const downloadExcel = async (req, res) => {
 
       worksheet.addRow({
         date: new Date(order.createdOn).toLocaleDateString(),
-        orderId: order.orderId,
+        orderId: order.orderId.toString().slice(-6).toUpperCase(),
         status: order.status,
         paymentMethod: order.paymentMethod,
         totalPrice: order.totalPrice,
@@ -205,9 +205,11 @@ const downloadPDF = async (req, res) => {
       discountSum += discount;
       couponDiscountSum += order.couponDiscount || 0;
       finalAmountSum += finalAmount;
+      orderId= order.orderId.toString().slice(-8).toUpperCase()
+     
 
       doc.text(new Date(order.createdOn).toLocaleDateString(), columnPositions.date, y);
-      doc.fontSize(8).text(order.orderId, columnPositions.orderId, y, { width: 90 });
+      doc.fontSize(10).text(orderId, columnPositions.orderId, y, { width: 90 });
       doc.fontSize(10);
       doc.text(order.paymentMethod, columnPositions.payment, y);
       doc.text(order.totalPrice.toFixed(2), columnPositions.total, y);
@@ -222,13 +224,13 @@ const downloadPDF = async (req, res) => {
       doc.addPage();
       y = 50;
     }
-
+ const totalOrders = orders.length;
     doc.moveDown(2).font("Helvetica-Bold").fontSize(12);
     doc.text("Summary", 50, y + 10);
     doc.font("Helvetica").fontSize(10);
     doc.text(`Total Sales: ${totalPriceSum.toFixed(2)}`, 50, y + 30);
     doc.text(`Total Discount: ${discountSum.toFixed(2)}`, 50, y + 45);
-    // doc.text(`Total Coupon Discount: ₹${couponDiscountSum.toFixed(2)}`, 50, y + 60);
+    doc.text(`Total orders: ${totalOrders}`, 50, y + 60);
     doc.text(`Final Revenue: ${finalAmountSum.toFixed(2)}`, 50, y + 75);
 
     doc.end();

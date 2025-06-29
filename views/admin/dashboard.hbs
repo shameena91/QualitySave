@@ -64,7 +64,7 @@
   <button class="btn btn-success">Export pdf</button>
 </a>
   </div>
-  <form method="GET" action="/admin/dashboard">
+   <form method="GET" action="/admin/dashboard" id="filterForm">
   <div class="card shadow-sm mb-5">
     <div class="card-body">
       <div class="row g-3">
@@ -79,9 +79,13 @@
         </div>
         <div class="col-md-4">
           <input type="date" class="form-control" value="{{filterData.fromDate}}" name="fromDate" aria-label="From Date" />
+       <div id="date-error-from" class="text-danger fw-semibold mt-2"></div>
+       
         </div>
         <div class="col-md-4">
           <input type="date" class="form-control" value="{{filterData.toDate}}" name="toDate" aria-label="To Date" />
+              <div id="date-error" class="text-danger fw-semibold mt-2"></div>
+
         </div>
         <div class="col-md-3">
           <select class="form-select" name="paymentMethod" aria-label="Payment Method">
@@ -495,12 +499,43 @@ toggleBrandsBtn.addEventListener('click', () => {
   }
 });
 
+
+
+  document.getElementById('filterForm').addEventListener('submit', function (e) {
+  const toDateInput = this.querySelector('input[name="toDate"]');
+  const fromDateInput = this.querySelector('input[name="fromDate"]');
+
+  const toDateErrorDiv = document.getElementById('date-error');
+  const fromDateErrorDiv = document.getElementById('date-error-from');
+
+  const toDate = new Date(toDateInput.value);
+  const fromDate = new Date(fromDateInput.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize time to compare only date
+
+  // Clear previous errors
+  toDateErrorDiv.textContent = '';
+  fromDateErrorDiv.textContent = '';
+
+  let hasError = false;
+
+  if (fromDateInput.value && fromDate > today) {
+    fromDateErrorDiv.textContent = 'From date cannot be in the future.';
+    fromDateInput.focus();
+    hasError = true;
+  }
+
+  if (toDateInput.value && toDate > today) {
+    toDateErrorDiv.textContent = 'To date cannot be in the future.';
+    if (!hasError) toDateInput.focus();
+    hasError = true;
+  }
+ 
+
+  if (hasError) {
+    e.preventDefault(); // Stop form submission
+  }
+});
+
 </script>
-
-
-
-
-
-
-
-   {{> admin-foote }}
+{{> admin-foote }}

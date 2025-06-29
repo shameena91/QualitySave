@@ -84,7 +84,7 @@
             <td> 
               <button class="btn btn-primary" data-bs-toggle="modal"
                data-bs-target="#editBrandModal" 
-               data-id="{{brand._id}}" 
+               data-id="{{this._id}}" 
                data-name="{{this.brandName}}"  
                data-image="{{this.brandImage}}">
   Edit 
@@ -117,7 +117,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-     <form id="editBrandForm" method="post" enctype="multipart/form-data">
+     <form id="editBrandForm" enctype="multipart/form-data">
   <div class="form-group">
     <label for="name">Brand Name</label>
     <input type="text" id="name" name="name" class="form-control" required>
@@ -136,7 +136,7 @@
   </div>
 </div>
 
-
+{{#if (gt totalPages 1)}}
   <div class="d-flex justify-content-end mt-4">
 <nav aria-label="page-navigation">
   <ul class="pagination">
@@ -158,6 +158,7 @@
   </ul>
 </nav>
 </div>
+{{/if}}
 <script>
 
 
@@ -256,16 +257,39 @@ Swal.fire({
     });
   }
 
+
+
+
+
+// Set up modal fields dynamically when opening the modal
+document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+  button.addEventListener('click', function() {
+    const brandId = this.getAttribute('data-id');
+    const brandName = this.getAttribute('data-name');
+    const brandImage = this.getAttribute('data-image');
+
+    document.getElementById('name').value = brandName;
+    if (brandImage) {
+      document.getElementById('brandImagePreview').src = "/uploads/re-image/" + brandImage;
+    } else {
+      document.getElementById('brandImagePreview').src = "";
+    }
+
+    // Dynamically set the action URL of the form to use PATCH
+    document.getElementById('editBrandForm').action = `/admin/brand/${brandId}`;
+  });
+});
   // Handle form submission via AJAX using Fetch
 document.getElementById('editBrandForm').addEventListener('submit', function(e) {
   e.preventDefault(); // Prevent normal form submission
 
   const formData = new FormData(this);
-
+  console.log("dat",formData)
   // Log form data for debugging
   for (let [key, value] of formData.entries()) {
     console.log(key, value); // Check if image is added correctly
   }
+
 
   fetch(this.action, {
     method: 'PATCH', // Use PATCH for updates
@@ -301,25 +325,6 @@ document.getElementById('editBrandForm').addEventListener('submit', function(e) 
       icon: 'error',
       confirmButtonText: 'OK'
     });
-  });
-});
-
-// Set up modal fields dynamically when opening the modal
-document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
-  button.addEventListener('click', function() {
-    const brandId = this.getAttribute('data-id');
-    const brandName = this.getAttribute('data-name');
-    const brandImage = this.getAttribute('data-image');
-
-    document.getElementById('name').value = brandName;
-    if (brandImage) {
-      document.getElementById('brandImagePreview').src = "/uploads/re-image/" + brandImage;
-    } else {
-      document.getElementById('brandImagePreview').src = "";
-    }
-
-    // Dynamically set the action URL of the form to use PATCH
-    document.getElementById('editBrandForm').action = `/admin/brand/${brandId}`;
   });
 });
 </script>

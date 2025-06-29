@@ -94,11 +94,14 @@ const postProducts = async (req, res) => {
 
   try {
     const products = req.body;
-    console.log(products);
+    console.log("oooo",products);
 
     const productExist = await Product.findOne({
       productName: products.productName,
+      
     });
+
+     console.log("oooo",productExist);
     if (productExist) {
       return res.status(400).json({ message: "Product already exists" });
     }
@@ -198,7 +201,8 @@ const geteditProduct = async (req, res) => {
 };
 const editProduct = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.params.productId;
+    console.log("iiiid",id)
     const data = req.body;
     console.log("update data", data);
 
@@ -208,7 +212,7 @@ const editProduct = async (req, res) => {
     });
 
     if (existingProduct) {
-      return res.status(400).json({ error: "Product with same name exists" });
+      return res.status(400).json({ status:false, message: "Product with same name exists" });
     }
 
     const images = [];
@@ -259,7 +263,11 @@ const editProduct = async (req, res) => {
         { new: true }
       );
     }
-
+console.log("Sending response:",{
+      status: "success",
+      message: "Product updated successfully!",
+      redirectUrl: "/admin/productList",
+    });
     res.json({
       status: "success",
       message: "Product updated successfully!",
@@ -267,6 +275,7 @@ const editProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating product:", error);
+    console.log(error)
     res
       .status(500)
       .json({ error: "An error occurred while updating the product" });

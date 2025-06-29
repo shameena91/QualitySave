@@ -216,11 +216,13 @@
 <!-- HTML content (unchanged except class enhancements) -->
 <div class="main-container">
   <section class="shop-page container">
-    <div class="shop-topbar">
+    <div class="shop-topbar ">
       <form action="/search" method="POST" class="search-form">
         <input type="text" name="query" placeholder="Search items..." class="search-input" />
         <button type="submit" class="search-button">Search</button>
       </form>
+            <button  class="btn btn-secondary me-auto rounded-5"><a href="/shop?clearFilters=true" >Clear</a></button>
+
     </div>
     <div style="padding-left:240px; display: flex; justify-content: space-between; align-items: center;">
   <div>
@@ -255,7 +257,7 @@
 </div>
 </div>
  
- 
+
     <div class="product-list-container">
      
       <!-- Sidebar -->
@@ -263,7 +265,6 @@
         <div class="filter-section">
           <div class="filter-title">Categories</div>
           <ul>
-            <li class="filter-item"><a href="/shop?clearFilters=true" >All</a></li>
             {{#each category}}
               <li class="filter-item"><a href="/filter?category={{_id}}">{{name}}</a></li>
             {{/each}}

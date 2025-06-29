@@ -552,7 +552,7 @@ const cancelOrder = async (req, res) => {
     const findCoupon=await Coupon.findById(couponId)
 
     console.log(order.razorpayStatus);
-    if (order.razorpayStatus === "paid") {
+    if (order.razorpayStatus === "paid" || order.paymentMethod==="wallet") {
       if (couponId) {
         let returnProductPrice =
           specifiedProduct.price * specifiedProduct.quantity;
@@ -583,6 +583,7 @@ const cancelOrder = async (req, res) => {
             description: `Refund for cancelled product${productId}`,
           });
            specifiedProduct.status = "Cancelled";
+           await user.save();
         } else {
           const amountTransfer = order.finalAmount - remainingPrice;
           user.wallet = user.wallet + amountTransfer;
@@ -609,6 +610,7 @@ const cancelOrder = async (req, res) => {
           });
         }
          specifiedProduct.status = "Cancelled";
+         await user.save();
       } else {
         const refundAmount = specifiedProduct.quantity * specifiedProduct.price;
         user.wallet += refundAmount;

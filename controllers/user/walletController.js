@@ -13,7 +13,10 @@ const getWallet = async (req, res) => {
 
     const walletHistory = userData.walletHistory?.slice(-3).reverse();
     return res.render("wallet", { user: userData, walletHistory });
-  } catch (error) {}
+  } catch (error)
+   {
+
+   }
 };
 const walletTransaction = async (req, res) => {
   try {
@@ -36,7 +39,10 @@ const walletTransaction = async (req, res) => {
       currentPage: page,
       hasMore,
     });
-  } catch (error) {}
+  } catch (error) 
+  {
+
+  }
 };
 
 const createWalletOrder = async (req, res) => {
@@ -45,7 +51,7 @@ const createWalletOrder = async (req, res) => {
 
   try {
     const options = {
-      amount: amount * 100, // Razorpay works in paise
+      amount: amount * 100, 
       currency: "INR",
       receipt: `wallet_${Date.now()}`,
     };

@@ -234,29 +234,14 @@ id="address-{{this._id}}"
        {{/each}}
   </div>
 </div>
-
           </div>
         </div>
-   
-
-  <!-- Coupon Dropdown -->
-        {{!-- <button class="btn btn-secondary" style="display:none"
-         onclick="removeCoupon()" id="removeBtn">
-  remove
-</button> --}}
 </div>
-
-
 
     <!-- Payment Methods Section -->
     <h5 class="mb-3 mt-4">Select Payment Method</h5>
     <div class="mb-3">
-      {{!-- <div class="form-check">
-        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="creditCard">
-        <label class="form-check-label" for="creditCard">
-          <i class="bi bi-credit-card" style="font-size: 20px;"></i> Credit Card
-        </label>
-      </div> --}}
+    
       <div class="form-check">
         <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="wallet">
         <label class="form-check-label" for="paypal">
@@ -393,7 +378,20 @@ id="address-{{this._id}}"
 {{> foote}}
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{{#if hasCoupon}}
+  <script>
+    window.onload = () => {
+      document.getElementById('applyCouponBtn').textContent = "Coupon Applied";
+      document.getElementById('applyCouponBtn').disabled = true;
+      document.getElementById('removeBtn').style.display = "block";
+      document.getElementById('discountSave').style.display = "block";
+      document.getElementById('discountSave').textContent = `You saved -₹{{totalDiscount}} with coupon`;
+    };
+  </script>
+{{/if}}
 <script>
+
+
 
 window.onload = function () {
   const originalAmountText = document.getElementById("finalAmount").textContent;

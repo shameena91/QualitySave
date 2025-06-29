@@ -1,29 +1,3 @@
-// const Cart = require("../../models/cartSchema");
-// const Order = require("../../models/orderSchema");
-// const Product = require("../../models/productSchema");
-// const User = require("../../models/userSchema");
-// const Address = require("../../models/addressSchema");
-
-// // const fs = require("fs").promises;
-// // const path = require("path");
-// // const hbs = require("express-handlebars").create();
-// // const puppeteer = require("puppeteer");
-// // const Handlebars = require("handlebars");
-
-// // // Register needed helpers manually
-// // Handlebars.registerHelper("eq", (a, b) => a === b);
-// // Handlebars.registerHelper("add", (a, b) => a + b);
-// // Handlebars.registerHelper("sub", (a, b) => a - b);
-// // Handlebars.registerHelper("formatDate", (date) =>
-// //   new Date(date).toLocaleDateString("en-IN", {
-// //     day: "2-digit",
-// //     month: "2-digit",
-// //     year: "numeric",
-// //   })
-// // );
-
-
-
 const PDFDocument = require("pdfkit");
 const Order = require("../../models/orderSchema");
 const Address = require("../../models/addressSchema");
@@ -48,6 +22,11 @@ const downloadInvoice = async (req, res) => {
     if (order.paymentMethod !== "razorpay") {
       orderItems = orderItems.filter((item) => item.status !== "Cancelled");
     }
+    if(order.paymentMethod === "wallet")
+    {
+          orderItems = order.orderItems;
+
+    }
 
     let subtotal = 0;
     let discountTotal = 0;
@@ -69,38 +48,29 @@ const downloadInvoice = async (req, res) => {
 
     doc.pipe(res);
 
-    // Title
     doc.fontSize(20).text("INVOICE", { align: "center" }).moveDown();
 
-    // Seller info
     doc.fontSize(12).text("From:", { underline: true });
     doc.text("Quality Save\n123 Business Street\nKollam, Kerala 691536\nPhone: 9876543210\nEmail: support@yourstore.com").moveDown();
 
-    // Buyer info
     doc.text("To:", { underline: true });
     doc.text(`${deliveryAddress.fullName || ""}\n${deliveryAddress.houseDetails || ""}\n${deliveryAddress.city || ""}, ${deliveryAddress.state || ""} - ${deliveryAddress.pincode || ""}\nPhone: ${deliveryAddress.phone || ""}`).moveDown();
 
-    // Order Details
-    // Set initial Y position
 let detailsY = doc.y;
 
-// Order ID & Date (same line)
 doc.font("Helvetica-Bold").text("Order ID:", 50, detailsY, { continued: true });
 doc.font("Helvetica").text(` ${order.orderId}`, { continued: true });
 
 doc.font("Helvetica-Bold").text("    Order Date:", { continued: true });
 doc.font("Helvetica").text(` ${orderDate}`);
 let currentY = doc.y;
-// Payment Method (next line)
+
 doc.font("Helvetica-Bold").text("Payment Method:", 50, currentY, { continued: true });
 
-// Payment Method Value (regular)
 doc.font("Helvetica").text(` ${order.paymentMethod === "razorpay" ? "Online" : order.paymentMethod}`);
 
-// Add spacing after line
 doc.moveDown();
 
-    // Table Headers
     const startY = doc.y + 10;
     doc.font("Helvetica-Bold").fontSize(12);
     doc.text("Product", 50, startY);
@@ -110,7 +80,6 @@ doc.moveDown();
 
     doc.moveTo(50, startY + 15).lineTo(550, startY + 15).stroke();
 
-    // Product Rows
     let y = startY + 25;
     doc.font("Helvetica").fontSize(10);
 
@@ -132,7 +101,6 @@ doc.moveDown();
       y += 20;
     });
 
-    // Summary Section
     if (y > 700) {
       doc.addPage();
       y = 50;

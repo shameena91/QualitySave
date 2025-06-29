@@ -29,8 +29,14 @@
       <div class="m-3" style="color:#c0bebe;font-size:large">
   Order Id: {{orderId}}
       </div>
-    
-     
+    {{#if (eq order.orderStatus "Not placed")}}
+      <div class="card p-3 shadow-sm" style="background: #f8d7da; border-left: 5px solid #dc3545;">   
+      <h5 class="mb-2 text-danger">Order Not Placed</h5>
+      <p class="mb-0">Due to an error with the payment, this order could not be placed.</p>
+      <p class="mb-2">If money was deducted, please contact your bank.</p>
+      {{!-- <a href="/retry-order/{{../orderId}}" class="btn btn-secondary btn-sm w-25 ">Place Order Again</a> --}}
+    </div>
+    {{/if}}
       {{#each products}}
      
 
@@ -38,37 +44,12 @@
 
   {{#if (eq ../order.paymentMethod "razorpay")}}
   {{#if (eq ../order.razorpayStatus "failed")}}
-    <div class="card p-3 shadow-sm" style="background: #f8d7da; border-left: 5px solid #dc3545;">
-     
-      <h5 class="mb-2 text-danger">Order Not Placed</h5>
-      <p class="mb-0">Due to an error with the payment, this order could not be placed.</p>
-      <p class="mb-2">If money was deducted, please contact your bank.</p>
-          <a href="/retry-order/{{../orderId}}" class="btn btn-secondary btn-sm w-25 ">Place Order Again</a>
-    </div>
+   
    
   {{/if}}
 {{/if}}
 
       <div class="card p-3 mb-4 shadow-sm"> 
-
-{{!-- {{#if (eq ../order.paymentMethod "razorpay")}}
-{{#if (eq status "Cancelled")}}
-  
-    <div class="card p-2 shadow-sm" style="background: #e6f9f0; border-left: 5px solid #28a745;">
-      <div class="d-flex align-items-center mb-2">
-        <div class="bg-success text-white rounded-circle d-flex justify-content-center align-items-center me-3"
-             style="width: 40px; height: 40px;">
-          <i class="fas fa-wallet"></i>
-        </div>
-        <div class="ps-2">
-        
-        <h4 class="text-dark fw-bold mb-0">₹{{finalAmount}}</h4>
-        <p class="text-muted mb-0">The amount has been successfully added to your wallet.</p>
-      </div>
-      </div> 
-    </div>
-    {{/if}}
-    {{/if}} --}}
         <div class="d-flex justify-content-between">
 
           
@@ -95,17 +76,14 @@
           </div>
 
         </div>
-
-
-
-           <div class="text-end">
+    <div class="text-end">
             {{#if (eq status "Pending") }}
       
  
 {{#if (eq  ../order.razorpayStatus "failed" )}}
  <div class="d-flex align-items-center mt-2 p-2" role="alert">
         <i class="fas fa-check-circle me-2" style="color:red"></i>
-        <div>Order Not Placed ,{{formatDate order.createdOn}}</div>
+        <div>Order Not Placed ,{{formatDate ../order.createdOn}}</div>
       </div>
       
     {{else}} 
@@ -175,8 +153,6 @@
         
     {{/each}}
     </div>
-
-   
     <div class="col-md-4">
       <div class="card mb-4">
         <div class=" p-2 ps-3" style="border-bottom:1px solid rgb(192, 191, 191);color:rgb(194, 193, 193)">
@@ -241,6 +217,8 @@
     {{order.paymentMethod}}
   {{/if}}
 {{/if}}
+
+{{#if (eq order.orderStatus "Placed")}}
         <div class="text-end text-capitalize">
           
           
@@ -250,13 +228,15 @@
   Download Invoice PDF
 </a>
 {{else}}
+
 {{#if (eq invoiceStatus "Show")}}
-               <a href="/invoice/download/{{orderId}}" target="_blank"  class="btn btn-sm btn-outline-success">
+  <a href="/invoice/download/{{orderId}}" target="_blank"  class="btn btn-sm btn-outline-success">
   Download Invoice PDF
 </a>
 {{/if}}
           {{/if}}
         </div>
+        {{/if}}
       </div>
     </div>
   </div>

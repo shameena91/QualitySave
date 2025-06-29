@@ -224,6 +224,7 @@ const loadDashboard = async (req, res) => {
       page,
     } = req.query;
 
+
     const currentPage = parseInt(page) || 1;
     const itemsPerPage = 10;
     const skip = (currentPage - 1) * itemsPerPage;
