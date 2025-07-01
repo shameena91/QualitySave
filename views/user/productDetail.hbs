@@ -3,6 +3,8 @@
   .main-image-wrapper {
     position: relative;
     overflow: hidden;
+    
+   
   }
 
   .zoom-hover {
@@ -13,7 +15,7 @@
   .carousel-item img {
     object-fit: cover;
     width: 100%;
-    height: 200px;
+    height: 100px;
   }
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
@@ -23,13 +25,13 @@
     scrollbar-width: none;
   }
   .product-card {
-    width: 250px;
+    width: 200px;
     background-color: white;
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     transition: 0.3s ease;
-    position: relative;
+    position: absolute;
     text-align: center;
     height: auto;
   }
@@ -110,16 +112,15 @@
     </nav>
 
     <!-- Product Detail Section -->
-    <div class="row g-4">
-      <!-- Product Images -->
-      <div class="col-md-6">
-        <div class="main-image-wrapper position-relative overflow-hidden border rounded" style="height: auto;width: 600px;">
-          <img id="mainProductImage"
-               src="/uploads/re-image/{{product.productImage.[0]}}"
-               alt="{{product.productName}}"
-               class="img w-100 object-fit-cover zoom-hover"
-               style="transform-origin: center;">
-        </div>
+    <div class="row g-5 justify-content-center">
+  <!-- Product Images -->
+  <div class="col-md-5 col-sm-8 col-lg-4">
+    <div class="main-image-wrapper position-relative overflow-hidden border rounded" style="height: auto;">
+      <img id="mainProductImage"
+           src="/uploads/re-image/{{product.productImage.[0]}}"
+           alt="{{product.productName}}"
+           class="img-fluid w-100 h-100 object-fit-contain zoom-hover">
+    </div>
 
         <!-- Thumbnails -->
         <div class="d-flex gap-2 mt-3 flex-wrap">
@@ -133,7 +134,7 @@
       </div>
 
       <!-- Product Info -->
-      <div class="col-md-6">
+      <div class="col-md-6 col-sm-12 col-lg-6 ">
         <h2 class="fw-bold mb-3" style="text-transform:capitalize">{{product.productName}}</h2>
         <p class="text-muted">Brand: &nbsp;<span style="text-transform:capitalize">{{brand.brandName}}</span><a href="#"></a> |
           {{#if stock}} 
@@ -274,7 +275,7 @@
     </div>
 
   
-    {{#if relatedProducts}}
+    {{#if (gt relatedProducts.length 0)}}
    <h3 class="mt-5 mb-3">Related Products</h3>
 <div class="position-relative">
 
