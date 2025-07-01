@@ -41,7 +41,7 @@ const addCategory = async (req, res) => {
   if (!req.body) {
     return res.status(400).json({ error: "No data received" });
   }
-  const { name, description, offerprice } = req.body;
+  const { name, description } = req.body;
   //
   try {
     const existingCategory = await Category.findOne({
@@ -53,7 +53,7 @@ const addCategory = async (req, res) => {
     const newCategory = new Category({
       name,
       description,
-      categoryoffer: offerprice,
+     
     });
     await newCategory.save();
     // res.redirect("/admin/dashboard");
@@ -96,7 +96,7 @@ const updateCategory = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const { name, description, offerprice } = req.body;
+    const { name, description } = req.body;
 
     const isExistCategory = await Category.findOne({
       name: { $regex: new RegExp("^" + name + "$", "i") },
@@ -113,7 +113,7 @@ const updateCategory = async (req, res) => {
       {
         name: name,
         description: description,
-        categoryoffer: offerprice,
+       
       },
       { new: true }
     );

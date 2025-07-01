@@ -80,7 +80,7 @@ const getProductOffer = async (req, res) => {
     const search = req.query.search || "";
     const statusFilter = req.query.statusFilter;
     const currentPage = parseInt(req.query.page) || 1;
-    const itemsPerPage = 4;
+    const itemsPerPage = 10;
     const skip = (currentPage - 1) * itemsPerPage;
 
     const searchExp = new RegExp(search.trim(), "i");
@@ -130,7 +130,7 @@ const getCategoryOffer = async (req, res) => {
 const search = req.query.search || "";
     const statusFilter = req.query.statusFilter;
     const currentPage = parseInt(req.query.page) || 1;
-    const itemsPerPage = 5;
+    const itemsPerPage = 10;
     const skip = (currentPage - 1) * itemsPerPage;
    const searchExp = new RegExp(search.trim(), "i");
 
@@ -267,14 +267,10 @@ const categoryOffer = async (req, res) => {
   try {
     const { name, code, discount, validUntil, type, categoryId } = req.body;
     const errors = {};
-    console.log("fff", name, code);
 
-    if (!name) {
-      errors.name = "Offer name is required.";
-    }
-    if (!code) {
-      errors.code = "Offer code is required.";
-    }
+    // Validation
+    if (!name) errors.name = "Offer name is required.";
+    if (!code) errors.code = "Offer code is required.";
     if (!discount) {
       errors.discount = "Discount is required.";
     } else if (discount <= 0 || discount >= 100) {
@@ -285,7 +281,7 @@ const categoryOffer = async (req, res) => {
     } else if (new Date(validUntil) <= new Date()) {
       errors.validUntil = "Valid until date must be in the future.";
     }
-    if (!type || type !== "category") {
+    if (type !== "category") {
       errors.type = 'Invalid offer type. Must be "category".';
     }
     if (!categoryId) {
@@ -296,6 +292,7 @@ const categoryOffer = async (req, res) => {
       return res.status(400).json({ success: false, errors });
     }
 
+    // Check for duplicate offer code
     const existingOffer = await Offer.findOne({ code });
     if (existingOffer) {
       return res.status(400).json({
@@ -305,16 +302,19 @@ const categoryOffer = async (req, res) => {
         },
       });
     }
+
+    // Check if category already has an offer
     const existingCategory = await Offer.findOne({ category: categoryId });
     if (existingCategory) {
       return res.status(400).json({
         success: false,
         errors: {
-          categoryId:
-            "Offer for this category already exist Please choose another.",
+          categoryId: "Offer for this category already exists. Please choose another.",
         },
       });
     }
+
+    // Create new offer
     const newOffer = new Offer({
       offerName: name,
       code,
@@ -327,15 +327,15 @@ const categoryOffer = async (req, res) => {
 
     await newOffer.save();
 
+    // Update category
     const findCategory = await Category.findById(categoryId);
     if (findCategory) {
       findCategory.categoryoffer = discount;
       await findCategory.save();
     }
 
-    const products = await Product.find({ category: categoryId })
-      .populate("category")
-      .lean();
+    // Apply offer to all products in that category
+    const products = await Product.find({ category: categoryId }).populate("category").lean();
 
     if (!products.length) {
       return res.status(404).json({
@@ -345,28 +345,34 @@ const categoryOffer = async (req, res) => {
     }
 
     for (const product of products) {
-      const productOffer = product.productOffer || 0;
-      const categoryOffer = parseInt(discount);
+      try {
+        const productOffer = product.productOffer || 0;
+        const categoryOffer = parseInt(discount);
+        const bestOffer = Math.max(productOffer, categoryOffer);
 
-      const bestOffer = Math.max(productOffer, categoryOffer);
-      const discountedPrice =
-        product.salePrice - Math.floor(product.salePrice * (bestOffer / 100));
+        const discountedPrice = product.salePrice - Math.floor(product.salePrice * (bestOffer / 100));
 
-      await Product.findByIdAndUpdate(product._id, {
-        discountedPrice,
-        categoryOffer: categoryOffer,
-      });
+        await Product.findByIdAndUpdate(product._id, {
+          discountedPrice,
+          categoryOffer: categoryOffer,
+        });
+      } catch (err) {
+        console.error(`Error updating product ${product._id}:`, err.message);
+        // You can collect these errors if needed
+      }
     }
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Category offer created and applied to products.",
     });
+
   } catch (error) {
     console.error("Error creating category offer:", error);
     return res.status(500).json({ success: false, message: "Server error." });
   }
 };
+
 const deleteOffer = async (req, res) => {
   try {
     const { offerId } = req.params;

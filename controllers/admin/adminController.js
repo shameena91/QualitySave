@@ -27,7 +27,7 @@ const login = async (req, res) => {
     if (admin) {
       const passwordmatch = await bcrypt.compare(password, admin.password);
       if (passwordmatch) {
-        req.session.admin = true;
+        req.session.admin = admin._id;
         console.log("succedd");
         return res.redirect("/admin/dashboard");
       } else {

@@ -132,11 +132,11 @@
             <span id="descError" class="text-danger small"></span>
           </div>
 
-          <div class="mb-2">
+          {{!-- <div class="mb-2">
             <label for="categoryOffer" class="form-label">Offer price in Percentage</label>
             <input type="number" class="form-control" name="offerprice" id="categoryOffer">
             <span id="offerError" class="text-danger small"></span>
-          </div>
+          </div> --}}
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -175,12 +175,12 @@
             <input type="text" id="inputdescription" class="form-control" />
             <div id="descError" class="text-danger small"></div>
           </div>
-
+{{!-- 
           <div class="mb-3">
             <label>Offer Price</label>
             <input type="text" id="inputofferPrice" class="form-control" />
             <div id="priceError" class="text-danger small"></div>
-          </div>
+          </div> --}}
 
         </div>
         <div class="modal-footer">
@@ -282,28 +282,30 @@ function openEditModal(category) {
   document.getElementById('categoryId').value = category._id;
   document.getElementById('nameex').value = category.name || "";
   document.getElementById('inputdescription').value = category.description || "";
-  document.getElementById('inputofferPrice').value = category.offerprice || "";
+  {{!-- document.getElementById('inputofferPrice').value = category.offerprice || ""; --}}
 
   // Clear any previous errors
   document.getElementById('nameError').innerText = "";
   document.getElementById('descError').innerText = "";
-  document.getElementById('priceError').innerText = "";
+  {{!-- document.getElementById('priceError').innerText = ""; --}}
 
   const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
   modal.show();
 }
+
+
 function editCategory(event) {
   event.preventDefault();
 
   const id = document.getElementById('categoryId').value;
   const name = document.getElementById('nameex').value.trim();
   const description = document.getElementById('inputdescription').value.trim();
-  const offerprice = document.getElementById('inputofferPrice').value.trim();
+  {{!-- const offerprice = document.getElementById('inputofferPrice').value.trim(); --}}
 
   // Clear previous errors
   document.getElementById("nameError").innerText = "";
   document.getElementById("descError").innerText = "";
-  document.getElementById("priceError").innerText = "";
+  {{!-- document.getElementById("priceError").innerText = ""; --}}
 
   let isValid = true;
 
@@ -317,10 +319,10 @@ function editCategory(event) {
     isValid = false;
   }
 
-   if (isNaN(offerprice) || Number(offerprice) < 0) {
+   {{!-- if (isNaN(offerprice) || Number(offerprice) < 0) {
     document.getElementById("priceError").innerText = "Enter a valid non-negative number.";
     isValid = false;
-  }
+  } --}}
 
   if (!isValid) return;
 
@@ -329,7 +331,7 @@ function editCategory(event) {
   url: `/admin/category/${id}`,
   method: "PUT",
   contentType: "application/json",
-  data: JSON.stringify({ name, description, offerprice }),
+  data: JSON.stringify({ name, description}),
   success: function (data) { // ✅ Accept `data` here
     const modal = bootstrap.Modal.getInstance(document.getElementById('editCategoryModal'));
     modal.hide();
@@ -355,14 +357,14 @@ function editCategory(event) {
   e.preventDefault();
 
   // Clear previous error messages
-  document.getElementById('nameError').textContent = '';
-  document.getElementById('descError').textContent = '';
-  document.getElementById('offerError').textContent = '';
+  document.getElementById("nameError").textContent = "";
+  document.getElementById("descError").textContent = "";
+  // document.getElementById("offerError").textContent = "";
 
   const formData = new FormData(e.target);
   const name = formData.get("name").trim();
   const description = formData.get("description").trim();
-  const offer = formData.get("offerprice").trim();
+  // const offer = formData.get("offerprice").trim();
 
   let isValid = true;
 
@@ -378,7 +380,8 @@ function editCategory(event) {
     isValid = false;
   }
 
-  // Validate Offer Price
+  // Optional: Validate Offer Price (if you enable it)
+  /*
   if (offer !== "") {
     const offerValue = parseFloat(offer);
     if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
@@ -386,51 +389,51 @@ function editCategory(event) {
       isValid = false;
     }
   }
+  */
 
-  if (!isValid) return; // Stop submission if invalid
+  if (!isValid) return;
 
   const data = {
     name,
     description,
-    offerprice: offer
+    // offerPrice: offer || null
   };
 
-    try {
-      const response = await fetch("/admin/Category", 
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify(data)
+  try {
+    const response = await fetch("/admin/Category", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      Swal.fire({
+        icon: "success",
+        title: result.message || "Category added successfully",
+        showConfirmButton: true,
+      }).then(() => {
+        location.reload();
       });
-
-      const result = await response.json();
-
-      if(response.ok){
-        Swal.fire({
-          icon: "success",
-          title: result.message,
-          showConfirmButton: true
-        }).then(() => {
-          location.reload(); 
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: result.error,
-          showConfirmButton: true
-        });
-      }
-    } catch (error) {
+    } else {
       Swal.fire({
         icon: "error",
-        title: "Something went wrong!",
-        showConfirmButton: true
+        title: result.error || "Failed to add category",
+        showConfirmButton: true,
       });
     }
-  });
-
+  } catch (error) {
+    console.error("Add Category Error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Something went wrong!",
+      showConfirmButton: true,
+    });
+  }
+});
 
 
    function deleteCategory(id) {
