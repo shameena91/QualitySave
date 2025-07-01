@@ -58,11 +58,11 @@ const downloadExcel = async (req, res) => {
     worksheet.columns = [
       { header: "Date", key: "date", width: 20 },
       { header: "Order ID", key: "orderId", width: 20 },
-      { header: "Status", key: "status", width: 15 },
       { header: "Payment Method", key: "paymentMethod", width: 20 },
       { header: "Total Amount", key: "totalPrice", width: 20 },
       { header: "Discount", key: "discount", width: 15 },
       { header: "Coupon Discount", key: "couponDiscount", width: 20 },
+      { header: "Amount Payed", key: "finalAmount", width: 20 },
       { header: "Coupon", key: "coupon", width: 20 },
     ];
 
@@ -72,12 +72,14 @@ const downloadExcel = async (req, res) => {
 
       worksheet.addRow({
         date: new Date(order.createdOn).toLocaleDateString(),
-        orderId: order.orderId.toString().slice(-6).toUpperCase(),
+        orderId: order.orderId.toString().slice(-8).toUpperCase(),
         status: order.status,
         paymentMethod: order.paymentMethod,
         totalPrice: order.totalPrice,
+
         discount: discount,
         couponDiscount: order.couponDiscount || 0,
+        finalAmount:order.finalAmount,
         coupon: order.couponUsed?.name || "N/A",
       });
 
@@ -93,7 +95,7 @@ const downloadExcel = async (req, res) => {
       totalPrice: totalPriceSum,
       discount: discountSum,
       couponDiscount: couponDiscountSum,
-      coupon: "Revenue: ₹" + finalAmountSum.toFixed(2),
+       finalAmount: "Revenue: ₹" + finalAmountSum.toFixed(2),
     });
 
     worksheet.getRow(1).font = { bold: true };

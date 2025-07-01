@@ -183,22 +183,30 @@ const unblockProduct = async (req, res) => {
 const geteditProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const product = await Product.findOne({ _id: id }).lean();
-    const brand = await Brand.find({}).lean();
+
+    const product = await Product.findOne({ _id: id })
+      .populate("category")
+      .populate("brand")
+      .lean();
+
+    const brand = await Brand.find().lean();
     const category = await Category.find().lean();
-    console.log("edite", product);
-    console.log(brand);
-    console.log("dddddddddddddd", product);
+
+    // Extract only the ObjectId strings for matching in Handlebars
+    product.brand = product.brand?._id?.toString();
+    product.category = product.category?._id?.toString();
 
     res.render("editProduct", {
-      product: product,
+      product,
+      brand,
       cat: category,
-      brand: brand,
     });
   } catch (error) {
+    console.error("Edit product error:", error);
     res.redirect("/pageerror");
   }
 };
+
 const editProduct = async (req, res) => {
   try {
     const id = req.params.productId;

@@ -364,20 +364,14 @@ const filterProduct = async (req, res) => {
     const { category, brand, gt, lt, page } = req.query;
 
     const findUser = await User.findById(userId).lean();
-
     const categories = await Category.find({ isListed: true }).lean();
     const brands = await Brand.find({ isBlocked: false }).lean();
 
-    const findCategory = category
-      ? await Category.findById(category).lean()
-      : null;
-    const findBrand = brand ? await Brand.findById(brand).lean() : null;
-
     const query = { isBlocked: false };
 
-    if (findCategory) query.category = findCategory._id;
+    if (category) query.category = category;
+    if (brand) query.brand = brand;
 
-    if (findBrand) query.brand = findBrand._id;
     if (gt && lt) {
       query.discountedPrice = {
         $gt: parseInt(gt),
@@ -385,8 +379,19 @@ const filterProduct = async (req, res) => {
       };
     }
 
-    const searchCat = findCategory ? findCategory.name : null;
-    const searchBrand = findBrand ? findBrand.brandName : null;
+    // Optional: Get readable filter names
+    let searchCat = null;
+    let searchBrand = null;
+
+    if (category) {
+      const findCategory = await Category.findById(category).lean();
+      searchCat = findCategory?.name || null;
+    }
+
+    if (brand) {
+      const findBrand = await Brand.findById(brand).lean();
+      searchBrand = findBrand?.brandName || null;
+    }
 
     let products = await Product.find(query)
       .populate("brand")
@@ -397,18 +402,16 @@ const filterProduct = async (req, res) => {
       return res.redirect("/no-data-found");
     }
 
+    // Sort and paginate
     products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
     const itemsPerPage = 6;
     const currentPage = parseInt(page) || 1;
     const totalPages = Math.ceil(products.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentProduct = products.slice(
-      startIndex,
-      startIndex + itemsPerPage
-    );
+    const currentProduct = products.slice(startIndex, startIndex + itemsPerPage);
 
-    req.session.filteredProducts = currentProduct;
+    // Save selected filters
+    const selectedFilters = { category, brand, gt, lt };
 
     res.render("shop", {
       user: findUser,
@@ -417,9 +420,10 @@ const filterProduct = async (req, res) => {
       brand: brands,
       totalPages,
       currentPage,
+      count: products.length,
+      selectedFilters,
       searchCat,
       searchBrand,
-      count: products.length,
     });
   } catch (error) {
     console.error("Filter Product Error:", error.message);
@@ -485,10 +489,25 @@ const searchProducts = async (req, res) => {
 
 const sortProducts = async (req, res) => {
   try {
-    const { sort } = req.query;
-    const user = req.session.user;
-    const userData = await User.findOne({ _id: user }).lean();
+    const { sort, category, brand, gt, lt, page } = req.query;
+    const userId = req.session.user;
+    const userData = await User.findById(userId).lean();
 
+    const categories = await Category.find({ isListed: true }).lean();
+    const brands = await Brand.find({ isBlocked: false }).lean();
+
+    // Construct query
+    const query = { isBlocked: false };
+    if (category) query.category = category;
+    if (brand) query.brand = brand;
+    if (gt && lt) {
+      query.discountedPrice = {
+        $gt: parseInt(gt),
+        $lt: parseInt(lt),
+      };
+    }
+
+    // Construct sort option
     let sortOption = {};
     if (sort === "asc") {
       sortOption = { discountedPrice: 1 };
@@ -500,46 +519,25 @@ const sortProducts = async (req, res) => {
       sortOption = { productName: -1 };
     }
 
-    let sortResults;
+    let products = await Product.find(query)
+      .populate("brand")
+      .populate("category")
+      .collation({ locale: "en", strength: 2 }) // for case-insensitive sort
+      .sort(sortOption)
+      .lean();
 
-    if (
-      !req.session.filteredProducts ||
-      req.session.filteredProducts.length === 0
-    ) {
-      req.session.filteredProducts = null;
-
-      sortResults = await Product.find({ isBlocked: false })
-        .populate("brand")
-        .populate("category")
-        .collation({ locale: "en", strength: 2 })
-        .sort(sortOption)
-        .lean();
-    } else {
-      sortResults = req.session.filteredProducts;
-
-      sortResults.sort((a, b) => {
-        if (sortOption.discountedPrice !== undefined) {
-          return sortOption.discountedPrice === 1
-            ? Number(a.discountedPrice) - Number(b.discountedPrice)
-            : Number(b.discountedPrice) - Number(a.discountedPrice);
-        } else if (sortOption.productName !== undefined) {
-          return sortOption.productName === 1
-            ? a.productName.localeCompare(b.productName)
-            : b.productName.localeCompare(a.productName);
-        } else {
-          return 0;
-        }
-      });
+    if (!products || products.length === 0) {
+      return res.redirect("/no-data-found");
     }
-    const itemsPerPage = 9;
-    const currentPage = parseInt(req.query.page) || 1;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const totalPages = Math.ceil(sortResults.length / itemsPerPage);
-    const currentProducts = sortResults.slice(startIndex, endIndex);
 
-    const categories = await Category.find({ isListed: true }).lean();
-    const brands = await Brand.find({ isBlocked: false }).lean();
+    // Pagination
+    const itemsPerPage = 9;
+    const currentPage = parseInt(page) || 1;
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentProducts = products.slice(startIndex, startIndex + itemsPerPage);
+
+    const selectedFilters = { category, brand, gt, lt };
 
     res.render("shop", {
       user: userData,
@@ -547,15 +545,18 @@ const sortProducts = async (req, res) => {
       brand: brands,
       category: categories,
       totalPages,
-      currentPage: currentPage,
-      count: sortResults.length,
+      currentPage,
+      count: products.length,
       sort,
+      selectedFilters,
+      
     });
   } catch (error) {
-    console.error("Sort Product Error:", error);
-    res.redirect("/pageNotFound");
+    console.error("Sort Product Error:", error.message);
+    res.redirect("/pageNotfound");
   }
 };
+
 
 module.exports = {
   loadHomePage,

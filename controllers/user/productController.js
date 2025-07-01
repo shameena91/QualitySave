@@ -4,6 +4,8 @@ const Category = require("../../models/categorySchema");
 
 var mongoose = require("mongoose");
 const Brand = require("../../models/brandSchema");
+const Order = require("../../models/orderSchema");
+const Review = require("../../models/reviewSchema");
 
 const productInfo = async (req, res) => {
   try {
@@ -23,13 +25,26 @@ const productInfo = async (req, res) => {
     if (!productData) {
       return res.redirect("/pageNotFound");
     }
+const hasPurchased = await Order.findOne({
+  userId: userId,
+  orderItems: {
+    $elemMatch: {
+      product: id,
+      status: { $in: ["Delivered", "Returned"] }
+    }
+  }
+});
 
+console.log("jjjjjjjjjj",hasPurchased)
     const findCategory = productData.category;
     const findBrand = productData.brand;
     const brand = await Brand.findById(findBrand).lean();
-    console.log("new brand is", brand);
+  
     const productOffer = productData.productOffer;
-    console.log("details", productData);
+
+const reviews=await Review.find({product:id}).sort({createdAt:-1}).lean()
+const existingReview = await Review.findOne({ user: req.session.user, product: id});
+
 
     const relatedProducts = await Product.find({
       isBlocked: false,
@@ -41,16 +56,18 @@ const productInfo = async (req, res) => {
       .limit(9)
       .lean();
 
-    console.log("relateddddddddd", relatedProducts.length);
     res.render("productDetail", {
       relatedProducts: relatedProducts,
       user: userData,
       product: productData,
       category: findCategory,
       productOffer: productOffer,
-
+hasPurchased,
       stock: productData.quantity,
       brand: brand,
+      reviews,
+      existingReview
+
     });
   } catch (error) {
     console.error("Error while loading product details:", error);

@@ -585,30 +585,39 @@ const cancelOrder = async (req, res) => {
            specifiedProduct.status = "Cancelled";
            await user.save();
         } else {
-          const amountTransfer = order.finalAmount - remainingPrice;
-          user.wallet = user.wallet + amountTransfer;
-          user.walletHistory.push({
-            amount: amountTransfer,
-            type: "credit",
-            reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId}`,
-          });
 
-          specifiedProduct.refundPrice = amountTransfer;
-          order.finalAmount = order.finalAmount - amountTransfer;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
-          order.discount = order.discount - specifiedProduct.discountedAmount;
-          // order.couponDiscount =
-          //   order.couponDiscount -
-          //   Math.floor(order.couponDiscount / order.orderItems.length);
-          await Ledger.create({
-            user: order.userId,
-            orderId: order._id,
-            type: "debit",
-            amount: amountTransfer,
-            paymentMethod: "wallet",
-            description: `Refund for cancelled product${productId}`,
-          });
-        }
+
+       
+  const adjustedRefund = returnProductPrice - order.couponDiscount;
+
+  user.wallet += adjustedRefund;
+  user.walletHistory.push({
+    amount: adjustedRefund,
+    type: "credit",
+    reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId} (coupon invalidated)`,
+  });
+
+  specifiedProduct.refundPrice = adjustedRefund;
+
+  // Reset coupon values since it’s now invalid
+  order.couponUsed = null;
+  order.couponDiscount = 0;
+
+  order.finalAmount -= adjustedRefund;
+  order.totalPrice -= returnProduct.salePrice * specifiedProduct.quantity;
+  order.discount -= specifiedProduct.discountedAmount;
+
+  await Ledger.create({
+    user: order.userId,
+    orderId: order._id,
+    type: "debit",
+    amount: adjustedRefund,
+    paymentMethod: "wallet",
+    description: `Refund after coupon invalidation for cancelled product ${productId}`,
+  });
+}
+
+        
          specifiedProduct.status = "Cancelled";
          await user.save();
       } else {

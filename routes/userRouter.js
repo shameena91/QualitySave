@@ -12,6 +12,8 @@ const walletController = require("../controllers/user/walletController");
 const invoiceController = require("../controllers/user/invoiceContoller");
 const aboutController = require("../controllers/user/aboutController");
 const razorpayController = require("../controllers/user/razorpayCOntroller");
+const reviewController = require("../controllers/user/riviewController");
+
 const multer = require("multer");
 const storage = require("../helpers/multer");
 const uploads = multer({ storage: storage });
@@ -70,6 +72,10 @@ router
 router.get("/resendForgotOTP", profileController.resendForgotPass);
 
 router.get("/productDetails/:id", productController.productInfo);
+
+
+router.post("/product/:productId/review",userAuth,reviewController.postReview)
+
 
 router.get("/user-profile", userAuth, profileController.userProfile);
 router.patch(

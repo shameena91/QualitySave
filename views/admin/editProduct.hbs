@@ -56,30 +56,38 @@
 
                 <div class="mb-4 mt-4">
                   <h5 class="mb-3">Product Name</h5>
+              
                   <input type="text" class="form-control" value="{{product.productName}}" name="productName" >
                   <div id="productName-error" class="error-message"></div>
                 </div>
 
-                <div class="row mb-4">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label"><strong>Brand</strong></label>
-                    <select class="form-select" name="brand">
-                      {{#each brand}}
-                        <option value="{{_id}}" {{#if (eq brand.brandName ../brand)}}selected{{/if}}>{{brandName}}</option>
-                      {{/each}}
-                    </select>
-                    <div id="brand-error" class="error-message text-danger"></div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label"><strong>Category</strong></label>
-                    <select class="form-select" name="category">
-                      {{#each cat}}
-                        <option value="{{_id}}" {{#if (eq _id ../category)}}selected{{/if}}>{{name}}</option>
-                      {{/each}}
-                    </select>
-                    <div id="category-error" class="error-message text-danger"></div>
-                  </div>
-                </div>
+              <div class="row mb-4">
+ <div class="col-md-6 mb-3">
+  <label class="form-label"><strong>Brand</strong></label>
+  <select class="form-select" name="brand">
+    {{#each brand}}
+  
+      <option value="{{_id}}" {{#if (eq _id ../product.brand)}}
+      selected{{/if}}>
+        {{brandName}}  
+      </option>
+    {{/each}}
+  </select>
+  <div id="brand-error" class="error-message text-danger"></div>
+</div>
+
+
+  <div class="col-md-6">
+    <label class="form-label"><strong>Category</strong></label>
+    <select class="form-select" name="category">
+      {{#each cat}}
+        <option value="{{_id}}" {{#if (eq _id ../product.category)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+    </select>
+    <div id="category-error" class="error-message text-danger"></div>
+  </div>
+</div>
+
 
                 <div class="mb-4">
                   <h5 class="mb-3">Product Description</h5>

@@ -117,33 +117,37 @@
         <h1 class="modal-title fs-5" id="staticBackdropLabel">Add category</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form  id="addCategoryForm">
-      <div class="modal-body">
-    <div class="mb-2">
-    <label for="nameex" class="form-label">Name </label>
-    <input type="text" class="form-control"  name="name" required>
+      <form id="addCategoryForm">
+        <div class="modal-body">
 
-  </div>
-  <div class="mb-2">
-    <label for="inputdescription" class="form-label">Description </label>
-    <input type="textarea" class="form-control"  name="description"  required>
+          <div class="mb-2">
+            <label for="categoryName" class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" id="categoryName" required>
+            <span id="nameError" class="text-danger small"></span>
+          </div>
 
-  </div>
-  <div class="mb-2">
-    <label for="inputofferPrice" class="form-label">Offer price in Percentage </label>
-    <input type="number" class="form-control"  name="offerprice"  >
+          <div class="mb-2">
+            <label for="categoryDescription" class="form-label">Description</label>
+            <input type="text" class="form-control" name="description" id="categoryDescription" required>
+            <span id="descError" class="text-danger small"></span>
+          </div>
 
-  </div>
- 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Add</button>
-      </div>
-      </div>
+          <div class="mb-2">
+            <label for="categoryOffer" class="form-label">Offer price in Percentage</label>
+            <input type="number" class="form-control" name="offerprice" id="categoryOffer">
+            <span id="offerError" class="text-danger small"></span>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Add</button>
+          </div>
+
+        </div>
       </form>
-      </div>
     </div>
   </div>
+</div>
 
 
 
@@ -347,14 +351,49 @@ function editCategory(event) {
 
 
 
-  document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      name: formData.get("name"),
-      description: formData.get("description"),
-      offerprice: formData.get("offerprice")
-    };
+ document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  // Clear previous error messages
+  document.getElementById('nameError').textContent = '';
+  document.getElementById('descError').textContent = '';
+  document.getElementById('offerError').textContent = '';
+
+  const formData = new FormData(e.target);
+  const name = formData.get("name").trim();
+  const description = formData.get("description").trim();
+  const offer = formData.get("offerprice").trim();
+
+  let isValid = true;
+
+  // Validate Name
+  if (name === "") {
+    document.getElementById("nameError").textContent = "Please enter category name.";
+    isValid = false;
+  }
+
+  // Validate Description
+  if (description === "") {
+    document.getElementById("descError").textContent = "Please enter description.";
+    isValid = false;
+  }
+
+  // Validate Offer Price
+  if (offer !== "") {
+    const offerValue = parseFloat(offer);
+    if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
+      document.getElementById("offerError").textContent = "Offer must be between 0 and 100.";
+      isValid = false;
+    }
+  }
+
+  if (!isValid) return; // Stop submission if invalid
+
+  const data = {
+    name,
+    description,
+    offerprice: offer
+  };
 
     try {
       const response = await fetch("/admin/Category", 
@@ -392,38 +431,6 @@ function editCategory(event) {
     }
   });
 
-async function addOffer(categoryId) {
-  const { value: amount } = await Swal.fire({
-    title: "Offer in percentage",
-    input: "number",
-    inputLabel: "percentage",
-    inputPlaceholder: "%"
-  });
-
-  if (!amount) return;
-
-  try {
-    $.ajax({
-      url: "/admin/addCategoryOffer",
-      method: "post",
-      data: {
-        percentage: amount,
-        categoryId: categoryId
-      },
-      success: (response) => {
-        if (response.status === true) {
-          Swal.fire('Offer Added', "The offer has been added", 'success').then(() => {
-            location.reload();
-          });
-        } else {
-          alert("Failed to add offer");
-        }
-      }
-    });
-  } catch (err) {
-    console.error(err);
-  }
-}
 
 
    function deleteCategory(id) {

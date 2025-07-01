@@ -38,17 +38,7 @@
     </div>
     {{/if}}
       {{#each products}}
-     
-
-
-
-  {{#if (eq ../order.paymentMethod "razorpay")}}
-  {{#if (eq ../order.razorpayStatus "failed")}}
-   
-   
-  {{/if}}
-{{/if}}
-
+    
       <div class="card p-3 mb-4 shadow-sm"> 
         <div class="d-flex justify-content-between">
 
@@ -70,8 +60,8 @@
         </div>
           </div>
           <div class="text-end">
-            <img src="/uploads/re-image/{{product.productImage.[0]}}"
-             class="me-3" style="height: 100px;" />
+            <a href="/productDetails/{{product._id}}"> <img src="/uploads/re-image/{{product.productImage.[0]}}"
+             class="me-3" style="height: 100px;" /></a>
 
           </div>
 
@@ -187,13 +177,22 @@
         <div class="d-flex justify-content-between mt-2">
           {{#if order.shipping}}
           <span>Shipping  :</span>
+          {{#if order.finalAmount}}
           <span>+₹{{order.shipping}}</span>
+          {{else}}
+            <span>+0</span>
+            {{/if}}
           {{/if}}
         </div>
         <hr>
         <div class="d-flex justify-content-between fw-bold mt-2">
+       
           <span>Net Payable :</span>
+             {{#if order.finalAmount}}
           <span>₹{{add payableAmount order.shipping}}</span>
+          {{else}}
+                <span>₹0</span>
+                {{/if}}
         </div>
         {{#if totalRefund}}
         <div class="d-flex justify-content-between  mt-2">

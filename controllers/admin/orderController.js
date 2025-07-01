@@ -48,9 +48,10 @@ const getOrderDetails = async (req, res) => {
 
     const products = orderdata.flatMap((order) =>
       order.orderItems
-        .filter((item) => item.product) // Exclude deleted products
+        .filter((item) => item.product) 
         .map((item) => ({
-          orderId: order.orderId,
+
+          orderId: order.orderId.toString().slice(-8).toUpperCase() ,
           orderDate: order.createdOn.toLocaleDateString(),
           orderTime: order.createdOn.toLocaleTimeString(),
           productName: item.product.productName,
@@ -159,6 +160,8 @@ const orderView = async (req, res) => {
 
     const addressId = order.address.toString();
     const userId = order.userId.toString();
+    const user=await User.findById(userId)
+    console.log("ccc",user)
 
     const addressList = await Address.findOne({ userId: userId })
       .populate("address")
@@ -197,6 +200,7 @@ const orderView = async (req, res) => {
       deliveryDate,
       deliveryTime,
       order,
+      user:user.email
     });
   } catch (error) {
     console.log(error);

@@ -145,9 +145,10 @@
 
         <!-- Rating -->
         <div class="mb-2">
-          <span class="text-warning">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
-          <small class="text-muted">(25 reviews)</small>
-       
+          {{#if product.reviews}}
+          <span class="text-white bg-success ps-1 pe-1 rounded-4">{{product.averageRating}}&#9733;</span>
+          <small class="text-muted">({{product.numReviews}})</small>
+       {{/if}}
         </div>
 
         <!-- Price -->
@@ -223,13 +224,57 @@
           <span>{{product.description}}</span>
         </div>
 
-        <div class="border border-2 p-3 mt-3">
-          <h5 style="font-weight:700;font-size:20px">Review and Ratings</h5>
-        </div>
+        <div class="border border-2 p-3 mt-4 rounded bg-white">
+  <div class="d-flex align-items-center mb-3">
+    <h5 class="fw-bold mb-0">Review and Ratings</h5>
+    {{#if user}}
+    {{#if hasPurchased}}
+    <button class="btn btn-outline-primary ms-auto shadow-sm" data-bs-toggle="modal" data-bs-target="#ratingModal">
+      ⭐ Rate Product
+    </button>
+    {{else}}
+    <button class="btn btn-outline-primary ms-auto shadow-sm" onclick="notPurchase()">
+      ⭐ Rate Product
+    </button>
+    {{/if}}
+    {{else}}
+
+   
+    <button class="btn btn-outline-primary ms-auto shadow-sm" onclick="notLogin()">
+      ⭐ Rate Product
+    </button>
+   
+    {{/if}}
+  </div>
+
+  <!-- Single Review Card -->
+  {{#if reviews}}
+  {{#each reviews}}
+  <div class="p-3 border border-1 rounded" style="border-color: #ddd; background-color: #f9f9f9;">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+      
+      <span style="font-size: 13px;" class="text-white  bg-success ps-2 pe-2 pb-1 rounded-4 m-2 text-center">{{this.rating}} &#9733;</span>
+ <span class="mb-0">{{this.comment}}</span>
+    </div>
+    <small class="text-muted">{{formatDate this.createdAt}}</small>
+  </div>
+ 
+  <strong class="ms-2"> {{this.userName}}</strong>
+</div>
+{{/each}}
+{{else}}
+<h5>No reviews</h5>
+{{/if}}
+
+
+</div>
+
       </div>
     </div>
 
-    <!-- Related Products Section with Carousel -->
+  
+    {{#if relatedProducts}}
    <h3 class="mt-5 mb-3">Related Products</h3>
 <div class="position-relative">
 
@@ -309,15 +354,107 @@
     <i class="bi bi-chevron-right"></i>
   </button>
 </div>
+{{/if}}
 
   </div>
 </main>
 
-<!-- Required Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="reviewForm">
+      <input type="hidden" id="productId" value="{{product._id}}" />
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ratingModalLabel">Rate this Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Your Rating:</label>
+          <div class="text-warning fs-4 mb-3" id="starRating">
+            <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+            <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+            <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+            <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+            <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Your Comment:</label>
+            <textarea name="comment" class="form-control" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Submit Review</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
 
 <script>
+   document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("reviewForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const productId = document.getElementById("productId").value;
+    const rating = document.querySelector('input[name="rating"]:checked')?.value;
+    const comment = this.querySelector('textarea[name="comment"]').value.trim();
+
+    if (!rating || !comment) {
+      Swal.fire("Please select a rating and write a comment.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/product/${productId}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ rating, comment })
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+       Swal.fire({
+  icon: "success",
+  title: "Thank you!",
+  text: result.message || "Your review has been submitted.",
+  confirmButtonColor: "#198754",
+  timer: 2000
+}).then(() => {
+  location.reload(); // reloads the page properly
+});
+   
+
+        // Reload reviews section (or full page if needed)
+        // location.reload();
+      } else {
+        Swal.fire("Error", result.error || "Failed to submit review", "error");
+      }
+    } catch (err) {
+      Swal.fire("Error", "Something went wrong!", "error");
+    }
+  });
+});
+
+
+  function notPurchase()
+  {
+    
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sorry',
+            text: "Sorry! You are not allowed to review this product since you haven't bought it on QualitySave.",
+            confirmButtonText: 'ok',
+            
+          })
+  }
+
   function notLogin()
 {
   
@@ -451,6 +588,8 @@
     modalZoomImage.src = mainImage.src;
     zoomModal.show();
   });
+ 
+
 </script>
 
 {{> foote}}

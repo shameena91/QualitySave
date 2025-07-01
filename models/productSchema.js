@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Review = require("./reviewSchema");
 const productSchema = new mongoose.Schema(
   {
     productName: {
@@ -50,6 +51,16 @@ const productSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+
+
+  reviews: [{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Review"
+  }],
+    numReviews: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
+
+
   },
   { timestamps: true }
 );

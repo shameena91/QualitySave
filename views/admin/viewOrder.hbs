@@ -70,24 +70,23 @@
     display: none;
   }
 </style>
-<div class="container my-5">
-    <div>
-        <h1>Order Details</h1>
-        
-    </div>
-  
+<div class="main-content" id="mainContent">
+  <h2 class="mb-4">Order Details</h2>
+  <div class="container pt-4">
 
  
 
+        
+  
 
-  <!-- Two Column Order Details Layout -->
   <div class="row" >
    
     <!-- Left Column: Product Info -->
     <div class="col-md-8" style="background:white">
         <div >
                    
-         <h5 class="mt-4 mb-3">{{orderId}}</h5>
+         <h5 class="mt-4 mb-3"><strong>Order Id :</strong> {{orderId}}</h5>
+          <h5 class="mt-4 mb-3"><strong>User :</strong> {{user}}</h5>
        
   
         </div>
@@ -226,6 +225,7 @@
         
       </div>
     </div>
+  </div>
   </div>
 </div>
 
