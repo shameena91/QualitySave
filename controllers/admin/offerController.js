@@ -17,7 +17,7 @@ const updateOfferStatuses = async () => {
     { $set: { status: "Active" } }
   );
 
-  // 2. Recalculate discounted prices
+  // 2. Recalculate discounted prices and update productOffer/categoryOffer
   const products = await Product.find().populate("category");
 
   for (const product of products) {
@@ -39,22 +39,20 @@ const updateOfferStatuses = async () => {
 
     const categoryOffer = categoryOfferDoc?.discount || 0;
 
-    // Apply the best offer
     const bestOffer = Math.max(productOffer, categoryOffer);
-
-    const discountedPrice =
-      bestOffer > 0
-        ? product.salePrice - Math.floor(product.salePrice * (bestOffer / 100))
-        : product.salePrice;
+    const discountedPrice = Math.floor(product.salePrice * (1 - bestOffer / 100));
 
     await Product.findByIdAndUpdate(product._id, {
       discountedPrice,
-      // productOffer: productOffer, // category offer doesn't go in this field
+      productOffer,
+    });
+    await Category.findByIdAndUpdate( product.category._id, {
+     
+    categoryoffer:categoryOffer,
     });
   }
-
-  console.log(" Offer statuses and product prices updated.");
 };
+
 
 const getCommonData = async () => {
   const products = await Product.find()

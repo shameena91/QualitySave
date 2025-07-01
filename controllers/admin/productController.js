@@ -5,6 +5,7 @@ const User = require("../../models/userSchema");
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
+const Offer = require("../../models/offerSchema");
 
 const productList = async (req, res) => {
   try {
@@ -61,6 +62,7 @@ const productList = async (req, res) => {
         totalPages: totalPages,
         cat: category,
         brand: brand,
+        
       });
     } else {
       res.render("page-404");

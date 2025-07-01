@@ -401,6 +401,7 @@ const getMyOrders = async (req, res) => {
         RazorPay: order.razorpayStatus,
         paymentMethod: order.paymentMethod,
         products: filteredItems.map((item) => ({
+          productId:item.product?._id, 
           productName: item.product?.productName || "Deleted Product",
           productImage: item.product?.productImage[0],
           quantity: item.quantity,
