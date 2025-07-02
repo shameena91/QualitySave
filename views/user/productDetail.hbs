@@ -6,6 +6,13 @@
     
    
   }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
   .zoom-hover {
     transition: transform 0.1s ease;
@@ -16,6 +23,7 @@
     object-fit: cover;
     width: 100%;
     height: 100px;
+   
   }
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
@@ -25,7 +33,7 @@
     scrollbar-width: none;
   }
   .product-card {
-    width: 200px;
+    width: 100%;
     background-color: white;
     border-radius: 12px;
     padding: 15px;
@@ -33,7 +41,7 @@
     transition: 0.3s ease;
     position: absolute;
     text-align: center;
-    height: auto;
+    height: 100%;
   }
 
   .product-card:hover {
@@ -275,75 +283,64 @@
     </div>
 
   
-    {{#if (gt relatedProducts.length 0)}}
-   <h3 class="mt-5 mb-3">Related Products</h3>
+   
+ {{#if relatedProducts.length}}
+<h3 class="mt-5 mb-3">Related Products</h3>
+
 <div class="position-relative">
 
   <!-- Scrollable container -->
   <div class="d-flex overflow-auto hide-scrollbar gap-3 px-2" id="relatedScroll" style="scroll-behavior: smooth;">
     {{#each relatedProducts}}
-      <div class="card flex-shrink-0 border-0" style="width: 250px;height:auto ">
+    <div class="card flex-shrink-0 border" style="width: 250px; min-height: 400px;">
 
-        <div class="product-card">
-          {{#if user}}
+      <div class="product-card p-2">
+        {{#if ../user}}
+        <span class="wishlist-btn" onclick="addToWishlist('{{this._id}}')">❤️</span>
+        {{else}}
+        <span class="wishlist-btn" onclick="notLogin()">❤️</span>
+        {{/if}}
 
-            <span class="wishlist-btn"   onclick="addToWishlist('{{this._id}}')">❤️</span>
-            {{else}}
-            <span class="wishlist-btn"   onclick="notLogin()">❤️</span>
-            {{/if}}
+        <a href="/productDetails/{{this._id}}">
+          <img src="/uploads/re-image/{{this.productImage.[0]}}" class="img-fluid mb-2" alt="{{this.productName}}" />
+        </a>
 
+        <h6 class="text-truncate" style="max-width: 100%;">{{this.productName}}</h6>
+        <p class="mb-0">Brand: {{this.brand.brandName}}</p>
 
-            <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{this.productImage.[0]}}" alt="{{productName}}" /></a>
-            <h4 class="text-truncate d-block" style="max-width: 100%;">{{this.productName}}</h4>
-            <p>Brand: {{brand.brandName}}</p>
-          {{#if (gt category.categoryoffer productOffer )}}
-{{#if category.categoryoffer}}
-            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
-            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{category.categoryoffer}}% off </span>
- {{else}}
-                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
+        {{#if (gt this.category.categoryoffer this.productOffer)}}
+          {{#if this.category.categoryoffer}}
+          <p style="font-size:16px;font-weight:600">₹{{this.discountedPrice}}
+            <span class="text-muted"><strike>₹{{this.salePrice}}</strike></span>
+            <span style="color:green;font-size:14px;font-weight:600">{{this.category.categoryoffer}}% off</span>
+          </p>
+          {{else}}
+          <p style="font-size:16px;font-weight:600">₹{{this.salePrice}}</p>
+          {{/if}}
+        {{else}}
+          {{#if this.productOffer}}
+          <p style="font-size:16px;font-weight:600">₹{{this.discountedPrice}}
+            <span class="text-muted"><strike>₹{{this.salePrice}}</strike></span>
+            <span style="color:green;font-size:14px;font-weight:600">{{this.productOffer}}% off</span>
+          </p>
+          {{else}}
+          <p style="font-size:16px;font-weight:600">₹{{this.salePrice}}</p>
+          {{/if}}
+        {{/if}}
 
-           
-           {{!-- <p>Category: {{category.categoryoffer}}</p> --}}
-           {{/if}}
-           {{else}}
-           {{#if productOffer}}
+        {{#if this.quantity}}
+        <button class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2"
 
-            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
-            
-            
-            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off </span>
-           {{else}}
-                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
+          onclick="{{#if ../user}}addToCart('{{this._id}}'){{else}}notLogin(){{/if}}">
+          Add to Cart
+        </button>
+        {{else}}
+        <h6 class="text-danger mt-2">Out of stock</h6>
+        {{/if}}
 
-           
-           {{!-- <p>pro: {{productOffer}}</p> --}}
-           {{/if}}
-
-{{/if}}
-
-
-
-             {{#if quantity}}
-             <div>
-              {{#if user}}
-             
-                      <button class="btn w-100" type="button" style="background-color:#1e918b; color:white"
-  onclick="addToCart('{{product._id}}')">
-  Add to Cart
-</button>
-{{else}}
-              <button class="btn w-100" type="button" style="background-color:#1e918b; color:white"
-  onclick="notLogin()">
-  Add to Cart
-</button>
-{{/if}}
-</div>
-            {{else}}
-             <h5 style="color:red">Currently unavailable</h5>
-             {{/if}}
-          </div>
       </div>
+
+    </div>
     {{/each}}
   </div>
 
@@ -354,8 +351,11 @@
   <button class="btn btn-light shadow-sm position-absolute top-50 end-0 translate-middle-y" onclick="scrollRight()" style="z-index: 10;">
     <i class="bi bi-chevron-right"></i>
   </button>
+
 </div>
 {{/if}}
+
+
 
   </div>
 </main>
@@ -442,7 +442,12 @@
     }
   });
 });
-
+  function scrollLeft() {
+    document.getElementById("relatedScroll").scrollBy({ left: -300, behavior: "smooth" });
+  }
+  function scrollRight() {
+    document.getElementById("relatedScroll").scrollBy({ left: 300, behavior: "smooth" });
+  }
 
   function notPurchase()
   {
@@ -547,14 +552,7 @@
 
 
 
-  function scrollLeft() {
-    document.getElementById("relatedScroll").scrollBy({ left: -220, behavior: 'smooth' });
-  }
-
-  function scrollRight() {
-    document.getElementById("relatedScroll").scrollBy({ left: 220, behavior: 'smooth' });
-  }
-
+ 
   const mainImage = document.getElementById('mainProductImage');
   const wrapper = mainImage.parentElement;
 

@@ -36,16 +36,11 @@ const hasPurchased = await Order.findOne({
 });
 
 console.log("jjjjjjjjjj",hasPurchased)
+console.log("Product Category:", productData.category);
+
     const findCategory = productData.category;
     const findBrand = productData.brand;
     const brand = await Brand.findById(findBrand).lean();
-  
-    const productOffer = productData.productOffer;
-
-const reviews=await Review.find({product:id}).sort({createdAt:-1}).lean()
-const existingReview = await Review.findOne({ user: req.session.user, product: id});
-
-
     const relatedProducts = await Product.find({
       isBlocked: false,
       category: productData.category._id,
@@ -55,7 +50,16 @@ const existingReview = await Review.findOne({ user: req.session.user, product: i
       .populate("brand")
       .limit(9)
       .lean();
+  console.log("Using category ID for related:", productData.category._id);
+console.log("Number of related products found:", relatedProducts.length);
+    const productOffer = productData.productOffer;
 
+const reviews=await Review.find({product:id}).sort({createdAt:-1}).lean()
+const existingReview = await Review.findOne({ user: req.session.user, product: id});
+
+
+    
+console.log("gggggggggggggggg",relatedProducts)
     res.render("productDetail", {
       relatedProducts: relatedProducts,
       user: userData,
