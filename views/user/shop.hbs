@@ -85,9 +85,10 @@
         <ul class="dropdown-menu w-100 text-start">
           {{#each brand}}
           <li>
-            <a class="dropdown-item text-capitalize" href="/filter?brand={{_id}}{{#if ../selectedFilters.category}}&category={{../selectedFilters.category}}{{/if}}">
-              {{brandName}}
-            </a>
+           <a class="dropdown-item text-capitalize" href="/filter?brand={{_id}}{{#if ../selectedFilters.category}}&category={{../selectedFilters.category}}{{/if}}{{#if ../selectedFilters.gt}}&gt={{../selectedFilters.gt}}{{/if}}{{#if ../selectedFilters.lt}}&lt={{../selectedFilters.lt}}{{/if}}">
+  {{brandName}}
+</a>
+
           </li>
           {{/each}}
         </ul>
@@ -95,16 +96,24 @@
     </div>
 
     <!-- Price Filter -->
-    <div>
-      <h6 class="text-center fw-semibold mb-3">Filter by Price</h6>
-      <div class="d-grid gap-2">
-        <a href="/filter?gt=0&&lt=100" class="btn btn-outline-secondary rounded-pill w-100">Under ₹100</a>
-        <a href="/filter?gt=100&&lt=500" class="btn btn-outline-secondary rounded-pill w-100">₹100 - ₹500</a>
-        <a href="/filter?gt=500&&lt=1000" class="btn btn-outline-secondary rounded-pill w-100">₹500 - ₹1000</a>
-        <a href="/filter?gt=1000&&lt=2000" class="btn btn-outline-secondary rounded-pill w-100">₹1000 - ₹2000</a>
-        <a href="/filter?gt=2000&&lt=10000" class="btn btn-outline-secondary rounded-pill w-100">Above ₹2000</a>
-      </div>
-    </div>
+  <!-- Price Filter -->
+<div>
+  <h6 class="text-center fw-semibold mb-3">Filter by Price</h6>
+  <div class="d-grid gap-2">
+
+    <a href="/filter?gt=0&lt=100{{#if selectedFilters.brand}}&brand={{selectedFilters.brand}}{{/if}}{{#if selectedFilters.category}}&category={{selectedFilters.category}}{{/if}}" class="btn btn-outline-secondary rounded-pill w-100">Under ₹100</a>
+
+    <a href="/filter?gt=100&lt=500{{#if selectedFilters.brand}}&brand={{selectedFilters.brand}}{{/if}}{{#if selectedFilters.category}}&category={{selectedFilters.category}}{{/if}}" class="btn btn-outline-secondary rounded-pill w-100">₹100 - ₹500</a>
+
+    <a href="/filter?gt=500&lt=1000{{#if selectedFilters.brand}}&brand={{selectedFilters.brand}}{{/if}}{{#if selectedFilters.category}}&category={{selectedFilters.category}}{{/if}}" class="btn btn-outline-secondary rounded-pill w-100">₹500 - ₹1000</a>
+
+    <a href="/filter?gt=1000&lt=2000{{#if selectedFilters.brand}}&brand={{selectedFilters.brand}}{{/if}}{{#if selectedFilters.category}}&category={{selectedFilters.category}}{{/if}}" class="btn btn-outline-secondary rounded-pill w-100">₹1000 - ₹2000</a>
+
+    <a href="/filter?gt=2000&lt=10000{{#if selectedFilters.brand}}&brand={{selectedFilters.brand}}{{/if}}{{#if selectedFilters.category}}&category={{selectedFilters.category}}{{/if}}" class="btn btn-outline-secondary rounded-pill w-100">Above ₹2000</a>
+
+  </div>
+</div>
+
 
   </div>
 </aside>
@@ -116,8 +125,8 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           {{#if query}}<h5>Search results for '{{query}}' ({{count}} found)</h5>{{/if}}
-          {{#if searchCat}}<h5>{{searchCat}} ({{count}} found)</h5>{{/if}}
-          {{#if searchBrand}}<h5>{{searchBrand}} ({{count}} found)</h5>{{/if}}
+          {{#if searchCat}}<h5>{{searchCat}} ({{catCount}} found)</h5>{{/if}}
+          {{#if searchBrand}}<h5>{{searchBrand}} ({{brandCount}} found)</h5>{{/if}}
         </div>
         <select id="sortDropdown" class="form-select w-auto" onchange="onSortChange(this)">
           <option value="">Sort by</option>
@@ -158,7 +167,15 @@
             {{/if}}
 
             {{#if quantity}}
-              <button onclick="addToCart('{{_id}}')" class="btn btn-success w-100 rounded-pill mt-2">Add to Cart</button>
+              {{!-- <button onclick="addToCart('{{_id}}')" class="btn btn-success w-100 rounded-pill mt-2">Add to Cart</button> --}}
+            {{!-- <button class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2"
+
+          onclick="{{#if ../user}}addToCart('{{this._id}}'){{else}}notLogin(){{/if}}"> --}}
+        <button class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2" onclick="{{#if ../user}}addToCart('{{this._id}}'){{else}}notLogin(){{/if}}">
+          Add to Cart
+        </button>
+           
+           
             {{else}}
               <h6 class="text-danger mt-2">Currently unavailable</h6>
             {{/if}}

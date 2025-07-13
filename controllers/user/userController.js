@@ -379,18 +379,28 @@ const filterProduct = async (req, res) => {
       };
     }
 
-    let searchCat = null;
-    let searchBrand = null;
+   let searchCat = null;
+let searchBrand = null;
+let catCount = null;
+let brandCount = null;
 
-    if (category) {
-      const findCategory = await Category.findById(category).lean();
-      searchCat = findCategory?.name || null;
-    }
+if (category) {
+  const findCategory = await Category.findById(category).lean();
+  searchCat = findCategory?.name || null;
+  catCount = await Product.countDocuments({ category, isBlocked: false });
+}
 
-    if (brand) {
-      const findBrand = await Brand.findById(brand).lean();
-      searchBrand = findBrand?.brandName || null;
-    }
+if (brand) {
+  const findBrand = await Brand.findById(brand).lean();
+  searchBrand = findBrand?.brandName || null;
+  brandCount = await Product.countDocuments({
+    brand,
+    isBlocked: false,
+    ...(category && { category }), // only include category if present
+  });
+}
+
+    console.log(brandCount,catCount)
 
     let products = await Product.find(query)
       .populate("brand")
@@ -422,6 +432,7 @@ const filterProduct = async (req, res) => {
       selectedFilters,
       searchCat,
       searchBrand,
+      brandCount,catCount
     });
   } catch (error) {
     console.error("Filter Product Error:", error.message);
