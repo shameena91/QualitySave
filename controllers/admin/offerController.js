@@ -6,7 +6,6 @@ const updateOfferStatuses = async () => {
   const todayDate = new Date();
   todayDate.setHours(0, 0, 0, 0);
 
-  // 1. Update offer status based on validUntil
   await Offer.updateMany(
     { validUntil: { $lt: todayDate }, status: "Active" },
     { $set: { status: "Inactive" } }
@@ -17,11 +16,9 @@ const updateOfferStatuses = async () => {
     { $set: { status: "Active" } }
   );
 
-  // 2. Recalculate discounted prices and update productOffer/categoryOffer
   const products = await Product.find().populate("category");
 
   for (const product of products) {
-    // Check for active product offer
     const productOfferDoc = await Offer.findOne({
       type: "product",
       products: product._id,
@@ -30,7 +27,6 @@ const updateOfferStatuses = async () => {
 
     const productOffer = productOfferDoc?.discount || 0;
 
-    // Check for active category offer
     const categoryOfferDoc = await Offer.findOne({
       type: "category",
       category: product.category?._id,
@@ -73,7 +69,7 @@ const getCommonData = async () => {
 
 const getProductOffer = async (req, res) => {
   try {
-    await updateOfferStatuses(); // Keep this at the top
+    await updateOfferStatuses(); 
 
     const search = req.query.search || "";
     const statusFilter = req.query.statusFilter;
@@ -201,12 +197,10 @@ const productOffer = async (req, res) => {
       errors.type = "Invalid offer type.";
     }
 
-    // If validation errors exist, return 400
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ success: false, errors });
     }
 
-    // ==== Duplicate Code Check ====
     const existingOffer = await Offer.findOne({ code });
     if (existingOffer) {
       return res.status(400).json({
@@ -217,7 +211,7 @@ const productOffer = async (req, res) => {
       });
     }
 
-    // ==== Create New Offer ====
+  
     const newOffer = new Offer({
       offerName: name,
       code,
@@ -229,7 +223,6 @@ const productOffer = async (req, res) => {
 
     await newOffer.save();
 
-    // ==== Fetch and Update Products ====
     const matchedProducts = await Product.find({ _id: { $in: products } })
       .populate("category")
       .lean();
@@ -266,7 +259,6 @@ const categoryOffer = async (req, res) => {
     const { name, code, discount, validUntil, type, categoryId } = req.body;
     const errors = {};
 
-    // Validation
     if (!name) errors.name = "Offer name is required.";
     if (!code) errors.code = "Offer code is required.";
     if (!discount) {
@@ -290,7 +282,7 @@ const categoryOffer = async (req, res) => {
       return res.status(400).json({ success: false, errors });
     }
 
-    // Check for duplicate offer code
+
     const existingOffer = await Offer.findOne({ code });
     if (existingOffer) {
       return res.status(400).json({
@@ -301,7 +293,7 @@ const categoryOffer = async (req, res) => {
       });
     }
 
-    // Check if category already has an offer
+  
     const existingCategory = await Offer.findOne({ category: categoryId });
     if (existingCategory) {
       return res.status(400).json({
@@ -312,7 +304,7 @@ const categoryOffer = async (req, res) => {
       });
     }
 
-    // Create new offer
+ 
     const newOffer = new Offer({
       offerName: name,
       code,
@@ -325,14 +317,14 @@ const categoryOffer = async (req, res) => {
 
     await newOffer.save();
 
-    // Update category
+   
     const findCategory = await Category.findById(categoryId);
     if (findCategory) {
       findCategory.categoryoffer = discount;
       await findCategory.save();
     }
 
-    // Apply offer to all products in that category
+    
     const products = await Product.find({ category: categoryId }).populate("category").lean();
 
     if (!products.length) {
@@ -356,7 +348,6 @@ const categoryOffer = async (req, res) => {
         });
       } catch (err) {
         console.error(`Error updating product ${product._id}:`, err.message);
-        // You can collect these errors if needed
       }
     }
 
@@ -473,7 +464,6 @@ const editProductOffer = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Offer not found." });
     }
-    // STEP 3: Get products that still belong to this offer
     const matchedProducts = await Product.find({ _id: { $in: products } })
       .populate("category")
       .lean();
@@ -497,7 +487,6 @@ const editProductOffer = async (req, res) => {
         productOffer: productOffer,
       });
     }
-    // STEP 4: Find and reset removed products
     const removedProductIds = oldProductIds.filter(
       (id) => !newProductIds.includes(id)
     );

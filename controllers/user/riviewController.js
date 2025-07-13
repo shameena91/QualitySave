@@ -18,7 +18,7 @@ const postReview = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(401).json({ error: "User not found" });
 
-    // Check for existing review
+   
     let review = await Review.findOne({ user: user._id, product: productId });
 
     if (review) {
@@ -37,7 +37,7 @@ const postReview = async (req, res) => {
       product.reviews.push(review._id);
     }
 
-    // Recalculate averageRating
+  
     const allReviews = await Review.find({ product: product._id });
     const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
     product.numReviews = allReviews.length;

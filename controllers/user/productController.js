@@ -14,7 +14,6 @@ const productInfo = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid product ID" });
     }
-    console.log("setailidddddddddddd", id);
 
     const userData = await User.findById(userId).lean();
     const productData = await Product.findById(id)
@@ -35,8 +34,6 @@ const hasPurchased = await Order.findOne({
   }
 });
 
-console.log("jjjjjjjjjj",hasPurchased)
-console.log("Product Category:", productData.category);
 
     const findCategory = productData.category;
     const findBrand = productData.brand;
@@ -50,8 +47,6 @@ console.log("Product Category:", productData.category);
       .populate("brand")
       .limit(9)
       .lean();
-  console.log("Using category ID for related:", productData.category._id);
-console.log("Number of related products found:", relatedProducts.length);
     const productOffer = productData.productOffer;
 
 const reviews=await Review.find({product:id}).sort({createdAt:-1}).lean()
@@ -59,7 +54,6 @@ const existingReview = await Review.findOne({ user: req.session.user, product: i
 
 
     
-console.log("gggggggggggggggg",relatedProducts)
     res.render("productDetail", {
       relatedProducts: relatedProducts,
       user: userData,

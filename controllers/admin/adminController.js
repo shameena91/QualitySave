@@ -129,7 +129,7 @@ const getCategories = async () => {
     {
       $lookup: {
         from: "categories",
-        localField: "productDetails.categoryObjId", // use converted ObjectId
+        localField: "productDetails.categoryObjId", 
         foreignField: "_id",
         as: "categoryDetails",
       },

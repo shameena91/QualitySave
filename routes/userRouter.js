@@ -122,7 +122,7 @@ router.route("/cart").get(userAuth, cartController.getCart);
 router.post("/addToCart", userAuth, cartController.addToCart);
 router.post("/updateCart", userAuth, cartController.updateCart);
 router.post("/removeItem", userAuth, cartController.removeCartItem);
-
+router.post('/cart/check-stock',userAuth, cartController.checkStock)
 // checkout
 
 router.get("/checkout", userAuth, checkoutController.getCheckout);

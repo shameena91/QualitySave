@@ -15,7 +15,6 @@ const getCart = async (req, res) => {
       return res.redirect("/pageNotFound");
     }
 
-    // Load cart without lean so we can update and save
     let cart = await Cart.findOne({ userId })
       .populate("cartItems.productId");
 
@@ -32,7 +31,6 @@ const getCart = async (req, res) => {
       });
     }
 
-    // Fix quantity if it exceeds stock
     cart.cartItems.forEach(item => {
       if (
         item.productId &&
@@ -44,19 +42,16 @@ const getCart = async (req, res) => {
       }
     });
 
-    // Save updated cart
     await cart.save();
 
-    // Convert to plain object so images render in view
     cart = cart.toObject();
     const cartProducts = cart.cartItems;
 
-    // Filter in-stock products
     const availableProducts = cartProducts.filter(
       item => item.productId && item.productId.quantity > 0
     );
 
-    // Price calculations
+  
     const sumTotalPrice = availableProducts.reduce(
       (acc, curr) => acc + curr.totalPrice,
       0
@@ -290,9 +285,45 @@ const removeCartItem = async (req, res) => {
   }
 };
 
+
+const checkStock = async (req, res) => {
+  try {
+    const userId = req.session.user;
+
+    const cart = await Cart.findOne({ userId }).populate('cartItems.productId');
+    const unavailable = [];
+
+    const availableItems = [];
+
+    for (let item of cart.cartItems) {
+      const product = item.productId;
+
+      if (product.quantity === 0) {
+        unavailable.push({
+          name: product.productName,
+          image: product.productImage?.[0] || 'default.jpg'
+        });
+      } else {
+        availableItems.push(item);
+      }
+    }
+
+ 
+    cart.cartItems = availableItems;
+    await cart.save();
+
+    res.json({ unavailable });
+  } catch (err) {
+    console.error("Stock check error:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
 module.exports = {
   getCart,
   addToCart,
   updateCart,
   removeCartItem,
+  checkStock
 };

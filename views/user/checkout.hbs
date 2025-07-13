@@ -547,47 +547,59 @@ function getSelectedValues() {
   };
 }
 
-function createOrder() {
+async function createOrder() {
   const { addressId, paymentMethod, amount, shippingCharge } = getSelectedValues();
 
   if (!addressId || !paymentMethod) {
     return Swal.fire({
-       title: 'Missing Info', 
-       text: 'Please select address and payment method.', 
-       icon: 'warning' });
-  }
-
-  if (paymentMethod === 'cod' || paymentMethod === 'wallet') {
-    $.post('/createOrder', { addressId, paymentMethod, amount, shippingCharge }, (response) => {
-      Swal.fire({ 
-        title: 'Order Placed!',
-         icon: 'success' })
-         .then(() => {
-        window.location.href = `/orderSuccess/${response.orderId}`;
-      });
-    }).fail((xhr) => {
-  const errorMessage = xhr.responseJSON?.message || 'Order could not be placed. Try again.';
-  Swal.fire({
-    title: 'Failed',
-    text: errorMessage,
-    icon: 'error'
-  });
-});
-  } else if (paymentMethod === 'razorpay') {
-    $.post('/createRazorpayOrder',
-     { addressId, paymentMethod, amount, shippingCharge }, 
-     (response) => {
-      launchRazorpay(response);
-    }).fail(() => {
-      Swal.fire({ title: 'Failed', 
-      text: 'Razorpay order creation failed.',
-       icon: 'error' });
+      title: 'Missing Info',
+      text: 'Please select address and payment method.',
+      icon: 'warning'
     });
   }
 
+  try {
+    const stockRes = await fetch('/cart/check-stock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const stockData = await stockRes.json();
+   
+
+   if (stockData.unavailable && stockData.unavailable.length > 0) {
+  let productList = '<div>';
+  stockData.unavailable.forEach(item => {
+    productList += `<div style="color: red; font-weight: bold;">${item.name}</div>`;
+  });
+  productList += '</div>';
 
 
+      return Swal.fire({
+        icon: 'warning',
+        title: 'Some products are out of stock',
+        html: productList,
+        showCancelButton: true,
+        confirmButtonText: 'Proceed with Available Items',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Proceed only with available items
+          placeOrder(addressId, paymentMethod, amount, shippingCharge);
+        }
+      });
+    }
+
+    // If all products are available
+    placeOrder(addressId, paymentMethod, amount, shippingCharge);
+
+  } catch (error) {
+    console.error(error);
+    Swal.fire('Error', 'Something went wrong while checking stock.', 'error');
+  }
 }
+
+
 
 function updateOrder(orderId) {
   const { addressId, paymentMethod, amount, shippingCharge } = getSelectedValues();
@@ -623,6 +635,40 @@ console.log(orderId,paymentMethod)
     });
   }
 }
+
+function placeOrder(addressId, paymentMethod, amount, shippingCharge) {
+ 
+  if (paymentMethod === 'cod' || paymentMethod === 'wallet') {
+    $.post('/createOrder', { addressId, paymentMethod, amount, shippingCharge }, (response) => {
+      Swal.fire({
+        title: 'Order Placed!',
+        icon: 'success'
+      }).then(() => {
+        window.location.href = `/orderSuccess/${response.orderId}`;
+      });
+    }).fail((xhr) => {
+      const errorMessage = xhr.responseJSON?.message || 'Order could not be placed. Try again.';
+      Swal.fire({
+        title: 'Failed',
+        text: errorMessage,
+        icon: 'error'
+      });
+    });
+  }
+
+  else if (paymentMethod === 'razorpay') {
+    $.post('/createRazorpayOrder', { addressId, paymentMethod, amount, shippingCharge }, (response) => {
+      launchRazorpay(response);
+    }).fail(() => {
+      Swal.fire({
+        title: 'Failed',
+        text: 'Razorpay order creation failed.',
+        icon: 'error'
+      });
+    });
+  }
+}
+
 
 function launchRazorpay(response) {
   const options = {

@@ -40,7 +40,6 @@ const getOrderDetails = async (req, res) => {
     const requestItem = allOrders.flatMap((order) =>
       order.orderItems.filter((item) => item.returnStatus === "Requested")
     );
-    console.log("lllllllll", requestItem.length);
 
     if (orderdata.length === 0) {
       return res.render("notFound", { search, statusFilter });
@@ -48,10 +47,9 @@ const getOrderDetails = async (req, res) => {
 
     const products = orderdata.flatMap((order) =>
       order.orderItems
-        .filter((item) => item.product) 
+        .filter((item) => item.product)
         .map((item) => ({
-
-          orderId: order.orderId.toString().slice(-8).toUpperCase() ,
+          orderId: order.orderId,
           orderDate: order.createdOn.toLocaleDateString(),
           orderTime: order.createdOn.toLocaleTimeString(),
           productName: item.product.productName,
@@ -65,8 +63,6 @@ const getOrderDetails = async (req, res) => {
         }))
     );
 
-    console.log(products);
-    console.log("length:", products.length);
     const requestProduct = products.filter((item) => {
       return item.returnStatus === "Requested";
     });
@@ -74,7 +70,6 @@ const getOrderDetails = async (req, res) => {
     const totalPages = Math.ceil(products.length / itemsPerPage);
     const paginatedProducts = products.slice(skip, skip + itemsPerPage);
 
-    console.log(totalPages);
     res.render("orderManagement", {
       products: paginatedProducts,
       totalPages,
@@ -95,19 +90,15 @@ const updateStatus = async (req, res) => {
     const { orderId, productId } = req.params;
     const { status } = req.body;
 
-    console.log("productid:", orderId, productId);
-    console.log(status);
     if (!status) {
       return res.status(400).json({ error: "Status is required" });
     }
 
     const order = await Order.findOne({ orderId: orderId });
-    console.log(order);
 
     const orderProduct = order.orderItems.find(
       (item) => item.product.toString() === productId
     );
-    console.log(orderProduct);
     orderProduct.status = status;
 
     if (orderProduct.status === "Delivered") {
@@ -158,10 +149,9 @@ const orderView = async (req, res) => {
       .populate("orderItems.product")
       .lean();
 
-    const addressId = order.address.toString();
+    const addressId = order.address?.toString();
     const userId = order.userId.toString();
-    const user=await User.findById(userId)
-    console.log("ccc",user)
+    const user = await User.findById(userId);
 
     const addressList = await Address.findOne({ userId: userId })
       .populate("address")
@@ -187,7 +177,6 @@ const orderView = async (req, res) => {
       ? orderProduct.deliveredAt.toLocaleTimeString()
       : "N/A";
 
-    console.log("nnn", deliveryDate);
     res.render("viewOrder", {
       productshipAddress,
       orderProduct,
@@ -200,10 +189,9 @@ const orderView = async (req, res) => {
       deliveryDate,
       deliveryTime,
       order,
-      user:user.email
+      user: user.email,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).send("Server error");
   }
 };
@@ -216,7 +204,7 @@ const updateReturnStatus = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-    console.log("oooooooooo", order);
+
     const orderProduct = order.orderItems.find((item) => {
       return item.product._id.toString() === productId;
     });
@@ -230,7 +218,6 @@ const updateReturnStatus = async (req, res) => {
       }, 0);
     }
 
-    console.log("ppp", orderProduct);
     if (!orderProduct) {
       return res.status(404).json({ message: "Product not found in order" });
     }
@@ -242,8 +229,6 @@ const updateReturnStatus = async (req, res) => {
     const user = await User.findById(userId);
     const returnProduct = await Product.findById(productId);
 
-    console.log("ttttt", order.orderItems.length);
-
     if (returnStatus === "Approved") {
       await Product.findByIdAndUpdate(productId, {
         $inc: { quantity: orderProduct.quantity },
@@ -251,11 +236,12 @@ const updateReturnStatus = async (req, res) => {
       let returnProductPrice = 0;
       if (couponId) {
         returnProductPrice = orderProduct.price * orderProduct.quantity;
-        const remainingPrice =order.finalAmount -returnProductPrice -
+        const remainingPrice =
+          order.finalAmount -
+          returnProductPrice -
           sumPriceReturned +
           order.couponDiscount;
 
-        console.log(couponId, returnProductPrice, remainingPrice);
         if (remainingPrice >= findCoupon.minimumPrice) {
           user.wallet = user.wallet + returnProductPrice;
           user.walletHistory.push({
@@ -266,7 +252,8 @@ const updateReturnStatus = async (req, res) => {
 
           orderProduct.refundPrice = returnProductPrice;
           order.finalAmount = order.finalAmount - returnProductPrice;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice*orderProduct.quantity;
+          order.totalPrice =
+            order.totalPrice - returnProduct.salePrice * orderProduct.quantity;
           order.discount = order.discount - orderProduct.discountedAmount;
           order.couponDiscount =
             order.couponDiscount -
@@ -289,7 +276,8 @@ const updateReturnStatus = async (req, res) => {
           });
           orderProduct.refundPrice = amountTransfer;
           order.finalAmount = order.finalAmount - amountTransfer;
-          order.totalPrice = order.totalPrice - returnProduct.salePrice*orderProduct.quantity;
+          order.totalPrice =
+            order.totalPrice - returnProduct.salePrice * orderProduct.quantity;
           order.discount = order.discount - orderProduct.discountedAmount;
           order.couponDiscount =
             order.couponDiscount -
@@ -313,7 +301,8 @@ const updateReturnStatus = async (req, res) => {
         });
         orderProduct.refundPrice = returnProductPrice;
         order.finalAmount = order.finalAmount - returnProductPrice;
-        order.totalPrice = order.totalPrice - returnProduct.salePrice*orderProduct.quantity;
+        order.totalPrice =
+          order.totalPrice - returnProduct.salePrice * orderProduct.quantity;
         order.discount = order.discount - orderProduct.discountedAmount;
         order.couponDiscount =
           order.couponDiscount -

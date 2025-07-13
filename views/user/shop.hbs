@@ -1,155 +1,16 @@
+<!-- Include Header Partial -->
 {{> headr }}
 
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fafbfc;
-    color: #333;
-  }
-
-  ul {
-    list-style: none;
-    padding-left: 0;
-  }
-
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .main-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-
-  .shop-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-  }
-
-  .search-form {
-    display: flex;
-    align-items: center;
-    background-color: #fff;
-    border-radius: 25px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-    max-width: 300px;
-    padding: 2px 5px;
-  }
-
-  .search-input {
-    flex: 1;
-    padding: 10px 15px;
-    font-size: 15px;
-    border: none;
-    outline: none;
-  }
-
-  .search-button {
-    padding: 10px 18px;
-    background-color: #1e918b;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    border-radius: 20px;
-    margin-right: 5px;
-    transition: 0.3s;
-  }
-
-  .search-button:hover {
-    background-color: #156f6b;
-  }
-
-  .product-list-container {
-    display: flex;
-    gap: 25px;
-  }
-
-  .sidebar {
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    width: 250px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-         height: fit-content;
-  }
-
-  .filter-section {
-    margin-bottom: 30px;
-   
-  }
-
-  .filter-title {
-    font-weight: 600;
-    margin-bottom: 15px;
-    font-size: 20px;
-  
-      text-align: center;
-  }
-
-  .filter-item {
-    padding: 5px 0;
-    text-transform: capitalize;
-    text-align: center;
-  }
-
-  .filter-item a {
-    color: #555;
-    transition: 0.3s;
-    text-align: center;
-  }
-
-  .filter-item a:hover {
-    color: #1e918b;
-  }
-
-  .price-filter .price-options {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-     text-align: center;
-  }
-
-  .price-button {
-    padding: 10px;
-    background-color: #f1f1f1;
-    color: #333;
-    border: 1px solid #ccc;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  .price-button:hover {
-    background-color: #1e918b;
-    color: white;
-    transform: scale(1.05);
-  }
-
-  .product-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 25px;
-    width: 100%;
-  }
-
   .product-card {
-    width: calc(33.33% - 20px);
     background-color: white;
     border-radius: 12px;
     padding: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    transition: 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
     text-align: center;
-    height: fit-content;
-  
-   
+    height: 100%;
   }
 
   .product-card:hover {
@@ -165,240 +26,184 @@
     margin-bottom: 10px;
   }
 
-  .product-card h4 {
-    font-size: 18px;
-    color: #333;
-    margin: 10px 0 5px;
-    
-  }
-
-
-
-  .product-card p {
-    margin: 4px 0;
-    font-size: 14px;
-  }
-
   .wishlist-btn {
     position: absolute;
- top:5px;
-  right: 15px;
-  z-index: 2;
-  font-size: 1.2rem;
-  background-color: #ffffffcc;
-  padding: 5px 8px 3px 8px;
-  
-  
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-}
-
-  
-
-  /* Pagination */
-  
+    top: 10px;
+    right: 15px;
+    z-index: 2;
+    font-size: 1.2rem;
+    background-color: #ffffffcc;
+    padding: 5px 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+  }
 </style>
 
-<!-- HTML content (unchanged except class enhancements) -->
-<div class="main-container">
-  <section class="shop-page container">
-    <div class="shop-topbar ">
-      <form action="/search" method="POST" class="search-form">
-<input 
-  type="text" 
-  name="query" 
-  placeholder="Search items..." 
-  class="search-input" 
-  value="{{query}}" />        <button type="submit" class="search-button">Search</button>
-      </form>
-            <button  class="btn btn-secondary me-auto rounded-5"><a href="/shop?clearFilters=true" >Clear</a></button>
-
-    </div>
-    <div style="padding-left:240px; display: flex; justify-content: space-between; align-items: center;">
-  <div>
-    {{#if query}}
-      <h3>Search result for '{{query}}' - <span style="font-size:20px">({{count}}) found</span></h3>
-    {{/if}}
-
-    {{#if searchCat}}
-      <h3>{{searchCat}} - <span style="font-size:20px; text-transform:capitalize">({{count}}) found</span></h3>
-    {{/if}}
-
-    {{#if searchBrand}}
-      <h3>{{searchBrand}} - <span style="font-size:20px; text-transform:capitalize">({{count}}) found</span></h3>
-    {{/if}}
+<div class="container py-4">
+  <!-- Topbar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <form action="/search" method="POST" class="d-flex bg-white shadow-sm rounded-pill overflow-hidden">
+      <input type="text" name="query" placeholder="Search items..." class="form-control border-0 px-3" value="{{query}}">
+      <button type="submit" class="btn btn-primary rounded-pill px-4">Search</button>
+    </form>
+    <a href="/shop?clearFilters=true" class="btn btn-outline-secondary rounded-pill ms-2">Clear All</a>
   </div>
 
-  <div class="ms-auto mb-3" style="margin-left: auto;">
-  <div class="dropdown">
-  {{!-- <a class="dropdown-toggle p-2" style="background-color:white; box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);" href="#" role="button" 
-  data-bs-toggle="dropdown" aria-expanded="false" 
-  style="text-decoration: none; " >
-  <span style="color:rgb(128, 126, 126)"> Sort by</span> 
-  </a> --}}
- <select id="sortDropdown" class="form-select w-auto" onchange="onSortChange(this)">
-  <option value="">Sort by</option>
-  <option value="asc" {{#if (eq sort "asc")}}selected{{/if}}>Price low to high</option>
-  <option value="desc" {{#if (eq sort "desc")}}selected{{/if}}>Price high to low</option>
-  <option value="az" {{#if (eq sort "az")}}selected{{/if}}>A-Z</option>
-  <option value="za" {{#if (eq sort "za")}}selected{{/if}}>Z-A</option>
-</select>
-</div>
-</div>
-</div>
- 
+  <!-- Filters and Results -->
+  <div class="row  ">
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+<aside class="col-lg-3 mb-4 mt-4">
+  <div class="p-4 rounded shadow-sm bg-white">
 
-    <div class="product-list-container">
-     
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="filter-section">
-          <div class="filter-title">Categories</div>
-          <ul>
-            {{#each category}}
-              <li class="filter-item">
-              <a href="/filter?category={{_id}}{{#if ../selectedFilters.brand}}&brand={{../selectedFilters.brand}}{{/if}}">
-
-                {{name}}</a>
-                </li>
-            {{/each}}
-          </ul>
-        </div>
-
-        <div class="filter-section">
-          <div class="filter-title">Brands</div>
-          <ul>
-            {{#each brand}}
-              <li class="filter-item">
-        <a href="/filter?brand={{_id}}{{#if ../selectedFilters.category}}&category={{../selectedFilters.category}}{{/if}}">
-            {{brandName}}</a>
-            </li>
-            {{/each}}
-          </ul>
-        </div>
-
-        <div class="price-filter">
-          <div class="filter-title">Filter by Price</div>
-          <div class="price-options">
-            <a href="/filter?gt=0&&lt=100"><button type="button" class="price-button">Under ₹100</button></a>
-            <a href="/filter?gt=100&&lt=500"><button type="button" class="price-button">₹100 - ₹500</button></a>
-            <a href="/filter?gt=500&&lt=1000"><button type="button" class="price-button">₹500 - ₹1000</button></a>
-            <a href="/filter?gt=1000&&lt=2000"><button type="button" class="price-button">₹1000 - ₹2000</button></a>
-            <a href="/filter?gt=2000&&lt=10000"><button type="button" class="price-button">Above ₹2000</button></a>
-
-          </div>
-        </div>
-      </aside>
-
-      <!-- Product Grid -->
-      <main class="product-grid">
-        
-        {{#each products}}
-          <div class="product-card ">
-        {{#if @root.user}}
-            <span class="wishlist-btn text-danger" onclick="addToWishlist(this,'{{_id}}')"><i class="bi bi-heart-fill"></i></span>
-          {{else}} 
-            <span class="wishlist-btn text-danger" onclick="notLogin()"><i class="bi bi-heart-fill"></i></span>
-
-          {{/if}} 
-            <a href="/productDetails/{{_id}}"><img src="/uploads/re-image/{{productImage.[0]}}" alt="{{productName}}" /></a>
-            <h4 class="text-truncate d-block" style="max-width: 100%;">{{productName}}</h4>
-            <p>Brand: {{brand.brandName}}</p>
-         
-
-{{#if (gt category.categoryoffer productOffer )}}
-{{#if category.categoryoffer}}
-            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
-            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{category.categoryoffer}}% off </span>
- {{else}}
-                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
-
-           
-           {{!-- <p>Category: {{category.categoryoffer}}</p> --}}
-           {{/if}}
-           {{else}}
-           {{#if productOffer}}
-
-            <p style="font-size:18px;font-weight:600">₹{{discountedPrice}}<span class="text-muted">&nbsp;<strike>₹{{salePrice}}</strike></span>
-            
-            
-            <span style="color:rgb(4, 170, 4);font-size:15px;font-weight:600">&nbsp;&nbsp;{{productOffer}}% off </span>
-           {{else}}
-                        <p style="font-size:18px;font-weight:600">₹{{salePrice}}
-
-           
-           {{!-- <p>pro: {{productOffer}}</p> --}}
-           {{/if}}
-
-{{/if}}
-
-           
-             {{#if quantity}}
- <div class="card-footer bg-white border-0">
-  
-    {{#if @root.user}}
-      <button onclick="addToCart('{{_id}}')"
-         class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
-       Add to Cart 
-      {{else}}
-      <button onclick="notLogin()"
-         class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
-       Add to Cart
-      </button>
-      {{/if}}
-    </div>            {{else}}
-             <h5 style="color:red">Currently unavailable</h5>
-             {{/if}}
-          </div>
-        {{/each}}
-      </main>
+    <!-- Category Filter Dropdown -->
+    <div class="mb-4 text-center">
+      <label class="fw-semibold mb-2 d-block">Filter by Category</label>
+      <div class="dropdown">
+        <button class="btn btn-outline-success dropdown-toggle w-100 text-capitalize" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Categories
+        </button>
+        <ul class="dropdown-menu w-100 text-start">
+          {{#each category}}
+          <li>
+            <a class="dropdown-item text-capitalize" href="/filter?category={{_id}}{{#if ../selectedFilters.brand}}&brand={{../selectedFilters.brand}}{{/if}}">
+              {{name}}
+            </a>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
     </div>
 
-    <!-- Pagination -->
-  <div class="d-flex justify-content-end mt-4">
+    <!-- Brand Filter Dropdown -->
+    <div class="mb-4 text-center">
+      <label class="fw-semibold mb-2 d-block">Filter by Brand</label>
+      <div class="dropdown">
+        <button class="btn btn-outline-success dropdown-toggle w-100 text-capitalize" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Brands
+        </button>
+        <ul class="dropdown-menu w-100 text-start">
+          {{#each brand}}
+          <li>
+            <a class="dropdown-item text-capitalize" href="/filter?brand={{_id}}{{#if ../selectedFilters.category}}&category={{../selectedFilters.category}}{{/if}}">
+              {{brandName}}
+            </a>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
 
-<nav aria-label="page-navigation">
-  <ul class="pagination">
-    <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
-      <a class="page-link" href="?page={{sub currentPage 1}}&sort={{sort}}">Previous</a>
-    </li>
+    <!-- Price Filter -->
+    <div>
+      <h6 class="text-center fw-semibold mb-3">Filter by Price</h6>
+      <div class="d-grid gap-2">
+        <a href="/filter?gt=0&&lt=100" class="btn btn-outline-secondary rounded-pill w-100">Under ₹100</a>
+        <a href="/filter?gt=100&&lt=500" class="btn btn-outline-secondary rounded-pill w-100">₹100 - ₹500</a>
+        <a href="/filter?gt=500&&lt=1000" class="btn btn-outline-secondary rounded-pill w-100">₹500 - ₹1000</a>
+        <a href="/filter?gt=1000&&lt=2000" class="btn btn-outline-secondary rounded-pill w-100">₹1000 - ₹2000</a>
+        <a href="/filter?gt=2000&&lt=10000" class="btn btn-outline-secondary rounded-pill w-100">Above ₹2000</a>
+      </div>
+    </div>
 
-    {{#each (range 1 totalPages)}}
-      <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
-        <a class="page-link" href="?page={{this}}&sort={{../sort}}">{{this}}</a>
-      </li>
-    {{/each}}
+  </div>
+</aside>
 
-    <li class="page-item {{#if (eq currentPage totalPages)}}disabled{{/if}}">
-      <a class="page-link" href="?page={{add currentPage 1}}&sort={{sort}}">Next</a>
-    </li>
-  </ul>
-</nav>
+
+
+    <!-- Product Grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          {{#if query}}<h5>Search results for '{{query}}' ({{count}} found)</h5>{{/if}}
+          {{#if searchCat}}<h5>{{searchCat}} ({{count}} found)</h5>{{/if}}
+          {{#if searchBrand}}<h5>{{searchBrand}} ({{count}} found)</h5>{{/if}}
+        </div>
+        <select id="sortDropdown" class="form-select w-auto" onchange="onSortChange(this)">
+          <option value="">Sort by</option>
+          <option value="asc" {{#if (eq sort "asc")}}selected{{/if}}>Price low to high</option>
+          <option value="desc" {{#if (eq sort "desc")}}selected{{/if}}>Price high to low</option>
+          <option value="az" {{#if (eq sort "az")}}selected{{/if}}>A-Z</option>
+          <option value="za" {{#if (eq sort "za")}}selected{{/if}}>Z-A</option>
+        </select>
+      </div>
+
+      <div class="row g-4">
+        {{#each products}}
+        <div class="col-sm-12 col-md-6 col-lg-4">
+          <div class="product-card">
+            {{#if @root.user}}
+              <span class="wishlist-btn text-danger" onclick="addToWishlist(this,'{{_id}}')"><i class="bi bi-heart-fill"></i></span>
+            {{else}}
+              <span class="wishlist-btn text-danger" onclick="notLogin()"><i class="bi bi-heart-fill"></i></span>
+            {{/if}}
+            <a href="/productDetails/{{_id}}">
+              <img src="/uploads/re-image/{{productImage.[0]}}" alt="{{productName}}">
+            </a>
+            <h5 class="text-truncate">{{productName}}</h5>
+            <p>Brand: {{brand.brandName}}</p>
+
+            {{#if (gt category.categoryoffer productOffer)}}
+              {{#if category.categoryoffer}}
+                <p class="fw-bold">₹{{discountedPrice}} <span class="text-muted"><s>₹{{salePrice}}</s></span> <span class="text-success">{{category.categoryoffer}}% off</span></p>
+              {{else}}
+                <p class="fw-bold">₹{{salePrice}}</p>
+              {{/if}}
+            {{else}}
+              {{#if productOffer}}
+                <p class="fw-bold">₹{{discountedPrice}} <span class="text-muted"><s>₹{{salePrice}}</s></span> <span class="text-success">{{productOffer}}% off</span></p>
+              {{else}}
+                <p class="fw-bold">₹{{salePrice}}</p>
+              {{/if}}
+            {{/if}}
+
+            {{#if quantity}}
+              <button onclick="addToCart('{{_id}}')" class="btn btn-success w-100 rounded-pill mt-2">Add to Cart</button>
+            {{else}}
+              <h6 class="text-danger mt-2">Currently unavailable</h6>
+            {{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+
+      <!-- Pagination -->
+
+      {{#if (gt totalPages 1)}}
+      <nav class="mt-4 d-flex justify-content-end">
+        <ul class="pagination">
+          <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
+            <a class="page-link" href="?page={{sub currentPage 1}}&sort={{sort}}">Previous</a>
+          </li>
+          {{#each (range 1 totalPages)}}
+          <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+            <a class="page-link" href="?page={{this}}&sort={{../sort}}">{{this}}</a>
+          </li>
+          {{/each}}
+          <li class="page-item {{#if (eq currentPage totalPages)}}disabled{{/if}}">
+            <a class="page-link" href="?page={{add currentPage 1}}&sort={{sort}}">Next</a>
+          </li>
+        </ul>
+      </nav>
+      {{/if}}
+    </div>
+  </div>
 </div>
-  </section>
-</div>
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script>
-document.getElementById("sortDropdown").addEventListener("change", function () {
-    const selectedSort = this.value;
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Preserve existing filters
-    const category = urlParams.get("category");
-    const brand = urlParams.get("brand");
-    const gt = urlParams.get("gt");
-    const lt = urlParams.get("lt");
-
-    // Build new URL
-    let url = "/sort?sort=" + selectedSort;
-    if (category) url += "&category=" + category;
-    if (brand) url += "&brand=" + brand;
-    if (gt && lt) url += "&gt=" + gt + "&lt=" + lt;
-
-    window.location.href = url;
-  });
+function onSortChange(select) {
+  const selectedSort = select.value;
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get("category");
+  const brand = urlParams.get("brand");
+  const gt = urlParams.get("gt");
+  const lt = urlParams.get("lt");
+  let url = "/sort?sort=" + selectedSort;
+  if (category) url += "&category=" + category;
+  if (brand) url += "&brand=" + brand;
+  if (gt && lt) url += "&gt=" + gt + "&lt=" + lt;
+  window.location.href = url;
+}
 
 
   function notLogin()
@@ -496,8 +301,7 @@ document.getElementById("sortDropdown").addEventListener("change", function () {
     }
   });
 }
-
-
 </script>
 
-{{> foote}}
+<!-- Include Footer Partial -->
+{{> foote }}

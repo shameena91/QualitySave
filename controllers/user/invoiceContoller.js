@@ -37,6 +37,8 @@ const downloadInvoice = async (req, res) => {
 
     const couponDiscount = order.couponDiscount || 0;
     const finalAmount = subtotal - discountTotal - couponDiscount + order.shipping;
+const allItemsCancelled = order.orderItems.every(item => item.status === "Cancelled");
+
 
     const doc = new PDFDocument({ margin: 50 });
 
@@ -68,7 +70,11 @@ let currentY = doc.y;
 doc.font("Helvetica-Bold").text("Payment Method:", 50, currentY, { continued: true });
 
 doc.font("Helvetica").text(` ${order.paymentMethod === "razorpay" ? "Online" : order.paymentMethod}`);
-
+if (allItemsCancelled) {
+  doc.font("Helvetica-Bold").fillColor("red").text("Order Status:", 50, doc.y, { continued: true });
+  doc.font("Helvetica").fillColor("red").text(" Cancelled").moveDown();
+  doc.fillColor("black"); // Reset color for rest of the document
+}
 doc.moveDown();
 
     const startY = doc.y + 10;

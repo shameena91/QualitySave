@@ -97,7 +97,7 @@ async function sendVerificationEmail(email, otp) {
 }
 
 function generateReferalCode(username) {
-  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4 random characters
+  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase(); 
   return `${username.slice(0, 4).toUpperCase()}${randomPart}`;
 }
 
@@ -120,7 +120,7 @@ const userSignup = async (req, res) => {
       return res.render("signUp", {
         message: "Failed to send OTP. Please try again.",
       });
-      // return res.json("email.error")
+      
     }
     req.session.userOtp = otp;
     req.session.userData = {
@@ -379,7 +379,6 @@ const filterProduct = async (req, res) => {
       };
     }
 
-    // Optional: Get readable filter names
     let searchCat = null;
     let searchBrand = null;
 
@@ -402,7 +401,7 @@ const filterProduct = async (req, res) => {
       return res.redirect("/no-data-found");
     }
 
-    // Sort and paginate
+  
     products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const itemsPerPage = 6;
     const currentPage = parseInt(page) || 1;
@@ -410,7 +409,6 @@ const filterProduct = async (req, res) => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentProduct = products.slice(startIndex, startIndex + itemsPerPage);
 
-    // Save selected filters
     const selectedFilters = { category, brand, gt, lt };
 
     res.render("shop", {
@@ -496,7 +494,7 @@ const sortProducts = async (req, res) => {
     const categories = await Category.find({ isListed: true }).lean();
     const brands = await Brand.find({ isBlocked: false }).lean();
 
-    // Construct query
+    
     const query = { isBlocked: false };
     if (category) query.category = category;
     if (brand) query.brand = brand;
@@ -507,7 +505,7 @@ const sortProducts = async (req, res) => {
       };
     }
 
-    // Construct sort option
+
     let sortOption = {};
     if (sort === "asc") {
       sortOption = { discountedPrice: 1 };
@@ -522,7 +520,7 @@ const sortProducts = async (req, res) => {
     let products = await Product.find(query)
       .populate("brand")
       .populate("category")
-      .collation({ locale: "en", strength: 2 }) // for case-insensitive sort
+      .collation({ locale: "en", strength: 2 }) 
       .sort(sortOption)
       .lean();
 
@@ -530,7 +528,7 @@ const sortProducts = async (req, res) => {
       return res.redirect("/no-data-found");
     }
 
-    // Pagination
+
     const itemsPerPage = 9;
     const currentPage = parseInt(page) || 1;
     const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -570,7 +568,7 @@ module.exports = {
   logout,
   loadShopPage,
   filterProduct,
-  // filterByPrice,
+ 
   searchProducts,
   noDataFound,
   sortProducts,

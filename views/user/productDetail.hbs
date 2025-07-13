@@ -287,72 +287,78 @@
  {{#if relatedProducts.length}}
 <h3 class="mt-5 mb-3">Related Products</h3>
 
-<div class="position-relative">
+<div class="position-relative my-4">
 
-  <!-- Scrollable container -->
+  <!-- Scrollable Product Cards Container -->
   <div class="d-flex overflow-auto hide-scrollbar gap-3 px-2" id="relatedScroll" style="scroll-behavior: smooth;">
     {{#each relatedProducts}}
-    <div class="card flex-shrink-0 border" style="width: 250px; min-height: 400px;">
+    <div class="card flex-shrink-0 shadow-sm border-0" style="width: 240px; min-height: 420px;">
 
-      <div class="product-card p-2">
+      <div class="position-relative">
         {{#if ../user}}
-        <span class="wishlist-btn" onclick="addToWishlist('{{this._id}}')">❤️</span>
+        <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 rounded-circle wishlist-btn" onclick="addToWishlist('{{this._id}}')">
+          <i class="bi bi-heart-fill text-danger"></i>
+        </button>
         {{else}}
-        <span class="wishlist-btn" onclick="notLogin()">❤️</span>
+        <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-2 rounded-circle wishlist-btn" onclick="notLogin()">
+          <i class="bi bi-heart-fill text-danger"></i>
+        </button>
         {{/if}}
 
         <a href="/productDetails/{{this._id}}">
-          <img src="/uploads/re-image/{{this.productImage.[0]}}" class="img-fluid mb-2" alt="{{this.productName}}" />
+          <img src="/uploads/re-image/{{this.productImage.[0]}}" class="card-img-top p-3" style="height: 200px; object-fit: contain;" alt="{{this.productName}}">
         </a>
+      </div>
 
-        <h6 class="text-truncate" style="max-width: 100%;">{{this.productName}}</h6>
-        <p class="mb-0">Brand: {{this.brand.brandName}}</p>
+      <div class="card-body text-center">
+        <h6 class="card-title text-truncate mb-1">{{this.productName}}</h6>
+        <p class="text-muted small mb-1">Brand: {{this.brand.brandName}}</p>
 
+        {{!-- Price and Offers --}}
         {{#if (gt this.category.categoryoffer this.productOffer)}}
           {{#if this.category.categoryoffer}}
-          <p style="font-size:16px;font-weight:600">₹{{this.discountedPrice}}
-            <span class="text-muted"><strike>₹{{this.salePrice}}</strike></span>
-            <span style="color:green;font-size:14px;font-weight:600">{{this.category.categoryoffer}}% off</span>
+          <p class="fw-semibold mb-2 text-success">
+            ₹{{this.discountedPrice}}
+            <small class="text-muted"><s>₹{{this.salePrice}}</s></small><br>
+            <small>{{this.category.categoryoffer}}% off</small>
           </p>
           {{else}}
-          <p style="font-size:16px;font-weight:600">₹{{this.salePrice}}</p>
+          <p class="fw-semibold mb-2">₹{{this.salePrice}}</p>
           {{/if}}
         {{else}}
           {{#if this.productOffer}}
-          <p style="font-size:16px;font-weight:600">₹{{this.discountedPrice}}
-            <span class="text-muted"><strike>₹{{this.salePrice}}</strike></span>
-            <span style="color:green;font-size:14px;font-weight:600">{{this.productOffer}}% off</span>
+          <p class="fw-semibold mb-2 text-success">
+            ₹{{this.discountedPrice}}
+            <small class="text-muted"><s>₹{{this.salePrice}}</s></small><br>
+            <small>{{this.productOffer}}% off</small>
           </p>
           {{else}}
-          <p style="font-size:16px;font-weight:600">₹{{this.salePrice}}</p>
+          <p class="fw-semibold mb-2">₹{{this.salePrice}}</p>
           {{/if}}
         {{/if}}
 
         {{#if this.quantity}}
-        <button class="btn btn-success w-100 rounded-pill d-flex align-items-center justify-content-center gap-2"
-
-          onclick="{{#if ../user}}addToCart('{{this._id}}'){{else}}notLogin(){{/if}}">
+        <button class="btn btn-success btn-sm w-100 rounded-pill" onclick="{{#if ../user}}addToCart('{{this._id}}'){{else}}notLogin(){{/if}}">
           Add to Cart
         </button>
         {{else}}
-        <h6 class="text-danger mt-2">Out of stock</h6>
+        <span class="text-danger small fw-semibold d-block">Out of stock</span>
         {{/if}}
-
       </div>
-
     </div>
     {{/each}}
   </div>
 
-  <!-- Scroll buttons -->
-  <button class="btn btn-light shadow-sm position-absolute top-50 start-0 translate-middle-y" onclick="scrollLeft()" style="z-index: 10;">
+  <!-- Scroll Controls -->
+  <button class="btn btn-outline-secondary shadow-sm position-absolute top-50 start-0 translate-middle-y rounded-circle" onclick="scrollLeft()" style="z-index: 10;">
     <i class="bi bi-chevron-left"></i>
   </button>
-  <button class="btn btn-light shadow-sm position-absolute top-50 end-0 translate-middle-y" onclick="scrollRight()" style="z-index: 10;">
+  <button class="btn btn-outline-secondary shadow-sm position-absolute top-50 end-0 translate-middle-y rounded-circle" onclick="scrollRight()" style="z-index: 10;">
     <i class="bi bi-chevron-right"></i>
   </button>
 
 </div>
+
 {{/if}}
 
 

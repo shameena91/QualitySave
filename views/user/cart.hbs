@@ -215,8 +215,8 @@
         </div>
        
         {{#if (and cartProducts.length (gt hasStock 0))}}
-        <a href="/checkout">
-        <button class="btn btn-warning w-100 mt-4">Place Order</button></a>
+       
+        <button class="btn btn-warning w-100 mt-4" onclick="checkProductStock()">Place Order</button>
         
         
         {{else }}
@@ -229,8 +229,78 @@
 </div>
 
 
+
+<!-- Modal -->
+<div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title" id="stockModalLabel">Some Products Are Unavailable</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">The following products are currently out of stock:</p>
+        <ul id="outOfStockList" class="list-group list-group-flush text-danger fw-semibold"></ul>
+        <p class="mt-3">Do you still want to proceed to checkout?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="proceedToCheckoutBtn">Yes, Proceed</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   
  <script>
+
+function checkProductStock() {
+  fetch('/cart/check-stock', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.unavailable.length === 0) {
+      // ✅ All products available
+      window.location.href = "/checkout";
+    } else {
+     
+      const list = document.getElementById("outOfStockList");
+list.innerHTML = '';
+
+data.unavailable.forEach(product => {
+  const card = document.createElement("div");
+  card.className = "col-12 d-flex align-items-center gap-3 border rounded p-2";
+
+  card.innerHTML = `
+    <img src="/uploads/re-image/${product.image}" alt="${product.name}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: contain;">
+    <div>
+      <strong>${product.name}</strong><br/>
+      <span class="text-danger small">Out of Stock</span>
+    </div>
+  `;
+  list.appendChild(card);
+});
+
+      const modal = new bootstrap.Modal(document.getElementById('stockModal'));
+      modal.show();
+
+      document.getElementById("proceedToCheckoutBtn").onclick = () => {
+        window.location.href = "/checkout";
+      };
+    }
+  })
+  .catch(err => {
+    alert("Error checking stock. Please try again.");
+    console.error(err);
+  });
+}
+
+
+  
   function increaseQty(productId) {
   const qtyDisplay = document.getElementById(`qtyDisplay-${productId}`);
   let quantity = parseInt(qtyDisplay.textContent);

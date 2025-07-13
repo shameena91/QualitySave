@@ -28,19 +28,11 @@ const applyCoupon = async (req, res) => {
       return res.json({ success: false, message: "Coupon already used" });
     }
 
-    // Save coupon info in session for later
+   
     req.session.coupon = couponId;
     return res.json({ success: true });
 
-    // if (!coupon.usedUsers.includes(userId)) {
-    //   coupon.usedUsers.push(userId);
-    //   await coupon.save();
-    //   req.session.coupon = couponId;
-    //   //  req.session.couponId=id
-    //   return res.json({ success: true });
-    // } else {
-    //   return res.json({ success: false });
-    // }
+  
   } catch (error) {
     console.error("Error updating coupon usage:", error);
     return res.status(500).json({ success: false, message: "Server error." });
@@ -211,7 +203,7 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Your cart is empty." });
     }
 
-    // Filter out-of-stock items
+ 
     const validCartItems = cart.cartItems.filter(
       (item) => item.productId.quantity > 0
     );
@@ -220,7 +212,7 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ message: "All cart items are out of stock." });
     }
 
-    // Prepare order items
+
     const orderItems = validCartItems.map((item) => ({
       product: item.productId._id,
       quantity: item.quantity,
@@ -229,7 +221,7 @@ const createOrder = async (req, res) => {
       discountedAmount: (item.salePrice - item.price) * item.quantity,
     }));
 
-    // Calculate totals
+
     const totalPrice = validCartItems.reduce(
       (sum, item) => sum + item.salePrice * item.quantity,
       0
@@ -241,7 +233,6 @@ const createOrder = async (req, res) => {
     const discount = totalPrice - finalAmount;
     const couponDiscount = finalAmount - (amount - shippingCharge);
 
-    // Create order document
     const newOrder = new Order({
       userId,
       orderItems,
@@ -257,7 +248,7 @@ const createOrder = async (req, res) => {
       orderStatus: "Placed",
     });
 
-    // Wallet payment processing
+
     if (paymentMethod === "wallet") {
       if (user.wallet < amount) {
         return res.status(400).json({
@@ -284,7 +275,6 @@ const createOrder = async (req, res) => {
       await user.save();
     }
 
-    // Mark coupon as used and clear session
     if (couponId) {
       await Coupon.updateOne(
         { _id: couponId },
@@ -293,13 +283,13 @@ const createOrder = async (req, res) => {
       req.session.coupon = null;
     }
 
-    // Save the order
+   
     await newOrder.save();
 
-    // Clear cart
+  
     await Cart.findOneAndDelete({ userId });
 
-    // Decrease product stock
+ 
     for (const item of orderItems) {
       await Product.updateOne(
         { _id: item.product, quantity: { $gte: item.quantity } },
@@ -330,7 +320,6 @@ const retryCodOrder = async (req, res) => {
         .json({ message: "Invalid payment method for COD retry" });
     }
 
-    // Update the existing order
     const order = await Order.findOne({ orderId: orderId });
     console.log("oooooo", order);
     if (!order) {
@@ -344,7 +333,7 @@ const retryCodOrder = async (req, res) => {
     order.paymentStatus = "pending";
     order.retry = true;
     order.razorpayStatus = "created";
-    order.updatedOn = new Date(); // reset timestamp if needed
+    order.updatedOn = new Date(); 
     console.log("ggg", order);
     await order.save();
 
@@ -600,7 +589,7 @@ const cancelOrder = async (req, res) => {
 
   specifiedProduct.refundPrice = adjustedRefund;
 
-  // Reset coupon values since it’s now invalid
+
   order.couponUsed = null;
   order.couponDiscount = 0;
 
@@ -656,11 +645,7 @@ const cancelOrder = async (req, res) => {
       order.finalAmount = order.finalAmount - refundAmount;
       order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
       order.discount = order.discount - specifiedProduct.discountedAmount;
-      // if (couponId) {
-      //   // order.couponDiscount =
-      //   //   order.couponDiscount -
-      //   //   Math.floor(order.couponDiscount / order.orderItems.length);
-      // }
+     
     }
 
     await order.save();
