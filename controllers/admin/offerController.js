@@ -79,8 +79,7 @@ const getProductOffer = async (req, res) => {
 
     const searchExp = new RegExp(search.trim(), "i");
     const matchingOfferIds = await Offer.find({ code: { $regex: searchExp} ,type:"product" }).distinct("_id");
-console.log("hhhhhhhhhhh",statusFilter)
-console.log("hhhhhhhhhhh",search)
+
     const query = {
       _id: { $in: matchingOfferIds }
     };
@@ -129,8 +128,7 @@ const search = req.query.search || "";
    const searchExp = new RegExp(search.trim(), "i");
 
    const matchingOfferIds = await Offer.find({ code: { $regex: searchExp },type:"category" }).distinct("_id");
-console.log("hhhhhhhhhhh",statusFilter)
-console.log("hhhhhhhhhhh",search)
+
     const query = {
       _id: { $in: matchingOfferIds }
     };
@@ -167,7 +165,7 @@ const productOffer = async (req, res) => {
     const { products, name, code, discount, validUntil, type } = req.body;
     const errors = {};
 
-    console.log(products);
+
 
     if (!Array.isArray(products) || products.length === 0) {
       errors.products = "Please select at least one product.";
@@ -237,7 +235,7 @@ const productOffer = async (req, res) => {
       const categoryOffer = product.category?.categoryoffer || 0;
       const productOffer = parseInt(discount);
       const bestOffer = Math.max(categoryOffer, productOffer);
-      console.log(productOffer);
+    
       const discountedPrice =
         product.salePrice - Math.floor(product.salePrice * (bestOffer / 100));
 
@@ -365,7 +363,7 @@ const categoryOffer = async (req, res) => {
 const deleteOffer = async (req, res) => {
   try {
     const { offerId } = req.params;
-    console.log("offerId", offerId);
+  
 
     const offer = await Offer.findById(offerId);
     if (!offer) {
@@ -524,7 +522,7 @@ const editCategoryOffer = async (req, res) => {
   try {
     const { offerId, offerName, discount, validUntil, categoryId, type } =
       req.body;
-    console.log(offerId, offerName, discount, validUntil, categoryId, type);
+  
 
     const updatedOffer = await Offer.findByIdAndUpdate(
       offerId,

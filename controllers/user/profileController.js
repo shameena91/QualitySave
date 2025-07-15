@@ -47,7 +47,7 @@ const sendVarificationEmail = async (email, otp) => {
       text: `Your OTP is ${otp}`,
       html: `<b>Yout OTP: ${otp} </b>`,
     });
-    console.log("Email send response:", info.messageId);
+   
     return true;
   } catch (error) {
     console.log("Error sending Email", error);
@@ -93,11 +93,10 @@ const forgotPassVarifyOtp = async (req, res) => {
     const enteredOtp = req.body.otp;
     const sessionOtp = req.session.userOtp;
 
-    console.log("Entered OTP:", enteredOtp);
-    console.log("Session OTP:", sessionOtp);
+ 
 
     if (!sessionOtp) {
-      console.log("OTP expired. Please request a new one");
+     
       return res.json({
         success: false,
         message: "OTP expired. Please request a new one.",
@@ -106,7 +105,7 @@ const forgotPassVarifyOtp = async (req, res) => {
 
     if (enteredOtp === sessionOtp) {
       req.session.userOtp = null;
-      console.log("resetPassword");
+   
       return res.json({ success: true, redirectUrl: "/resetPassword" });
     } else {
       return res.json({ success: false, message: "OTP not matching" });
@@ -147,7 +146,7 @@ const resendForgotPass = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
     const { newPass1, newPass2 } = req.body;
-    console.log("newPass", newPass1);
+   
 
     const email = req.session.email;
 
@@ -235,7 +234,7 @@ const deleteProfileImage = async (req, res) => {
         "re-image",
         user.profileImage
       );
-      console.log(imagePath);
+    
 
       try {
         await fs.promises.unlink(imagePath);
@@ -267,20 +266,20 @@ const getChangeEmail = async (req, res) => {
 const varifyChangeEmail = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log("ffffff", email);
+  
     const findUser = await User.findOne({ email: email });
-    console.log("oooo", findUser);
+  
 
     if (findUser) {
       const otp = generateOtp();
-      console.log(otp);
+     
       const emailSent = await sendVarificationEmail(email, otp);
       if (emailSent) {
         req.session.userOtp = otp;
         req.session.email = email;
         req.session.userData = req.body;
         res.render("change-email-otp");
-        console.log("reserOPT", otp);
+       
       } else {
         res.json({ message: "please try again later" });
       }
@@ -299,11 +298,9 @@ const varifyEmailOtp = async (req, res) => {
     const enteredOtp = req.body.otp;
     const sessionOtp = req.session.userOtp;
 
-    console.log("Entered OTP:", enteredOtp);
-    console.log("Session OTP:", sessionOtp);
 
     if (!sessionOtp) {
-      console.log("OTP expired. Please request a new one");
+      
       return res.render("change-email-otp", {
         message: "OTP expired. Please request a new one.",
       });
@@ -351,20 +348,20 @@ const getChangePwd = async (req, res) => {
 const varifyChangePswd = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log("ffffff", email);
+   
     const findUser = await User.findOne({ email: email });
-    console.log("oooo", findUser);
+   
 
     if (findUser) {
       const otp = generateOtp();
-      console.log(otp);
+     
       const emailSent = await sendVarificationEmail(email, otp);
       if (emailSent) {
         req.session.userOtp = otp;
         req.session.email = email;
         req.session.userData = req.body;
         res.render("change-pswd-otp");
-        console.log("reserOPT", otp);
+       
       } else {
         res.json({ message: "please try again later" });
       }
@@ -384,8 +381,6 @@ const varifyPswdOtp = async (req, res, next) => {
     const enteredOtp = req.body.otp;
     const sessionOtp = req.session.userOtp;
 
-    console.log("Entered OTP:", enteredOtp);
-    console.log("Session OTP:", sessionOtp);
 
     if (enteredOtp === sessionOtp) {
       req.session.userOtp = null;

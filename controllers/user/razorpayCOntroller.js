@@ -18,7 +18,7 @@ const createRazorpayOrder = async (req, res) => {
     const couponId = req.session.coupon;
     const { addressId, paymentMethod, amount, shippingCharge, orderId } =
       req.body;
-    console.log("nnnn", shippingCharge);
+
     if (!addressId || !paymentMethod) {
       return res
         .status(400)
@@ -30,7 +30,6 @@ const createRazorpayOrder = async (req, res) => {
     const findCartItems = await Cart.findOne({ userId })
       .populate("cartItems.productId")
       .lean();
-    console.log("111111111", amount);
 
     const userCart = findCartItems.cartItems.filter(
       (item) => item.productId.quantity > 0
@@ -47,13 +46,7 @@ const createRazorpayOrder = async (req, res) => {
     );
     const discount = totalAmount - finalAmount;
     const couponDiscount = finalAmount - amountPay;
-    console.log("jjjjjjjjjjjjjjjjjjjjjj");
-    console.log(totalAmount);
-    console.log(finalAmount);
-    console.log(discount);
 
-    console.log(couponDiscount);
-  
     const newOrder = new Order({
       userId,
       orderItems: userCart.map((item) => ({
@@ -109,23 +102,17 @@ const verifyPayment = async (req, res) => {
   try {
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature, orderId } =
       req.body;
-    console.log(
-      "ttttttt",
-      razorpayOrderId,
-      razorpayPaymentId,
-      razorpaySignature,
-      orderId
-    );
+
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest("hex");
-    console.log("gggggg", generatedSignature);
+
     if (generatedSignature !== razorpaySignature) {
       return res.status(400).json({ message: "Invalid signature" });
     }
     const order = await Order.findById(orderId);
-    console.log("kkkk", order);
+
     await Order.findByIdAndUpdate(orderId, {
       razorpayOrderId,
       razorpayPaymentId,
@@ -206,20 +193,18 @@ const retryRazorpayPayment = async (req, res) => {
 const retryOrder = async (req, res) => {
   try {
     const orderId = req.params.orderId;
-    console.log(orderId);
+
     const user = req.session.user;
     const userData = await User.findById(user).lean();
     const order = await Order.findOne({ orderId: orderId })
 
       .populate("orderItems.product")
       .lean();
-let hasCoupon
-      if(order.couponUsed)
-      {
-  hasCoupon=true
-      }
-     
-    console.log("ddddd", order.address);
+    let hasCoupon;
+    if (order.couponUsed) {
+      hasCoupon = true;
+    }
+
     const orderProducts = order.orderItems;
     const addressId = order.address;
     const address = await Address.findOne({ userId: user }).lean();
@@ -227,7 +212,6 @@ let hasCoupon
       minimumPrice: { $lt: order.finalAmount },
       isList: true,
     }).lean();
-       
 
     if (!address || !address.address || address.address.length === 0) {
       return res.render("checkout", {
@@ -235,11 +219,10 @@ let hasCoupon
         message: "No saved addresses found.",
         cartProducts: orderProducts, // if you show all saved addresses
         finalSalePrice: order.totalPrice,
-        finalTotalPrice: order.finalAmount+order.couponDiscount,
+        finalTotalPrice: order.finalAmount + order.couponDiscount,
         shippingCharge: order.shipping || 0,
         coupons,
         totalDiscount: order.discount,
-    
 
         user: userData, // needed to reuse same order
         retry: true,
@@ -250,12 +233,11 @@ let hasCoupon
       addresses,
       cartProducts: orderProducts, // if you show all saved addresses
       finalSalePrice: order.totalPrice,
-      finalTotalPrice: order.finalAmount+order.couponDiscount,
+      finalTotalPrice: order.finalAmount + order.couponDiscount,
       shippingCharge: order.shipping || 0,
       coupons,
       totalDiscount: order.discount,
-      wallet:userData.wallet,
-     
+      wallet: userData.wallet,
 
       user: userData, // needed to reuse same order
       retry: true,
@@ -266,14 +248,10 @@ let hasCoupon
   }
 };
 const retryRazorpayOrder = async (req, res) => {
-  console.log(req.params);
   try {
     const { orderId } = req.params;
-    console.log("hhhh", orderId);
 
     const existingOrder = await Order.findOne({ orderId: orderId });
-
-    console.log("hhhh", existingOrder);
 
     const totalAmount = existingOrder.finalAmount * 100; // amount in paise
 
@@ -287,8 +265,7 @@ const retryRazorpayOrder = async (req, res) => {
       receipt: `${String(existingOrder._id)}-retry`,
       payment_capture: 1,
     });
-    console.log("yyyyyyyy", razorpayOrder);
-    // Update the razorpayOrderId and status in DB
+
     await Order.updateOne(
       { orderId: orderId },
       {
@@ -316,8 +293,7 @@ const retryRazorpayOrder = async (req, res) => {
 const deletePendingOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
-    console.log("mmmmmmmmm", orderId);
-    // Ensure to check order status before deletion
+
     await Order.deleteOne({ _id: orderId });
     res.json({ success: true, message: "Order deleted" });
   } catch (err) {

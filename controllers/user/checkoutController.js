@@ -91,7 +91,7 @@ const getCheckout = async (req, res) => {
     }
 
     const finalTotalPrice = finalTotalAmount + shippingCharge;
-    console.log(shippingCharge);
+   
 
     if (
       !userAddressDoc ||
@@ -113,7 +113,7 @@ const getCheckout = async (req, res) => {
     }
     const addresses = userAddressDoc.address;
 
-    console.log("coupons", coupons);
+   
     res.render("checkout", {
       user,
       addresses,
@@ -147,7 +147,7 @@ const checkoutAddaddress = async (req, res) => {
       altphone,
       addressType,
     } = req.body;
-    console.log(fullName, phone, pincode, city, houseDetails, addressType);
+    
     const userData = await User.findOne({ _id: userId });
 
     const userAddress = await Address.findOne({ userId: userData._id });
@@ -312,7 +312,7 @@ const retryCodOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { addressId, paymentMethod, amount, shippingCharge } = req.body;
-    console.log(orderId);
+  
 
     if (paymentMethod !== "cod") {
       return res
@@ -321,7 +321,7 @@ const retryCodOrder = async (req, res) => {
     }
 
     const order = await Order.findOne({ orderId: orderId });
-    console.log("oooooo", order);
+   
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
@@ -334,7 +334,7 @@ const retryCodOrder = async (req, res) => {
     order.retry = true;
     order.razorpayStatus = "created";
     order.updatedOn = new Date(); 
-    console.log("ggg", order);
+
     await order.save();
 
     res
@@ -400,7 +400,7 @@ const getMyOrders = async (req, res) => {
         })),
       };
     });
-    console.log(groupedOrders);
+   
     const paginatedOrders = groupedOrders.slice(0, skip + limit);
     const hasMore = page * limit < groupedOrders.length;
 
@@ -421,7 +421,7 @@ const getOrderDetail = async (req, res) => {
   try {
     const userId = req.session.user;
     const { orderId } = req.params;
-    console.log("orderid", orderId);
+   
     const user = await User.findById(userId).lean();
 
 
@@ -429,16 +429,16 @@ const getOrderDetail = async (req, res) => {
       .populate("orderItems.product")
       .lean();
 
-    console.log(order);
+
     const addressId = order.address;
     const viewAddress = await Address.findOne({ userId: userId }).lean();
     specifiedAddress = viewAddress.address.find((item) => {
-      console.log("aaai", item._id);
+
       return item._id.toString() === addressId.toString();
     });
-    console.log("add", addressId, specifiedAddress);
+   
 const products=order.orderItems
-console.log(products)
+
 let invoiceStatus = "Show";
 let findOrderItems = [];
 let deliveredTotalPrice;
@@ -495,7 +495,7 @@ const payableAmount=deliveredTotalPrice-deliveredTotaldiscount-couponDiscount
 
 
 
-  console.log("INNN",invoiceStatus)
+
     res.render("viewOrderDetail", {
       products,
       orderId,
@@ -526,7 +526,7 @@ const cancelOrder = async (req, res) => {
 
     const order = await Order.findOne({ userId, orderId });
     const returnProduct = await Product.findById(productId);
-    console.log("rrrrrrr", returnProduct);
+  
     if (!order) {
       return res.status(404).send("Order not found");
     }
@@ -541,14 +541,14 @@ const cancelOrder = async (req, res) => {
     const couponId = order.couponUsed;
     const findCoupon=await Coupon.findById(couponId)
 
-    console.log(order.razorpayStatus);
+
     if (order.razorpayStatus === "paid" || order.paymentMethod==="wallet") {
       if (couponId) {
         let returnProductPrice =
           specifiedProduct.price * specifiedProduct.quantity;
         const remainingPrice = order.finalAmount - returnProductPrice;
 
-        console.log(couponId, returnProductPrice, remainingPrice);
+     
         if (remainingPrice >= findCoupon.minimumPrice) {
           user.wallet = user.wallet + returnProductPrice;
           user.walletHistory.push({
@@ -626,9 +626,7 @@ const cancelOrder = async (req, res) => {
         order.finalAmount = order.finalAmount - refundAmount;
         order.totalPrice = order.totalPrice - returnProduct.salePrice*specifiedProduct.quantity;
         order.discount = order.discount - specifiedProduct.discountedAmount;
-        // order.couponDiscount =
-        //   order.couponDiscount -
-        //   Math.floor(order.couponDiscount / order.orderItems.length);
+       
         await Ledger.create({
           user: order.userId,
           orderId: order._id,
@@ -664,20 +662,18 @@ const cancelOrder = async (req, res) => {
 const returnRequest = async (req, res) => {
   try {
     const { orderId,productId } = req.params;
-    console.log(orderId, productId);
+    
     const { reason } = req.body;
-    console.log(reason);
+    
 
     const order = await Order.findOne({ orderId: orderId });
     if (!order) return res.status(404).json({ message: "Order not found" });
-   console.log("orderrrr",order)
-   console.log("bbbbbbbb",order.orderItems)
+  
   const item=order.orderItems.find((pro)=>{
-    console.log(pro.product)
-    console.log(productId)
+  
     return pro.product.toString()===productId
   })
-    console.log("itemmmmmm",item)
+  
     if (!item)
       return res.status(404).json({ message: "Product not found in order" });
 

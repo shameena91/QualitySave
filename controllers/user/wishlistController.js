@@ -5,7 +5,7 @@ const Wishlist = require("../../models/wishlistSchema");
 const getWishlist = async (req, res) => {
   try {
     const userId = req.session.user;
-    console.log("userId from session:", userId);
+    
     const userData = await User.findById(userId)
     .lean();
 
@@ -25,12 +25,12 @@ const getWishlist = async (req, res) => {
       })
       .lean();
 
-    console.log("Wishlisthhhhhhhhhhhh", wishlist);
+  
     if (!wishlist) {
       console.log("Wishlist not found");
       return res.redirect("/pageNotFound");
     }
-    console.log("Wishlist data:", wishlist);
+    
 
     const wishlistItems = wishlist
       ? wishlist.products.sort(
@@ -38,7 +38,7 @@ const getWishlist = async (req, res) => {
         )
       : [];
 
-    console.log("Wishlist productssssss", wishlistItems);
+
     res.render("wishlist", {
       wishlistItems,
       user: userData,
@@ -88,7 +88,7 @@ const addToWishlist = async (req, res, next) => {
 const removeWishlistItem = async (req, res, next) => {
   try {
     const productId = req.params.id;
-    console.log("wishid", productId);
+
     const userId = req.session.user;
     const user = await User.findById(userId);
 

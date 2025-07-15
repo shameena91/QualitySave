@@ -7,7 +7,7 @@ const Wishlist = require("../../models/wishlistSchema");
 const getCart = async (req, res) => {
   try {
     const userId = req.session.user;
-    console.log("userId from session:", userId);
+
 
     const user = await User.findById(userId).lean();
     if (!user) {
@@ -107,7 +107,7 @@ const addToCart = async (req, res) => {
     }
     const product = await Product.findById(productId);
     const categoryData = await Category.findById(product.category);
-    console.log(categoryData);
+
 
     if (!product) {
       return res
@@ -129,7 +129,7 @@ const addToCart = async (req, res) => {
       categoryData && categoryData.categoryoffer > product.productOffer
         ? categoryData.categoryoffer
         : product.productOffer;
-    console.log("ooooo", offer);
+  
     const quantity = 1;
     let maxQuantity = 5;
 
@@ -225,42 +225,25 @@ else{
 const updateCart = async (req, res) => {
   try {
     const userId = req.session.user;
-    console.log("User ID:", userId);
+
     const { productId, quantity, totalPrice, totalSalePrice } = req.body;
-    console.log("Received Data:", req.body);
+
 
     let cart = await Cart.findOne({ userId: userId });
     if (!cart) {
       return res.status(404).json({ status: false, message: "Cart not found" });
     }
-    console.log("Cart Items:", cart);
 
     const cartItem = cart.cartItems.find(
       (item) => item.productId.toString() === productId
     );
-    //   console.log("Cart Items:", cart.cartItems); //
+
     if (cartItem) {
      
       cartItem.quantity = quantity;
       cartItem.totalPrice = totalPrice;
       cartItem.totalSalePrice = totalSalePrice;
     }
-
-
-
-
-// if(findProduct.quantity<productExists.quantity+1){
-//   productExists.quantity =findProduct.quantity;
-//   productExists.totalPrice = productExists.quantity * price;
-//         productExists.totalSalePrice = productExists.quantity * salePrice;
-// }
-// else{
-//         productExists.quantity += 1;
-//         productExists.totalPrice = productExists.quantity * price;
-//         productExists.totalSalePrice = productExists.quantity * salePrice;
-// }
-
-
 
     await cart.save();
     res.status(200).json({ status: true });

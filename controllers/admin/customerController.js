@@ -23,7 +23,7 @@ const customerInfo = async (req, res) => {
       .skip((page - 1) * limit)
       .lean()
       .exec();
-    console.log(userData);
+
     countUsers = await User.find({
       isAdmin: false,
       $or: [

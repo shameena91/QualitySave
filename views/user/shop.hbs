@@ -186,23 +186,30 @@
 
       <!-- Pagination -->
 
-      {{#if (gt totalPages 1)}}
-      <nav class="mt-4 d-flex justify-content-end">
-        <ul class="pagination">
-          <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
-            <a class="page-link" href="?page={{sub currentPage 1}}&sort={{sort}}">Previous</a>
-          </li>
-          {{#each (range 1 totalPages)}}
-          <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
-            <a class="page-link" href="?page={{this}}&sort={{../sort}}">{{this}}</a>
-          </li>
-          {{/each}}
-          <li class="page-item {{#if (eq currentPage totalPages)}}disabled{{/if}}">
-            <a class="page-link" href="?page={{add currentPage 1}}&sort={{sort}}">Next</a>
-          </li>
-        </ul>
-      </nav>
-      {{/if}}
+     {{#if (gt totalPages 1)}}
+  <nav class="mt-4 d-flex justify-content-end" aria-label="Page navigation">
+    <ul class="pagination">
+      <li class="page-item {{#if (eq currentPage 1)}}disabled{{/if}}">
+        <a class="page-link" href="?page={{sub currentPage 1}}&sort={{sort}}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+
+      {{#each (range 1 totalPages)}}
+        <li class="page-item {{#if (eq ../currentPage this)}}active{{/if}}">
+          <a class="page-link" href="?page={{this}}&sort={{../sort}}">{{this}}</a>
+        </li>
+      {{/each}}
+
+      <li class="page-item {{#if (eq currentPage totalPages)}}disabled{{/if}}">
+        <a class="page-link" href="?page={{add currentPage 1}}&sort={{sort}}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+{{/if}}
+
     </div>
   </div>
 </div>

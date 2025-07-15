@@ -44,8 +44,7 @@ const loadHomePage = async (req, res) => {
 
     if (userId) {
       const userData = await User.findOne({ _id: userId }).lean();
-      console.log(userData.name);
-      console.log(productDetails);
+     
       res.render("userHome", { user: userData, products: productDetails });
     } else {
       return res.render("userHome", { products: productDetails, user: null });
@@ -60,7 +59,7 @@ const loadSignupPage = async (req, res) => {
   try {
     res.render("signUp");
   } catch (error) {
-    console.log("Home page not found");
+  
     res.status(500).send("server error");
   }
 };
@@ -107,7 +106,7 @@ const userSignup = async (req, res) => {
     if (password != cpassword) {
       return res.render("signUp", { message: "password not matched" });
     }
-    console.log(email);
+  
     const findUser = await User.findOne({ email });
     if (findUser) {
       return res.render("signUp", { message: "User already exists" });
@@ -131,7 +130,7 @@ const userSignup = async (req, res) => {
       generatedReferralCode,
       referalCode,
     };
-    console.log("OTP sent", otp);
+  
     res.render("otp-varify");
   } catch (error) {
     console.log("sighnup error", error);
@@ -154,12 +153,11 @@ const securepassword = async (password) => {
 const varifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    console.log(otp);
-    console.log("sessionotp", req.session.userOtp);
+   
     if (String(otp) === String(req.session.userOtp)) {
       const user = req.session.userData;
       const passwordHash = await securepassword(user.password);
-      console.log("sessionotp", req.session.userOtp);
+   
 
       const saveUserData = new User({
         name: user.name,
@@ -174,14 +172,14 @@ const varifyOtp = async (req, res) => {
         userData.googleId = user.googleId;
       }
       await saveUserData.save();
-      console.log(user.referalCode);
+   
       if (user.referalCode) {
         const findUser = await User.findOne({ referralCode: user.referalCode });
         if (findUser) {
           findUser.wallet = (findUser.wallet || 0) + 100;
           findUser.walletHistory = findUser.walletHistory || [];
 
-          console.log("userrrrrrrr", findUser);
+      
 
           findUser.walletHistory.push({
             type: "credit",
@@ -228,7 +226,7 @@ const resendOtp = async (req, res) => {
     req.session.userOtp = otp;
     const emailsent = await sendVerificationEmail(email, otp);
     if (emailsent) {
-      console.log("ResendOTP", otp);
+    
       res
         .status(200)
         .json({ success: true, message: "OTP resend successfully" });
@@ -307,7 +305,7 @@ const loadShopPage = async (req, res) => {
 
     const categoryIds = categories.map((category) => category._id.toString());
     const page = parseInt(req.query.page) || 1;
-    console.log("page", page);
+  
     const limit = 9;
     const skip = (page - 1) * limit;
 
@@ -338,13 +336,13 @@ const loadShopPage = async (req, res) => {
 
     const productOffer = products.productOffer;
 
-    console.log(productOffer);
+ 
 
     if (req.query.clearFilters === "true") {
       req.session.filteredProducts = null;
     }
 
-    console.log("iiiiiiiiiiiiiiiiii", products);
+   
     res.render("shop", {
       user: userData,
       products: products,
@@ -400,7 +398,7 @@ if (brand) {
   });
 }
 
-    console.log(brandCount,catCount)
+
 
     let products = await Product.find(query)
       .populate("brand")

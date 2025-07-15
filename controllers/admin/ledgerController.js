@@ -48,7 +48,7 @@ const getLedger = async (req, res) => {
     }
 
     const totalRevenue = totalSales - totalRefunds;
-    console.log(ledgerEntries);
+ 
     res.render("ledger", {
       ledgerEntries,
       currentPage,

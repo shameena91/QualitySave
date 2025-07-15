@@ -130,12 +130,17 @@ const postProducts = async (req, res) => {
       productImage: images,
       status: "Available",
     });
-
+if(categoryDoc.categoryoffer)
+{
     if (!newProduct.productOffer && categoryDoc.categoryoffer) {
       newProduct.discountedPrice =
         newProduct.salePrice -
         Math.floor(newProduct.salePrice * (categoryDoc.categoryoffer / 100));
     }
+  }
+  else{
+    newProduct.discountedPrice =newProduct.salePrice
+  }
     await newProduct.save();
     res.status(200).json({ message: "Product added successfully" });
   } catch (error) {
@@ -225,11 +230,17 @@ const editProduct = async (req, res) => {
     }
     let discountedPrice;
     const categoryDoc = await Category.findById(data.category);
+    if(categoryDoc.categoryoffer)
+    {
     if (!data.productOffer && categoryDoc?.categoryoffer) {
       discountedPrice =
         data.salePrice -
         Math.floor(data.salePrice * (categoryDoc.categoryoffer / 100));
     }
+  }
+  else{
+     discountedPrice = data.salePrice 
+  }
     const updateFields = {
       productName: data.productName,
       description: data.descriptionData,

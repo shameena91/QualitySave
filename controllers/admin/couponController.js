@@ -90,7 +90,7 @@ const updateCoupon = async (req, res) => {
   try {
     const { couponId } = req.params;
     const { code, discount, minimumPrice, startDate, endDate } = req.body;
-    console.log(couponId);
+ 
    
 
     await Coupon.findByIdAndUpdate(

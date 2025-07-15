@@ -35,10 +35,10 @@ router.route("/resend-otp").post(userController.resendOtp);
 // home and shopping
 router.get("/", userController.loadHomePage);
 router.get("/shop", userController.loadShopPage);
-router.get("/filter", userAuth, userController.filterProduct);
+router.get("/filter", userController.filterProduct);
 
-router.post("/search", userAuth, userController.searchProducts);
-router.get("/sort", userAuth, userController.sortProducts);
+router.post("/search", userController.searchProducts);
+router.get("/sort", userController.sortProducts);
 
 router.get(
   "/auth/google",
