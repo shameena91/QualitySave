@@ -444,7 +444,7 @@ const searchProducts = async (req, res) => {
     const userData = await User.findOne({ _id: user }).lean();
     const search = req.body.query;
 
-    const brands = await Brand.find({}).lean();
+     const brands = await Brand.find({ isBlocked: false }).lean();
     const categories = await Category.find({ isListed: true }).lean();
     const categoryIds = categories.map((category) => category._id.toString());
 
@@ -462,7 +462,9 @@ const searchProducts = async (req, res) => {
         productName: { $regex: ".*" + search + ".*", $options: "i" },
         isBlocked: false,
         category: { $in: categoryIds },
-      }).lean();
+      }).populate("brand")
+      .populate("category")
+      .lean();
     }
 
     if (!searchResult || searchResult.length === 0) {

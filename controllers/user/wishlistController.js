@@ -5,16 +5,14 @@ const Wishlist = require("../../models/wishlistSchema");
 const getWishlist = async (req, res) => {
   try {
     const userId = req.session.user;
-    
-    const userData = await User.findById(userId)
-    .lean();
 
-    const user = await User.findById(userId);
-    if (!user) {
+    const userData = await User.findById(userId).lean();
+    if (!userData) {
       console.log("User not found");
       return res.redirect("/pageNotFound");
     }
 
+  
     const wishlist = await Wishlist.findOne({ userId })
       .populate({
         path: "products.productId",
@@ -25,29 +23,28 @@ const getWishlist = async (req, res) => {
       })
       .lean();
 
-  
-    if (!wishlist) {
-      console.log("Wishlist not found");
-      return res.redirect("/pageNotFound");
+    let wishlistItems = [];
+    let isEmpty = true;
+
+    if (wishlist && wishlist.products.length > 0) {
+      wishlistItems = wishlist.products.sort(
+        (a, b) => new Date(b.addedOn) - new Date(a.addedOn)
+      );
+      isEmpty = false;
     }
-    
-
-    const wishlistItems = wishlist
-      ? wishlist.products.sort(
-          (a, b) => new Date(b.addedOn) - new Date(a.addedOn)
-        )
-      : [];
-
 
     res.render("wishlist", {
       wishlistItems,
       user: userData,
+      isEmpty,
     });
+
   } catch (error) {
     console.error("Error fetching wishlist:", error);
     return res.redirect("/pageNotFound");
   }
 };
+
 
 const addToWishlist = async (req, res, next) => {
   try {
