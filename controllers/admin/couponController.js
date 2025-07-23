@@ -34,7 +34,7 @@ const getCoupon = async (req, res, next) => {
     const totalOffers = await Coupon.countDocuments(query);
 
     const coupons = await Coupon.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ createdOn: -1 })
       .skip(skip)
       .limit(itemsPerPage)
       .lean();
