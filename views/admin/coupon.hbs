@@ -407,14 +407,14 @@ Swal.fire({
    const minimumPrice = minimumPriceInput.value.trim() !== ""? parseInt(minimumPriceInput.value): NaN;
 
 
-   if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= minimumPrice) {
-     document.getElementById("error-offer-price").innerHTML = "Offer Price must be greater than Minimum Price";
+   if (isNaN(offerPrice) || isNaN(minimumPrice) || offerPrice >= 100) {
+     document.getElementById("error-offer-price").innerHTML = "Offer Price must be Less than 100";
      return false;
    }
 
 
-   if (isNaN(offerPrice) || isNaN(minimumPrice)) {
-     document.getElementById("error-offer-price").innerHTML ="Please enter numeric values for Offer Price and Minimum Price";
+   if (isNaN(minimumPrice)||minimumPrice <= 0 ) {
+     document.getElementById("error-minimum-price").innerHTML ="Please enter valid Price";
      return false;
    }
 

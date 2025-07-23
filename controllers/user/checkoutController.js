@@ -524,7 +524,7 @@ const cancelOrder = async (req, res) => {
     const { orderId, productId, reason } = req.body;
     const user = await User.findById(userId);
 
-    const order = await Order.findOne({ userId, orderId });
+    const order = await Order.findOne({ userId, orderId }).populate("orderItems.product");
     const returnProduct = await Product.findById(productId);
   
     if (!order) {
@@ -534,7 +534,8 @@ const cancelOrder = async (req, res) => {
     const specifiedProduct = order.orderItems.find(
       (item) => item.product._id.toString() === productId
     );
-
+console.log(specifiedProduct)
+console.log(specifiedProduct.product.productName)
     if (!specifiedProduct) {
       return res.status(404).send("Product not found in order");
     }
@@ -554,7 +555,7 @@ const cancelOrder = async (req, res) => {
           user.walletHistory.push({
             amount: returnProductPrice,
             type: "credit",
-            reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId}`,
+            reason: `Refund for cancelled product ${specifiedProduct.product.productName } from order ${orderId}`,
           });
 
           specifiedProduct.refundPrice = returnProductPrice;
@@ -570,7 +571,7 @@ const cancelOrder = async (req, res) => {
             type: "debit",
             amount: returnProductPrice,
             paymentMethod: "wallet",
-            description: `Refund for cancelled product${productId}`,
+            description: `Refund for cancelled product${specifiedProduct.product.productName }`,
           });
            specifiedProduct.status = "Cancelled";
            await user.save();
@@ -584,7 +585,7 @@ const cancelOrder = async (req, res) => {
   user.walletHistory.push({
     amount: adjustedRefund,
     type: "credit",
-    reason: `Refund for cancelled product ${specifiedProduct.product} from order ${orderId} (coupon invalidated)`,
+    reason: `Refund for cancelled product ${specifiedProduct.product.productName } from order ${orderId} (coupon invalidated)`,
   });
 
   specifiedProduct.refundPrice = adjustedRefund;
@@ -617,7 +618,7 @@ const cancelOrder = async (req, res) => {
           amount: refundAmount,
           type: "credit",
           reason: `Refund for cancelled product ${
-            specifiedProduct.product.name || specifiedProduct.product
+            specifiedProduct.product.productName || specifiedProduct.product
           } from order ${orderId}`,
         });
         specifiedProduct.status = "Cancelled";
@@ -633,7 +634,7 @@ const cancelOrder = async (req, res) => {
           type: "debit",
           amount: refundAmount,
           paymentMethod: "wallet",
-          description: `Refund for cancelled product${productId}`,
+          description: `Refund for cancelled product${specifiedProduct.product.productName }`,
         });
         await user.save();
       }
