@@ -1,46 +1,86 @@
 {{> admin-header }}
 <style>
-  .image-container {
-    position: relative;
-    max-width: 300px;
-    margin-bottom: 20px;
-  }
 
-  .image-container img {
-    max-width: 100%;
-    display: block;
-  }
+ 
+#imageCropContainers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
 
-  .btn-crop {
-    margin-top: 10px;
-  }
+}
 
-  #croppedPreviewContainer img {
-    max-width: 150px;
-    margin-right: 10px;
-  }
+.image-container {
+  position: relative;
+  max-width: 300px;
+  margin-bottom: 20px;
+  flex: 0 0 auto; /* Don't grow or shrink */
+ 
+}
 
-  .error-message {
-    color: red;
-    font-size: 0.875rem;
-  }
+.image-container img {
+  max-width: 100%;
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+ 
+}
 
-  .close-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    opacity: 0.7;
-    text-shadow: 0 1px 0 black;
-  }
+.btn-crop {
+  margin-top: 10px;
+  width: 25%;
+}
 
-  .close-btn:hover {
-    opacity: 1;
-  }
+#croppedPreviewContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+#croppedPreviewContainer img {
+  max-width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+}
+
+.close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  text-shadow: 0 1px 0 black;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+/* Cropper.js specific styles */
+.cropper-container {
+  max-width: 100%;
+  max-height:600px;
+}
+
+.cropper-canvas img {
+  max-width: none !important;
+ 
+}
 </style>
 <div class="main-content" id="mainContent">
   <h3 class="text-start mb-4">Edit Product</h3>
@@ -88,13 +128,29 @@
   </div>
 </div>
 
-
                 <div class="mb-4">
                   <h5 class="mb-3">Product Description</h5>
                   <textarea class="form-control" rows="4" name="descriptionData" id="descriptionId">{{product.description}}</textarea>
                   <div id="description-error" class="error-message"></div>
                 </div>
+ <div class="row mb-4 m-2">
+                  <div class="col-md-6 mb-3">
+                    <h5 class="mb-3">Regular Price</h5>
+                    <input type="number" class="form-control" value="{{product.regularPrice}}" name="regularPrice">
+                    <div id="regularPrice-error" class="error-message"></div>
+                  </div>
 
+                  <div class="col-md-6">
+                    <h5 class="mb-3">Sale Price</h5>
+                    <input type="text" class="form-control" value="{{product.salePrice}}" name="salePrice">
+                    <div id="salePrice-error" class="error-message"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <h5 class="mb-3">Stock</h5>
+                    <input type="number" class="form-control" value="{{product.quantity}}" name="quantity">
+                    <div id="quantity-error" class="error-message"></div>
+                  </div>
+                </div>
                 <div class=" mb-3">
                   <div class="row">
                     {{#each product.productImage}}
@@ -119,26 +175,7 @@
                 <div id="imageCropContainers" class="d-flex flex-wrap gap-4 mt-4"></div>
 
                 <h5 class="mt-5">Cropped Preview</h5>
-                <div id="croppedPreviewContainer" class="d-flex flex-wrap mt-3"></div>
-
-                <div class="row mb-4 m-2">
-                  <div class="col-md-6 mb-3">
-                    <h5 class="mb-3">Regular Price</h5>
-                    <input type="number" class="form-control" value="{{product.regularPrice}}" name="regularPrice">
-                    <div id="regularPrice-error" class="error-message"></div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <h5 class="mb-3">Sale Price</h5>
-                    <input type="text" class="form-control" value="{{product.salePrice}}" name="salePrice">
-                    <div id="salePrice-error" class="error-message"></div>
-                  </div>
-                  <div class="col-md-6">
-                    <h5 class="mb-3">Stock</h5>
-                    <input type="number" class="form-control" value="{{product.quantity}}" name="quantity">
-                    <div id="quantity-error" class="error-message"></div>
-                  </div>
-                </div>
+                <div id="croppedPreviewContainer" class="d-flex flex-wrap mt-3"></div>     
 
                 <div class="d-flex justify-content-end gap-2 m-5">
                   <button class="btn btn-secondary" type="button" onclick="window.location.href='/admin/productList'">Cancel</button>
@@ -156,101 +193,133 @@
   const cropContainers = document.getElementById("imageCropContainers");
   const previewContainer = document.getElementById("croppedPreviewContainer");
   const croppedImages = [];
-  const productId = '{{product._id}}';
 
   let croppers = [];
+  
 
-imageInput.addEventListener("change", function (event) {
-  const existingCount = croppers.length;
-  const files = Array.from(event.target.files).slice(0, 3 - existingCount); 
+ imageInput.addEventListener("change", (event) => {
+  const newFiles = Array.from(event.target.files);
 
-  if (existingCount + files.length > 3) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Limit Exceeded',
-      text: 'You can only add up to 3 images.'
-    });
+
+  if (croppedImages.length + newFiles.length > 3) {
+    Swal.fire("Limit Exceeded", "You can only add up to 3 images.", "warning");
+    imageInput.value = ""; // Reset input
     return;
   }
 
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const container = document.createElement("div");
-        container.classList.add("image-container");
+  newFiles.forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const container = document.createElement("div");
+      container.className = "image-container";
+       container.style.position = "relative";
 
-        const image = document.createElement("img");
-        image.src = e.target.result;
-        image.id = `image-${index}`;
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      
+ const closeBtn = document.createElement("button");
+      closeBtn.innerHTML = "&times;";
+      closeBtn.className = "btn btn-danger btn-sm position-absolute top-0 end-0";
+      closeBtn.style.zIndex = "10";
 
-        const cropBtn = document.createElement("button");
-        cropBtn.type = "button";
-        cropBtn.innerText = "Save";
-        cropBtn.classList.add("btn", "btn-primary", "btn-crop");
-
-        cropBtn.onclick = () => cropImage(index, image, container);
-
-        container.appendChild(image);
-        container.appendChild(cropBtn);
-
-        cropContainers.appendChild(container);
-
-        const cropper = new Cropper(image, {
-          aspectRatio: 1,
-          viewMode: 1,
-        });
-
-        croppers[index] = cropper;
+      closeBtn.onclick = () => {
+        const cropperIndex = croppers.indexOf(cropper);
+        if (cropperIndex > -1) {
+          croppers.splice(cropperIndex, 1);
+          croppedImages.splice(cropperIndex, 1);
+        }
+        container.remove();
       };
-      reader.readAsDataURL(file);
-    });
+      
 
-    imageInput.value = "";
+      const cropBtn = document.createElement("button");
+      cropBtn.type = "button";
+      cropBtn.innerText = "Crop";
+      cropBtn.className = "btn btn-primary btn-crop";
+
+      const currentIndex = croppers.length; 
+      cropBtn.onclick = () => cropImage(currentIndex, img, container);
+
+
+   container.appendChild(closeBtn);
+      container.appendChild(img);
+      container.appendChild(cropBtn);
+      cropContainers.appendChild(container);
+
+      const cropper = new Cropper(img, {
+        aspectRatio: 1,
+        viewMode: 1,
+      });
+
+      croppers.push(cropper); 
+    };
+
+    reader.readAsDataURL(file);
   });
 
- 
+
+  imageInput.value = "";
+});
+
+
   function cropImage(index, imgElement, container) {
-    if (!croppers[index]) return; 
+  const cropper = croppers[index];
+  const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+  const croppedURL = canvas.toDataURL("image/png");
 
-    const cropper = croppers[index];
+  // Replace container content
+  container.innerHTML = "";
+  const croppedImg = document.createElement("img");
+  croppedImg.src = croppedURL;
+  croppedImg.className = "img-thumbnail";
 
-  
-    const canvas = cropper.getCroppedCanvas({
-      width: 500,
-      height: 500,
-    });
+const closeBtn = document.createElement("button");
+      closeBtn.innerHTML = "&times;";
+      closeBtn.className = "btn btn-danger btn-sm position-absolute top-0 end-0";
+      closeBtn.style.zIndex = "10";
 
- 
-    const croppedImageURL = canvas.toDataURL("image/png");
+      closeBtn.onclick = () => {
+        const cropperIndex = croppers.indexOf(cropper);
+        if (cropperIndex > -1) {
+          croppers.splice(cropperIndex, 1);
+          croppedImages.splice(cropperIndex, 1);
+        }
+        container.remove();
+      };
 
-    container.innerHTML = ''; 
+ container.appendChild(closeBtn);
+  container.appendChild(croppedImg);
 
-    const croppedImage = document.createElement("img");
-    croppedImage.src = croppedImageURL;
-
-    previewContainer.appendChild(croppedImage);
-
-
-    canvas.toBlob((blob) => {
-      croppedImages[index] = blob; 
-    }, "image/png");
-
-    Swal.fire({
-      icon: "success",
-      title: "Image Saved!",
-      text: "The image has been saved successfully.",
-    });
+  // Clear previous preview if exists
+  const existingPreview = previewContainer.children[index];
+  if (existingPreview) {
+    existingPreview.remove();
   }
+  
+  // Add new preview
+  const preview = croppedImg.cloneNode();
+  previewContainer.appendChild(preview);
 
+  // Store the blob
+  canvas.toBlob((blob) => {
+    croppedImages[index] = blob;
+  }, "image/png");
+
+  // Destroy the cropper to free memory
+  cropper.destroy();
+
+  Swal.fire({
+    icon: "success",
+    title: "Saved!",
+    text: "Image saved successfully.",
+  });
+}
   function validateAndSubmit( productId) {
     event.preventDefault();
 
     if (validateForm()) {
       const form = document.forms[0];
-      const formData = new FormData(form);
-
-    
-     
+      const formData = new FormData(form);  
       croppedImages.forEach((blob, i) => {
         if (blob) {
           formData.append("images", blob, `image${i + 1}.png`);
@@ -391,11 +460,21 @@ console.log("hooooooooooo",formData)
       isValid = false;
     }
 
-    if (saleprice.trim() !== "" && (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) < 0)) {
+    if (saleprice.trim() !== "" && (!/^\d+(\.\d{1,2})?$/.test(saleprice) || parseFloat(saleprice) <= 0)) {
       displayErrorMessage('salePrice-error', 'Please enter a valid non-negative sale price.');
       isValid = false;
     }
+  {{!-- if (croppedImages.length === 0 || croppedImages.some(blob => !blob)) {
+      displayErrorMessage('imageInput-error', 'Please crop and select at least one image.');
 
+          isValid = false;
+    } --}}
+    const remainingOldImages = document.querySelectorAll(".position-relative img[src*='/uploads/product-images/']").length;
+
+    if (remainingOldImages === 0  && croppedImages.length === 0) {
+  displayErrorMessage('imageInput-error', 'Please crop and select at least one image.');
+  isValid = false;
+}
 
     return isValid;
   }
