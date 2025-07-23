@@ -85,7 +85,7 @@ async function sendVerificationEmail(email, otp) {
       to: email,
       subject: "Verify your account ",
       text: `Your OPT is ${otp}`,
-      html: `<b>Yout OTP: ${otp} </b>`,
+      html: `<b>Your OTP: ${otp} </b>`,
     });
     console.log("Email send response:", info);
     return info.accepted.length > 0;
@@ -157,7 +157,6 @@ const varifyOtp = async (req, res) => {
     if (String(otp) === String(req.session.userOtp)) {
       const user = req.session.userData;
       const passwordHash = await securepassword(user.password);
-   
 
       const saveUserData = new User({
         name: user.name,
@@ -178,8 +177,6 @@ const varifyOtp = async (req, res) => {
         if (findUser) {
           findUser.wallet = (findUser.wallet || 0) + 100;
           findUser.walletHistory = findUser.walletHistory || [];
-
-      
 
           findUser.walletHistory.push({
             type: "credit",
@@ -580,6 +577,7 @@ module.exports = {
   loadShopPage,
   filterProduct,
  
+
   searchProducts,
   noDataFound,
   sortProducts,
