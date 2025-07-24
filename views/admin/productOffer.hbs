@@ -463,6 +463,11 @@ window.openEditModal = function (id, name, discount, validUntil, productIdsStrin
     products: selected,
     type: "product" // Hardcoded since this is for product offer
   };
+  const discountValue = parseFloat(data.discount);
+if (discountValue > 100) {
+  Swal.fire("Validation Error", "Discount should be less than 100%", "warning");
+  return;
+}
 
   // Send to backend
   fetch("/admin/offers/product", { // Make sure this matches your route
