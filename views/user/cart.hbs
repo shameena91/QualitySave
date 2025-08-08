@@ -264,7 +264,7 @@ function checkProductStock() {
   .then(res => res.json())
   .then(data => {
     if (data.unavailable.length === 0) {
-      // ✅ All products available
+     
       window.location.href = "/checkout";
     } else {
      
@@ -288,6 +288,9 @@ data.unavailable.forEach(product => {
       const modal = new bootstrap.Modal(document.getElementById('stockModal'));
       modal.show();
 
+      document.getElementById("proceedToCheckoutBtn").onclick = () => {
+        window.location.href = "/checkout";
+      };
       document.getElementById("proceedToCheckoutBtn").onclick = () => {
         window.location.href = "/checkout";
       };

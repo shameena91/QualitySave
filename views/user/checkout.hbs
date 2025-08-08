@@ -567,28 +567,33 @@ async function createOrder() {
     const stockData = await stockRes.json();
    
 
-   if (stockData.unavailable && stockData.unavailable.length > 0) {
+  if (stockData.unavailable && stockData.unavailable.length > 0) {
+  // Show unavailable products
   let productList = '<div>';
   stockData.unavailable.forEach(item => {
     productList += `<div style="color: red; font-weight: bold;">${item.name}</div>`;
   });
   productList += '</div>';
 
+  return Swal.fire({
+    icon: 'warning',
+    title: 'Some products are out of stock',
+    html: productList,
+    showCancelButton: true,
+    confirmButtonText: 'Proceed with Available Items',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Update displayed amount
+      {{!-- document.getElementById("finalAmount").textContent = `₹${stockData.newAmount.toFixed(2)}`; --}}
 
-      return Swal.fire({
-        icon: 'warning',
-        title: 'Some products are out of stock',
-        html: productList,
-        showCancelButton: true,
-        confirmButtonText: 'Proceed with Available Items',
-        cancelButtonText: 'Cancel'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Proceed only with available items
-          placeOrder(addressId, paymentMethod, amount, shippingCharge);
-        }
-      });
+      // Call placeOrder with updated amount
+      placeOrder(addressId, paymentMethod, stockData.newAmount, shippingCharge);
+    } else if (result.isDismissed) {
+      location.reload();
     }
+  });
+}
 
     // If all products are available
     placeOrder(addressId, paymentMethod, amount, shippingCharge);
@@ -732,5 +737,3 @@ function verifyPayment(paymentResult, orderId) {
 
 
 </script>
-
-

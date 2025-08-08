@@ -35,7 +35,10 @@ const applyCoupon = async (req, res) => {
   
   } catch (error) {
     console.error("Error updating coupon usage:", error);
-    return res.status(500).json({ success: false, message: "Server error." });
+res.status(StatusEnum.SERVER_ERROR).json({
+  status: false,
+  message: MessageEnum.SERVER_ERROR
+});
   }
 };
 
@@ -53,7 +56,10 @@ const removeCoupon = async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     console.error("Error updating coupon usage:", error);
-    return res.status(500).json({ success: false, message: "Server error." });
+res.status(StatusEnum.SERVER_ERROR).json({
+  status: false,
+  message: MessageEnum.SERVER_ERROR
+});
   }
 };
 
@@ -205,7 +211,7 @@ const createOrder = async (req, res) => {
 
  
     const validCartItems = cart.cartItems.filter(
-      (item) => item.productId.quantity > 0
+      (item) => item.productId.quantity > 0 && item.productId.isBlocked===false
     );
 
     if (validCartItems.length === 0) {

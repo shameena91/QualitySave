@@ -32,8 +32,9 @@ const createRazorpayOrder = async (req, res) => {
       .lean();
 
     const userCart = findCartItems.cartItems.filter(
-      (item) => item.productId.quantity > 0
+      (item) => item.productId.quantity > 0 && item.productId.isBlocked===false
     );
+
 
     // 2. Calculate totals
     const finalAmount = userCart.reduce(

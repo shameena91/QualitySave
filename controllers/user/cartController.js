@@ -4,7 +4,7 @@ const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const User = require("../../models/userSchema");
 const Wishlist = require("../../models/wishlistSchema");
-
+const { StatusEnum, MessageEnum } = require("../../utils/status");
 const getCart = async (req, res) => {
   try {
     const userId = req.session.user;
@@ -83,29 +83,33 @@ const getCart = async (req, res) => {
 const addToCart = async (req, res) => {
   try {
     if (!req.session.user) {
-      return res.status(401).json({
-        status: false,
-        message: "Please log in to add products to your cart.",
-      });
-    }
+  return res.status(StatusEnum.UNAUTHORIZED).json({
+    status: false,
+    message: MessageEnum.LOGIN_REQUIRED
+  });
+}
     const productId = req.body.proId;
     const userId = req.session.user;
     const findProduct = await Product.findById(productId);
 
     const wishlist = await Wishlist.findOne({ userId: userId });
-    if (!productId || !userId) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Missing product or user ID" });
-    }
+   if (!productId || !userId) {
+  return res.status(StatusEnum.BAD_REQUEST).json({
+    status: false,
+    message: MessageEnum.MISSING_IDS
+  });
+}
+
     const product = await Product.findById(productId);
     const categoryData = await Category.findById(product.category);
 
-    if (!product) {
-      return res
-        .status(404)
-        .json({ status: false, message: "Product not found" });
-    }
+   if (!product) {
+  return res.status(StatusEnum.NOT_FOUND).json({
+    status: false,
+    message: MessageEnum.PRODUCT_NOT_FOUND
+  });
+}
+
 
     if (wishlist) {
       const productExists = wishlist.products.some(
@@ -172,30 +176,6 @@ const addToCart = async (req, res) => {
             });
         }
 
-        // const sDate=new Date()
-        // sDate.setHours(0,0,0,0)
-
-        // const tdate=new Date()
-        // tdate.setHours(23,59,59,999)
-        // let c=0
-        // const TodayProductcount=await Order.find({userId:userId,'orderItems.product':proId,createdOn:{$gt:sDate,$lt:tdate}})
-
-        // for(let cout of TodayProductcount)
-        // {
-        // for(let item of cout.orderItems)
-        // {
-        //   if(item.product.toString()===proId)
-        //   {
-        //    c=c+item.quantity
-        //   }
-        // }
-        // }
-
-        // if(c===5)
-        // {
-        //   console.log("not purchased more")
-        // }
-
         if (productExists.quantity + 1 > maxQuantity) {
           return res.status(200).json({
             status: false,
@@ -214,9 +194,11 @@ const addToCart = async (req, res) => {
         }
 
         await cart.save();
-        return res
-          .status(200)
-          .json({ status: true, message: "Your cart updated successfully" });
+        return res.status(StatusEnum.OK).json({
+  status: true,
+  message: MessageEnum.CART_UPDATED
+});
+
       }
 
       cart.cartItems.push({
@@ -264,7 +246,10 @@ const updateCart = async (req, res) => {
     await cart.save();
     res.status(200).json({ status: true });
   } catch (error) {
-    res.status(500).json({ status: false, message: "Server error" });
+res.status(StatusEnum.SERVER_ERROR).json({
+  status: false,
+  message: MessageEnum.SERVER_ERROR
+});
   }
 };
 const removeCartItem = async (req, res) => {
@@ -280,41 +265,53 @@ const removeCartItem = async (req, res) => {
     await cart.save();
     res.status(200).json({ status: true });
   } catch (error) {
-    res.status(500).json({ status: false, message: "Server error" });
+res.status(StatusEnum.SERVER_ERROR).json({
+  status: false,
+  message: MessageEnum.SERVER_ERROR
+});
   }
 };
 
 const checkStock = async (req, res) => {
   try {
     const userId = req.session.user;
-
     const cart = await Cart.findOne({ userId }).populate("cartItems.productId");
-    const unavailable = [];
 
+    const unavailable = [];
     const availableItems = [];
+    let newAmount = 0;
 
     for (let item of cart.cartItems) {
       const product = item.productId;
 
-      if (product.quantity === 0) {
+      if (product.quantity === 0 || product.isBlocked) {
         unavailable.push({
           name: product.productName,
           image: product.productImage?.[0] || "default.jpg",
         });
       } else {
         availableItems.push(item);
+
+        const priceToUse = item.price;
+        newAmount += priceToUse * item.quantity;
+        if(newAmount<850)
+        {
+          newAmount+=40
+        }
       }
     }
 
-    cart.cartItems = availableItems;
-    await cart.save();
+    res.json({ unavailable, newAmount });
 
-    res.json({ unavailable });
   } catch (err) {
     console.error("Stock check error:", err);
-    res.status(500).json({ error: "Server error" });
+res.status(StatusEnum.SERVER_ERROR).json({
+  status: false,
+  message: MessageEnum.SERVER_ERROR
+});
   }
 };
+
 
 module.exports = {
   getCart,

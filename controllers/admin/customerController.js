@@ -10,15 +10,16 @@ const customerInfo = async (req, res) => {
     if (req.query.page) {
       page = req.query.page;
     }
-
+    const searchExp = new RegExp(search.trim(), "i");
     const limit = 5;
     const userData = await User.find({
       isAdmin: false,
       $or: [
-        { name: { $regex: ".*" + search + ".*" } },
-        { email: { $regex: ".*" + search + ".*" } },
+        { name: { $regex:searchExp } },
+        { email: { $regex: searchExp } },
       ],
     })
+    .sort({createdAt:-1})
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .lean()

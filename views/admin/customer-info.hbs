@@ -2,14 +2,15 @@
 <div class="main-content " id="mainContent">
   <h2>Customer List</h2>
 
-  <form class="mx-auto" role="search" style="max-width: 400px; width: 100%;">
-    <div class="input-group">
-      <input type="search" name="search" class="form-control" placeholder="Search users..." aria-label="Search">
-      <button class="btn  search-button" type="submit">
-        <i class="fas fa-search"></i>
-      </button>
-    </div>
-  </form>
+<form class="mx-auto" role="search" style="max-width: 400px; width: 100%;">
+  <div class="input-group">
+    <input type="search" name="search" class="form-control" placeholder="Search users..." aria-label="Search">
+    <button class="btn search-button" type="submit">
+      <i class="fas fa-search"></i>
+    </button>
+    <a href="/admin/users" class="btn btn-warning ms-3">Clear All</a>
+  </div>
+</form>
 
   <div class="table-responsive mt-4">
     <table class="table table-striped shadow-sm rounded-3">
